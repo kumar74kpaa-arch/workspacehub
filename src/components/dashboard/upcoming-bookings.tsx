@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { mockBookings } from '@/lib/data';
+import { getMockBookings } from '@/lib/data';
 import { ArrowUpRight, Calendar, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState, useEffect } from 'react';
@@ -17,6 +17,7 @@ export function UpcomingBookings() {
 
   useEffect(() => {
     // This runs only on the client, after hydration
+    const mockBookings = getMockBookings();
     const futureBookings = mockBookings.filter(b => b.startTime > new Date()).slice(0, 3);
     setUpcoming(futureBookings);
     setIsClient(true);

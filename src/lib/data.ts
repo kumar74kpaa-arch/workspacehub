@@ -51,35 +51,52 @@ export const mockWorkspaces: Workspace[] = [
   },
 ];
 
-export const mockBookings: (Booking & { workspaceName: string, workspaceType: 'desk' | 'room' })[] = [
-  {
-    id: 'booking-1',
-    userId: 'user-1',
-    workspaceId: 'desk-1',
-    workspaceName: 'Sunny Window Desk',
-    workspaceType: 'desk',
-    startTime: new Date(new Date().setDate(new Date().getDate() + 1)),
-    endTime: new Date(new Date().setDate(new Date().getDate() + 1)),
-    status: 'confirmed',
-  },
-  {
-    id: 'booking-2',
-    userId: 'user-1',
-    workspaceId: 'room-1',
-    workspaceName: 'The Boardroom',
-    workspaceType: 'room',
-    startTime: new Date(new Date().setDate(new Date().getDate() + 3)),
-    endTime: new Date(new Date().setDate(new Date().getDate() + 3)),
-    status: 'confirmed',
-  },
-  {
-    id: 'booking-3',
-    userId: 'user-1',
-    workspaceId: 'desk-2',
-    workspaceName: 'Quiet Corner Booth',
-    workspaceType: 'desk',
-    startTime: new Date(new Date().setDate(new Date().getDate() - 2)),
-    endTime: new Date(new Date().setDate(new Date().getDate() - 2)),
-    status: 'confirmed',
-  },
-];
+export const getMockBookings = (): (Booking & { workspaceName: string, workspaceType: 'desk' | 'room' })[] => {
+    const today = new Date();
+    
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    tomorrow.setHours(10, 0, 0, 0);
+
+    const threeDaysFromNow = new Date(today);
+    threeDaysFromNow.setDate(today.getDate() + 3);
+    threeDaysFromNow.setHours(14, 0, 0, 0);
+
+    const twoDaysAgo = new Date(today);
+    twoDaysAgo.setDate(today.getDate() - 2);
+    twoDaysAgo.setHours(13, 0, 0, 0);
+
+
+    return [
+      {
+        id: 'booking-1',
+        userId: 'user-1',
+        workspaceId: 'desk-1',
+        workspaceName: 'Sunny Window Desk',
+        workspaceType: 'desk',
+        startTime: tomorrow,
+        endTime: new Date(tomorrow.getTime() + 2 * 60 * 60 * 1000), // 2 hours later
+        status: 'confirmed',
+      },
+      {
+        id: 'booking-2',
+        userId: 'user-1',
+        workspaceId: 'room-1',
+        workspaceName: 'The Boardroom',
+        workspaceType: 'room',
+        startTime: threeDaysFromNow,
+        endTime: new Date(threeDaysFromNow.getTime() + 3 * 60 * 60 * 1000), // 3 hours later
+        status: 'confirmed',
+      },
+      {
+        id: 'booking-3',
+        userId: 'user-1',
+        workspaceId: 'desk-2',
+        workspaceName: 'Quiet Corner Booth',
+        workspaceType: 'desk',
+        startTime: twoDaysAgo,
+        endTime: new Date(twoDaysAgo.getTime() + 4 * 60 * 60 * 1000), // 4 hours later
+        status: 'confirmed',
+      },
+    ];
+};
