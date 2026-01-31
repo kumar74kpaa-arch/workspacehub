@@ -3,20 +3,20 @@
 import { getMockWorkspaces } from '@/lib/data';
 import { OverviewCards } from '@/components/dashboard/overview-cards';
 import { UpcomingBookings } from '@/components/dashboard/upcoming-bookings';
-import { WorkspaceCard } from '@/components/dashboard/workspace-card';
 import { useUser } from '@/firebase';
 import { WorkstationBooking } from '@/components/dashboard/workstation-booking';
+import { MeetingRoomBooking } from '@/components/dashboard/meeting-room-booking';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
 import type { Workspace } from '@/lib/definitions';
 
 export default function DashboardPage() {
   const { user, loading } = useUser();
-  const [roomWorkspaces, setRoomWorkspaces] = useState<Workspace[]>([]);
+  const [meetingRooms, setMeetingRooms] = useState<Workspace[]>([]);
 
   useEffect(() => {
     const rooms = getMockWorkspaces().filter(space => space.type === 'room');
-    setRoomWorkspaces(rooms);
+    setMeetingRooms(rooms);
   }, []);
 
   if (loading) {
@@ -75,11 +75,7 @@ export default function DashboardPage() {
               <h2 className="text-2xl font-bold mb-4">Available Workspaces</h2>
               <div className="grid gap-8">
                   <WorkstationBooking />
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {roomWorkspaces.map((space) => (
-                      <WorkspaceCard key={space.id} workspace={space} />
-                      ))}
-                  </div>
+                  {meetingRooms.length > 0 && <MeetingRoomBooking rooms={meetingRooms} />}
               </div>
             </div>
         </div>
