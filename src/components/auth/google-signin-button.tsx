@@ -40,14 +40,22 @@ export function GoogleSignInButton({ buttonText = 'Sign in with Google' }: { but
           displayName: user.displayName,
           email: user.email,
           photoURL: user.photoURL,
+          role: 'user',
         });
+        router.push('/dashboard');
+      } else {
+        const userData = userDoc.data();
+        if (userData?.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/dashboard');
+        }
       }
       
       toast({
         title: 'Success',
         description: 'You have successfully signed in with Google.',
       });
-      router.push('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',

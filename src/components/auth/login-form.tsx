@@ -11,9 +11,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { GoogleSignInButton } from './google-signin-button';
+import { doc, getDoc } from 'firebase/firestore';
 
 const LoginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -25,6 +26,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const auth = useAuth();
+  const firestore = useFirestore();
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -35,15 +37,31 @@ export function LoginForm() {
   });
 
   const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
-    if (!auth) return;
+    if (!auth || !firestore) return;
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
+
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        if (userData?.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/dashboard');
+        }
+      } else {
+        // Fallback for users that exist in Auth but not Firestore
+        router.push('/dashboard');
+      }
+
       toast({
         title: 'Success',
         description: 'You have successfully signed in.',
       });
-      router.push('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',

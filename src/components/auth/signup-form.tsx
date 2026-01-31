@@ -55,6 +55,7 @@ export function SignupForm() {
         displayName: values.name,
         email: user.email,
         photoURL: user.photoURL,
+        role: 'user',
       });
 
       toast({
