@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { GoogleSignInButton } from './google-signin-button';
 
 const LoginSchema = z.object({
@@ -98,8 +98,9 @@ export function LoginForm() {
       await setDoc(userDocRef, {
         displayName: values.name,
         email: user.email,
-        photoURL: user.photoURL,
-        role: 'user', // New users are always 'user'
+        role: 'user',
+        provider: 'password',
+        createdAt: serverTimestamp(),
       });
 
       toast({

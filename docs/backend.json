@@ -26,12 +26,24 @@
             "user",
             "admin"
           ]
+        },
+        "provider": {
+          "type": "string",
+          "description": "The authentication provider for the user.",
+          "enum": ["google", "password"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The creation timestamp of the user account."
         }
       },
       "required": [
         "displayName",
         "email",
-        "role"
+        "role",
+        "provider",
+        "createdAt"
       ]
     }
   },

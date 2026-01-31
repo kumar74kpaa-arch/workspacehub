@@ -6,7 +6,7 @@ import { useAuth, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const GoogleIcon = () => (
     <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
@@ -41,6 +41,8 @@ export function GoogleSignInButton({ buttonText = 'Sign in with Google' }: { but
           email: user.email,
           photoURL: user.photoURL,
           role: 'user',
+          provider: 'google',
+          createdAt: serverTimestamp(),
         });
         router.push('/dashboard');
       } else {
