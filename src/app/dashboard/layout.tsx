@@ -1,10 +1,6 @@
 import Link from 'next/link';
 import {
   LayoutDashboard,
-  Calendar,
-  CreditCard,
-  FileText,
-  Bot,
   PanelLeft,
   Search,
 } from 'lucide-react';
@@ -35,10 +31,6 @@ import { Logo } from '@/components/logo';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Workspace' },
-  { href: '#', icon: Calendar, label: 'Bookings' },
-  { href: '#', icon: CreditCard, label: 'Memberships' },
-  { href: '#', icon: FileText, label: 'Invoices' },
-  { href: '#', icon: Bot, label: 'AI Optimizer' },
 ];
 
 export default function DashboardLayout({
