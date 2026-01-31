@@ -25,7 +25,8 @@
   },
   "auth": {
     "providers": [
-      "email-password"
+      "email-password",
+      "google.com"
     ]
   },
   "firestore": {
