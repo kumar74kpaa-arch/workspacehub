@@ -17,6 +17,9 @@ export function Header() {
             <Link href="/#memberships" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Memberships
             </Link>
+            <Link href="/#tour" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              Tour
+            </Link>
              <Link href="/dashboard" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Workspace
             </Link>

@@ -76,6 +76,7 @@ const membershipPlans = [
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-image');
+  const tourImages = PlaceHolderImages.filter((img) => img.id.startsWith('tour-image'));
 
   return (
     <>
@@ -180,7 +181,34 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="availability" className="w-full py-24 lg:py-32 bg-secondary/50">
+        <section id="tour" className="w-full py-24 lg:py-32 bg-secondary/50">
+          <div className="container px-4 md:px-6">
+            <div className="text-center space-y-4 mb-16">
+              <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
+                Tour the Space
+              </h2>
+              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+                Get a feel for our vibrant and inspiring environment.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {tourImages.map((image) => (
+                <div key={image.id} className="overflow-hidden rounded-lg group">
+                  <Image
+                    src={image.imageUrl}
+                    alt={image.description}
+                    width={600}
+                    height={400}
+                    className="h-full w-full object-cover object-center transform group-hover:scale-105 transition-transform duration-300"
+                    data-ai-hint={image.imageHint}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="availability" className="w-full py-24 lg:py-32 bg-background">
           <div className="container px-4 md:px-6">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>

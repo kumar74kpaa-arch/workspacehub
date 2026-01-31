@@ -35,6 +35,66 @@
       "description": "Avatar for a user named Maria.",
       "imageUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx3b21hbiUyMHBvcnRyYWl0fGVufDB8fHx8fDE3Njk4Mzk2MjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "woman portrait"
+    },
+    {
+      "id": "tour-image-1",
+      "description": "A collaborative workspace area.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-3.jpg",
+      "imageHint": "collaborative workspace"
+    },
+    {
+      "id": "tour-image-2",
+      "description": "Lounge area with comfortable seating.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-2.jpg",
+      "imageHint": "office lounge"
+    },
+    {
+      "id": "tour-image-3",
+      "description": "Modern office interior with stylish lighting.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-4.jpg",
+      "imageHint": "modern office"
+    },
+    {
+      "id": "tour-image-4",
+      "description": "Spacious conference hall.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-5.jpg",
+      "imageHint": "conference hall"
+    },
+    {
+      "id": "tour-image-5",
+      "description": "Cosy corner with unique chairs.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-6.jpg",
+      "imageHint": "office corner"
+    },
+    {
+      "id": "tour-image-6",
+      "description": "Open plan office space.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-8.jpg",
+      "imageHint": "open office"
+    },
+    {
+      "id": "tour-image-7",
+      "description": "Another view of the open office.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-9.jpg",
+      "imageHint": "office view"
+    },
+    {
+      "id": "tour-image-8",
+      "description": "Workstations with ergonomic chairs.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-10.jpg",
+      "imageHint": "office workstations"
+    },
+    {
+      "id": "tour-image-9",
+      "description": "A row of modern workstations.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-11.jpg",
+      "imageHint": "workstation row"
+    },
+    {
+      "id": "tour-image-10",
+      "description": "Well-lit office corridor.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-1.jpg",
+      "imageHint": "office corridor"
     }
   ]
 }
