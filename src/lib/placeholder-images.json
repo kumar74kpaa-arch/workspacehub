@@ -43,12 +43,6 @@
       "imageHint": "collaborative workspace"
     },
     {
-      "id": "tour-image-2",
-      "description": "Lounge area with comfortable seating.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-2.jpg",
-      "imageHint": "office lounge"
-    },
-    {
       "id": "tour-image-3",
       "description": "Modern office interior with stylish lighting.",
       "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-4.jpg",
@@ -95,6 +89,12 @@
       "description": "Well-lit office corridor.",
       "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-1.jpg",
       "imageHint": "office corridor"
+    },
+    {
+      "id": "tour-image-11",
+      "description": "Bright office kitchen area.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-7.jpg",
+      "imageHint": "office kitchen"
     }
   ]
 }
