@@ -45,6 +45,11 @@ const amenities = [
     name: 'Prime Location',
     description: 'Centrally located with excellent connectivity and nearby amenities.',
   },
+  {
+    icon: Clock,
+    name: 'Flexible Hours',
+    description: '24/7 access for members. Work on your schedule, not ours.',
+  },
 ];
 
 const membershipPlans = [
@@ -119,7 +124,7 @@ export default function Home() {
                 Everything you need to do your best work, all in one place.
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               {amenities.map((amenity) => (
                 <Card key={amenity.name} className="flex flex-col items-center text-center p-6 bg-card hover:shadow-lg transition-shadow duration-300">
                   <div className="p-4 bg-accent/10 rounded-full mb-4">
