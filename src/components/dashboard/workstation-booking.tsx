@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { format, isSameDay } from 'date-fns';
 import { Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -22,12 +23,19 @@ import {
 import { getMockBookings } from '@/lib/data';
 import type { Booking } from '@/lib/definitions';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useUser } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 type WorkstationBooking = Booking & { workspaceName: string, workspaceType: 'desk' | 'room' };
 
 export function WorkstationBooking() {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [bookings, setBookings] = React.useState<WorkstationBooking[]>([]);
+  const [isCalendarOpen, setCalendarOpen] = React.useState(false);
+  
+  const { user } = useUser();
+  const router = useRouter();
+  const { toast } = useToast();
 
   React.useEffect(() => {
     // Fetch mock bookings on the client side
@@ -43,6 +51,18 @@ export function WorkstationBooking() {
       (b) => b.workspaceId.toLowerCase() === workstationId.toLowerCase() && isSameDay(b.startTime, date)
     );
   };
+  
+  const handleBookWorkstation = (workstationId: string) => {
+    if (!user) {
+      router.push('/login');
+    } else {
+      // TODO: Implement actual booking logic
+      toast({
+        title: 'Workstation Booked (simulation)',
+        description: `You have booked ${workstationId} for ${date ? format(date, 'PPP') : 'the selected date'}.`,
+      });
+    }
+  };
 
   return (
     <Card>
@@ -53,7 +73,7 @@ export function WorkstationBooking() {
       <CardContent className="space-y-6">
         <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Select Date</label>
-            <Popover>
+            <Popover open={isCalendarOpen} onOpenChange={setCalendarOpen}>
             <PopoverTrigger asChild>
                 <Button
                 variant={'outline'}
@@ -68,10 +88,13 @@ export function WorkstationBooking() {
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
                 <Calendar
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                initialFocus
+                  mode="single"
+                  selected={date}
+                  onSelect={(day) => {
+                    setDate(day);
+                    setCalendarOpen(false);
+                  }}
+                  initialFocus
                 />
             </PopoverContent>
             </Popover>
@@ -88,7 +111,8 @@ export function WorkstationBooking() {
                                 <Button
                                     variant={booking ? 'destructive' : 'outline'}
                                     className="w-full"
-                                    disabled={!!booking}
+                                    disabled={!!booking || !date}
+                                    onClick={() => handleBookWorkstation(ws)}
                                 >
                                     {ws}
                                 </Button>
@@ -102,11 +126,16 @@ export function WorkstationBooking() {
                                 </p>
                             </TooltipContent>
                         )}
-                         {!booking && (
+                         {!booking && date && (
                              <TooltipContent>
                                 <p>Available</p>
                             </TooltipContent>
                         )}
+                         {!date && (
+                             <TooltipContent>
+                                <p>Please select a date</p>
+                            </TooltipContent>
+                         )}
                     </Tooltip>
                 </TooltipProvider>
             );

@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Workspace } from '@/lib/definitions';
+import { useUser } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 interface MeetingRoomBookingProps {
     rooms: Workspace[];
@@ -34,6 +37,23 @@ export function MeetingRoomBooking({ rooms }: MeetingRoomBookingProps) {
   const [startTime, setStartTime] = React.useState('09:00');
   const [endTime, setEndTime] = React.useState('10:00');
   const [selectedRoom, setSelectedRoom] = React.useState<string | undefined>(rooms[0]?.id);
+  const [isCalendarOpen, setCalendarOpen] = React.useState(false);
+
+  const { user } = useUser();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleReserveClick = () => {
+    if (!user) {
+      router.push('/login');
+    } else {
+      // TODO: Implement actual booking logic
+      toast({
+        title: 'Room Reserved (simulation)',
+        description: `You've booked ${selectedRoom} on ${date ? format(date, 'PPP') : ''} from ${startTime} to ${endTime}.`,
+      });
+    }
+  };
 
   return (
     <Card>
@@ -60,7 +80,7 @@ export function MeetingRoomBooking({ rooms }: MeetingRoomBookingProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex flex-col gap-2">
                 <Label htmlFor="date">Select Date</Label>
-                <Popover>
+                <Popover open={isCalendarOpen} onOpenChange={setCalendarOpen}>
                     <PopoverTrigger asChild>
                         <Button
                         id="date"
@@ -78,7 +98,10 @@ export function MeetingRoomBooking({ rooms }: MeetingRoomBookingProps) {
                         <Calendar
                         mode="single"
                         selected={date}
-                        onSelect={setDate}
+                        onSelect={(day) => {
+                          setDate(day);
+                          setCalendarOpen(false);
+                        }}
                         initialFocus
                         />
                     </PopoverContent>
@@ -113,7 +136,7 @@ export function MeetingRoomBooking({ rooms }: MeetingRoomBookingProps) {
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="w-full md:w-auto ml-auto">Reserve Room</Button>
+        <Button className="w-full md:w-auto ml-auto" onClick={handleReserveClick}>Reserve Room</Button>
       </CardFooter>
     </Card>
   );
