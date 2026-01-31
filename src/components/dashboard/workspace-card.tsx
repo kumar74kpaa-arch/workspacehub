@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { Workspace } from '@/lib/definitions';
-import { Users, Desk } from 'lucide-react';
+import { Users, LampDesk } from 'lucide-react';
 
 type WorkspaceCardProps = {
   workspace: Workspace;
@@ -31,12 +31,12 @@ export function WorkspaceCard({ workspace }: WorkspaceCardProps) {
       <CardContent className="p-4">
         <h3 className="font-bold text-lg truncate">{workspace.name}</h3>
         <div className="flex items-center text-muted-foreground text-sm mt-2">
-          {workspace.type === 'room' ? <Users className="h-4 w-4 mr-2" /> : <Desk className="h-4 w-4 mr-2" />}
+          {workspace.type === 'room' ? <Users className="h-4 w-4 mr-2" /> : <LampDesk className="h-4 w-4 mr-2" />}
           <span>
             {workspace.type === 'room' ? `Up to ${workspace.capacity} people` : 'Single person desk'}
           </span>
         </div>
-        <Button className="w-full mt-4">Book Now</Button>
+        <Button className="w-full mt-4">Reserve Workspace</Button>
       </CardContent>
     </Card>
   );
