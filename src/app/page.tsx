@@ -44,20 +44,20 @@ const amenities = [
 const membershipPlans = [
   {
     name: 'Day Pass',
-    price: '$25',
+    price: '₹2,000',
     period: 'per day',
     features: ['Flexible access', 'High-speed WiFi', 'Coffee & snacks'],
   },
   {
     name: 'Monthly',
-    price: '$250',
+    price: '₹20,000',
     period: 'per month',
     features: ['24/7 access', 'Dedicated desk option', '4 hours meeting room credit'],
     popular: true,
   },
   {
     name: 'Annual',
-    price: '$2500',
+    price: '₹2,00,000',
     period: 'per year',
     features: ['All monthly benefits', '1 month free', 'Company mailbox service'],
   },
