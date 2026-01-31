@@ -28,20 +28,19 @@ if (!workstationImage || !conferenceHallImage || !miniMeetingRoomImage) {
   throw new Error('Required placeholder images for workspaces are missing.');
 }
 
-export const mockWorkspaces: Workspace[] = [
-    {
-        id: 'workstation',
-        name: 'Workstation',
+export const getMockWorkspaces = (): Workspace[] => [
+    ...Array.from({ length: 16 }, (_, i) => ({
+        id: `WS-${String(i + 1).padStart(2, '0')}`,
+        name: `Workstation ${String(i + 1).padStart(2, '0')}`,
         type: 'desk' as const,
         capacity: 1,
-        // The booking component will handle the visual representation
-        imageUrl: '',
-        imageHint: '',
-    },
+        imageUrl: workstationImage.imageUrl,
+        imageHint: workstationImage.imageHint,
+    })),
     {
         id: 'conference-hall',
         name: 'Conference Hall',
-        type: 'room',
+        type: 'room' as const,
         capacity: 12,
         imageUrl: conferenceHallImage.imageUrl,
         imageHint: conferenceHallImage.imageHint,
@@ -49,7 +48,7 @@ export const mockWorkspaces: Workspace[] = [
     {
         id: 'mini-meeting-room',
         name: 'Mini Meeting Room',
-        type: 'room',
+        type: 'room' as const,
         capacity: 4,
         imageUrl: miniMeetingRoomImage.imageUrl,
         imageHint: miniMeetingRoomImage.imageHint,
