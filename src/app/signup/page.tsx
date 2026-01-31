@@ -6,7 +6,7 @@ import { Logo } from '@/components/logo';
 export default function SignupPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4">
-      <Card className="w-full max-w-md shadow-xl">
+      <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mb-4 flex justify-center">
             <Link href="/">
@@ -14,7 +14,7 @@ export default function SignupPage() {
             </Link>
           </div>
           <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
-          <CardDescription>Join Deskify and find your perfect workspace today.</CardDescription>
+          <CardDescription>Join Workspace Hub and find your perfect workspace today.</CardDescription>
         </CardHeader>
         <CardContent>
           <SignupForm />

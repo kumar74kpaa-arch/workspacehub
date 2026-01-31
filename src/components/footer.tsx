@@ -8,7 +8,7 @@ export function Footer() {
           <Logo />
         </div>
         <p className="text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} Deskify. All rights reserved.
+          &copy; {new Date().getFullYear()} Workspace Hub. All rights reserved.
         </p>
       </div>
     </footer>

@@ -1,18 +1,23 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 
-const fontInter = Inter({
+const fontSans = Inter({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-sans',
+});
+
+const fontHeadline = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-headline',
 });
 
 export const metadata: Metadata = {
-  title: 'Deskify - Your Modern Workspace Solution',
+  title: 'Workspace Hub - A Calm Space to Work and Think',
   description:
-    'Book workstations and meeting rooms, manage memberships, and optimize your productivity with AI-powered suggestions.',
+    'Thoughtfully designed coworking for focused professionals.',
 };
 
 export default function RootLayout({
@@ -26,11 +31,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className={cn('min-h-screen bg-background font-body antialiased', fontInter.variable)}>
+      <body className={cn('min-h-screen bg-background font-body antialiased', fontSans.variable, fontHeadline.variable)}>
         <div className="relative flex min-h-screen flex-col">
           {children}
         </div>

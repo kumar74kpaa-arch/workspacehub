@@ -12,7 +12,7 @@ export function UpcomingBookings() {
         <div className="grid gap-2">
           <CardTitle>Upcoming Bookings</CardTitle>
           <CardDescription>
-            Your next few reservations at Deskify.
+            Your next few reservations at Workspace Hub.
           </CardDescription>
         </div>
         <Button asChild size="sm" className="ml-auto gap-1">

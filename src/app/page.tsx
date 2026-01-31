@@ -41,7 +41,7 @@ const amenities = [
   },
 ];
 
-const pricingPlans = [
+const membershipPlans = [
   {
     name: 'Day Pass',
     price: '$25',
@@ -70,21 +70,21 @@ export default function Home() {
     <>
       <Header />
       <main className="flex-1">
-        <section className="relative w-full py-20 md:py-32 lg:py-40 bg-background">
-          <div className="container px-4 md:px-6 grid md:grid-cols-2 gap-8 items-center">
-            <div className="space-y-6">
+        <section className="relative w-full py-24 md:py-32 lg:py-40 bg-background">
+          <div className="container px-4 md:px-6 grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
               <h1 className="text-4xl font-headline font-bold tracking-tight sm:text-5xl md:text-6xl text-primary">
-                Your Space, Perfected.
+                A Calm Space to Work and Think
               </h1>
               <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                Deskify offers a seamless blend of modern design and productivity. Find your focus with our flexible workspaces and AI-powered booking optimizer.
+                Thoughtfully designed coworking for focused professionals.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button asChild size="lg" className="font-semibold">
-                  <Link href="/signup">Book a Seat</Link>
+                  <Link href="/signup">Reserve Workspace</Link>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="font-semibold">
-                  <Link href="#pricing">View Plans</Link>
+                  <Link href="#memberships">View Memberships</Link>
                 </Button>
               </div>
             </div>
@@ -95,7 +95,7 @@ export default function Home() {
                   alt={heroImage.description}
                   width={600}
                   height={400}
-                  className="rounded-lg object-cover shadow-2xl aspect-[3/2]"
+                  className="rounded-lg object-cover aspect-[3/2] hover:shadow-lg transition-shadow"
                   data-ai-hint={heroImage.imageHint}
                 />
              )}
@@ -103,9 +103,9 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="amenities" className="w-full py-20 md:py-24 bg-secondary/50">
+        <section id="amenities" className="w-full py-24 lg:py-32 bg-secondary/50">
           <div className="container px-4 md:px-6">
-            <div className="text-center space-y-4 mb-12">
+            <div className="text-center space-y-4 mb-16">
               <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
                 Amenities for Success
               </h2>
@@ -127,19 +127,19 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="pricing" className="w-full py-20 md:py-24">
+        <section id="memberships" className="w-full py-24 lg:py-32">
           <div className="container px-4 md:px-6">
-            <div className="text-center space-y-4 mb-12">
+            <div className="text-center space-y-4 mb-16">
               <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                Flexible Plans for Everyone
+                Flexible Memberships for Everyone
               </h2>
               <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                Choose the plan that fits your work style. No hidden fees, no long-term commitments.
+                Choose the membership that fits your work style. No hidden fees, no long-term commitments.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              {pricingPlans.map((plan) => (
-                <Card key={plan.name} className={`flex flex-col ${plan.popular ? 'border-accent shadow-accent/20 shadow-lg' : ''}`}>
+              {membershipPlans.map((plan) => (
+                <Card key={plan.name} className={`flex flex-col ${plan.popular ? 'border-accent' : ''}`}>
                   {plan.popular && <Badge className="absolute -top-3 right-4 bg-accent text-accent-foreground">Popular</Badge>}
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
@@ -152,7 +152,7 @@ export default function Home() {
                     <ul className="space-y-3">
                       {plan.features.map((feature) => (
                         <li key={feature} className="flex items-center gap-3">
-                          <CheckCircle className="h-5 w-5 text-green-500" />
+                          <CheckCircle className="h-5 w-5 text-accent" />
                           <span>{feature}</span>
                         </li>
                       ))}
@@ -160,7 +160,7 @@ export default function Home() {
                   </CardContent>
                   <CardFooter>
                     <Button className="w-full font-semibold" variant={plan.popular ? 'default' : 'outline'}>
-                      Get Started
+                      Reserve Workspace
                     </Button>
                   </CardFooter>
                 </Card>
@@ -169,7 +169,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="availability" className="w-full py-20 md:py-24 bg-secondary/50">
+        <section id="availability" className="w-full py-24 lg:py-32 bg-secondary/50">
           <div className="container px-4 md:px-6">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
@@ -177,7 +177,7 @@ export default function Home() {
                   Real-Time Availability
                 </h2>
                 <p className="mt-4 text-muted-foreground md:text-lg">
-                  Check our live occupancy to find the perfect time to come in. Deskify helps you plan your day for maximum productivity.
+                  Check our live occupancy to find the perfect time to come in. Workspace Hub helps you plan your day for maximum productivity.
                 </p>
                 <Button asChild className="mt-6 font-semibold">
                   <Link href="/dashboard">

@@ -36,7 +36,7 @@ const navItems = [
   { href: '#', icon: Calendar, label: 'Bookings' },
   { href: '#', icon: Users, label: 'Users' },
   { href: '#', icon: Building2, label: 'Resources' },
-  { href: '#', icon: CreditCard, label: 'Plans' },
+  { href: '#', icon: CreditCard, label: 'Memberships' },
   { href: '#', icon: FileText, label: 'Payments' },
 ];
 

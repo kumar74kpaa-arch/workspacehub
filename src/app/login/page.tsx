@@ -6,7 +6,7 @@ import { Logo } from '@/components/logo';
 export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4">
-      <Card className="w-full max-w-md shadow-xl">
+      <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mb-4 flex justify-center">
             <Link href="/">
@@ -14,7 +14,7 @@ export default function LoginPage() {
             </Link>
           </div>
           <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>Enter your credentials to access your dashboard.</CardDescription>
+          <CardDescription>Enter your credentials to access your workspace.</CardDescription>
         </CardHeader>
         <CardContent>
           <LoginForm />

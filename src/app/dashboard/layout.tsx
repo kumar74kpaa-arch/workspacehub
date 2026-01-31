@@ -34,9 +34,9 @@ import { UserNav } from '@/components/dashboard/user-nav';
 import { Logo } from '@/components/logo';
 
 const navItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Workspace' },
   { href: '#', icon: Calendar, label: 'Bookings' },
-  { href: '#', icon: CreditCard, label: 'Membership' },
+  { href: '#', icon: CreditCard, label: 'Memberships' },
   { href: '#', icon: FileText, label: 'Invoices' },
   { href: '#', icon: Bot, label: 'AI Optimizer' },
 ];

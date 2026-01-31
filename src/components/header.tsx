@@ -14,11 +14,11 @@ export function Header() {
             <Link href="/" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Home
             </Link>
-            <Link href="/#pricing" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Pricing
+            <Link href="/#memberships" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              Memberships
             </Link>
              <Link href="/dashboard" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Dashboard
+              Workspace
             </Link>
           </nav>
         </div>
