@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   Home,
   Calendar,
@@ -30,14 +33,15 @@ import {
 
 import { UserNav } from '@/components/dashboard/user-nav';
 import { Logo } from '@/components/logo';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/admin', icon: Home, label: 'Overview' },
-  { href: '#', icon: Calendar, label: 'Bookings' },
-  { href: '#', icon: Users, label: 'Users' },
-  { href: '#', icon: Building2, label: 'Resources' },
-  { href: '#', icon: CreditCard, label: 'Memberships' },
-  { href: '#', icon: FileText, label: 'Payments' },
+  { href: '/admin/bookings', icon: Calendar, label: 'Bookings' },
+  { href: '/admin/users', icon: Users, label: 'Users' },
+  { href: '/admin/resources', icon: Building2, label: 'Resources' },
+  { href: '/admin/memberships', icon: CreditCard, label: 'Memberships' },
+  { href: '/admin/payments', icon: FileText, label: 'Payments' },
 ];
 
 export default function AdminLayout({
@@ -45,6 +49,8 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-muted/40">
@@ -61,7 +67,7 @@ export default function AdminLayout({
                       <TooltipTrigger asChild>
                         <SidebarMenuButton
                           asChild
-                          isActive={item.href === '/admin'}
+                          isActive={pathname === item.href}
                         >
                           <Link href={item.href}>
                             <item.icon />
@@ -95,7 +101,10 @@ export default function AdminLayout({
                     <Link
                       key={item.label}
                       href={item.href}
-                      className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                      className={cn(
+                        'flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground',
+                        pathname === item.href && 'text-foreground'
+                      )}
                     >
                       <item.icon className="h-5 w-5" />
                       {item.label}
