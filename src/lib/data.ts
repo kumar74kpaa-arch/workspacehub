@@ -20,34 +20,38 @@ export const mockAdmin: User = {
   role: 'admin',
 };
 
+const workstationImage = PlaceHolderImages.find((img) => img.id === 'workstation-image');
+const conferenceHallImage = PlaceHolderImages.find((img) => img.id === 'conference-hall-image');
+const miniMeetingRoomImage = PlaceHolderImages.find((img) => img.id === 'mini-meeting-room-image');
+
+if (!workstationImage || !conferenceHallImage || !miniMeetingRoomImage) {
+  throw new Error('Required placeholder images for workspaces are missing.');
+}
+
 export const mockWorkspaces: Workspace[] = [
-  {
-    id: 'desk-1',
-    name: 'Sunny Window Desk',
-    type: 'desk',
+  ...Array.from({ length: 16 }, (_, i) => ({
+    id: `workstation-${i + 1}`,
+    name: `Workstation ${i + 1}`,
+    type: 'desk' as const,
     capacity: 1,
-    ...PlaceHolderImages.find((img) => img.id === 'workspace-1')!,
-  },
+    imageUrl: workstationImage.imageUrl,
+    imageHint: workstationImage.imageHint,
+  })),
   {
-    id: 'room-1',
-    name: 'The Boardroom',
+    id: 'conference-hall',
+    name: 'Conference Hall',
     type: 'room',
-    capacity: 8,
-    ...PlaceHolderImages.find((img) => img.id === 'workspace-2')!,
+    capacity: 12,
+    imageUrl: conferenceHallImage.imageUrl,
+    imageHint: conferenceHallImage.imageHint,
   },
   {
-    id: 'desk-2',
-    name: 'Quiet Corner Booth',
-    type: 'desk',
-    capacity: 1,
-    ...PlaceHolderImages.find((img) => img.id === 'workspace-3')!,
-  },
-  {
-    id: 'room-2',
-    name: 'Creative Lounge',
+    id: 'mini-meeting-room',
+    name: 'Mini Meeting Room',
     type: 'room',
     capacity: 4,
-    ...PlaceHolderImages.find((img) => img.id === 'workspace-4')!,
+    imageUrl: miniMeetingRoomImage.imageUrl,
+    imageHint: miniMeetingRoomImage.imageHint,
   },
 ];
 
@@ -71,8 +75,8 @@ export const getMockBookings = (): (Booking & { workspaceName: string, workspace
       {
         id: 'booking-1',
         userId: 'user-1',
-        workspaceId: 'desk-1',
-        workspaceName: 'Sunny Window Desk',
+        workspaceId: 'workstation-5',
+        workspaceName: 'Workstation 5',
         workspaceType: 'desk',
         startTime: tomorrow,
         endTime: new Date(tomorrow.getTime() + 2 * 60 * 60 * 1000), // 2 hours later
@@ -81,8 +85,8 @@ export const getMockBookings = (): (Booking & { workspaceName: string, workspace
       {
         id: 'booking-2',
         userId: 'user-1',
-        workspaceId: 'room-1',
-        workspaceName: 'The Boardroom',
+        workspaceId: 'conference-hall',
+        workspaceName: 'Conference Hall',
         workspaceType: 'room',
         startTime: threeDaysFromNow,
         endTime: new Date(threeDaysFromNow.getTime() + 3 * 60 * 60 * 1000), // 3 hours later
@@ -91,8 +95,8 @@ export const getMockBookings = (): (Booking & { workspaceName: string, workspace
       {
         id: 'booking-3',
         userId: 'user-1',
-        workspaceId: 'desk-2',
-        workspaceName: 'Quiet Corner Booth',
+        workspaceId: 'workstation-1',
+        workspaceName: 'Workstation 1',
         workspaceType: 'desk',
         startTime: twoDaysAgo,
         endTime: new Date(twoDaysAgo.getTime() + 4 * 60 * 60 * 1000), // 4 hours later

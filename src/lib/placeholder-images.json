@@ -7,28 +7,22 @@
       "imageHint": "modern office"
     },
     {
-      "id": "workspace-1",
-      "description": "A bright desk with a city view.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-9.jpg",
-      "imageHint": "desk window"
+      "id": "workstation-image",
+      "description": "A row of modern workstations.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-11.jpg",
+      "imageHint": "workstation row"
     },
     {
-      "id": "workspace-2",
-      "description": "A professional boardroom for team meetings.",
+      "id": "conference-hall-image",
+      "description": "A large conference hall for team meetings.",
       "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-5.jpg",
-      "imageHint": "meeting room"
+      "imageHint": "conference hall"
     },
     {
-      "id": "workspace-3",
-      "description": "A private booth for focused work or calls.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-10.jpg",
-      "imageHint": "office booth"
-    },
-    {
-      "id": "workspace-4",
-      "description": "A comfortable lounge area for creative collaboration.",
+      "id": "mini-meeting-room-image",
+      "description": "A small meeting room for focused discussions.",
       "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-3.jpg",
-      "imageHint": "lounge area"
+      "imageHint": "small meeting room"
     },
     {
       "id": "user-avatar-1",
