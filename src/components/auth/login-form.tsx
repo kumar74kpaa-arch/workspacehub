@@ -1,35 +1,29 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Mail, Lock } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { login } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
+import { useState } from 'react';
+import { useAuth } from '@/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const LoginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
   password: z.string().min(1, { message: 'Password is required.' }),
 });
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" className="w-full" disabled={pending}>
-      {pending ? 'Signing In...' : 'Sign In'}
-    </Button>
-  );
-}
-
 export function LoginForm() {
-  const [state, dispatch] = useFormState(login, undefined);
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const auth = useAuth();
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -39,19 +33,30 @@ export function LoginForm() {
     },
   });
 
-  useEffect(() => {
-    if (state?.message) {
+  const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
+    if (!auth) return;
+    setIsLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, values.email, values.password);
       toast({
-        title: 'Authentication',
-        description: state.message,
+        title: 'Success',
+        description: 'You have successfully signed in.',
       });
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Authentication Error',
+        description: error.message,
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }, [state, toast]);
-
+  };
 
   return (
     <Form {...form}>
-      <form action={dispatch} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-4">
           <FormField
             control={form.control}
@@ -86,7 +91,9 @@ export function LoginForm() {
             )}
           />
         </div>
-        <SubmitButton />
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? 'Signing In...' : 'Sign In'}
+        </Button>
       </form>
     </Form>
   );

@@ -3,6 +3,8 @@ import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
+import { FirebaseProvider } from '@/firebase/provider';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 const fontSans = Inter({
   subsets: ['latin'],
@@ -36,10 +38,13 @@ export default function RootLayout({
         />
       </head>
       <body className={cn('min-h-screen bg-background font-body antialiased', fontSans.variable, fontHeadline.variable)}>
-        <div className="relative flex min-h-screen flex-col">
-          {children}
-        </div>
-        <Toaster />
+        <FirebaseProvider>
+          <div className="relative flex min-h-screen flex-col">
+            {children}
+          </div>
+          <Toaster />
+          <FirebaseErrorListener />
+        </FirebaseProvider>
       </body>
     </html>
   );

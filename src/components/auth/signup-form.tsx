@@ -1,17 +1,18 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { User, Mail, Lock } from 'lucide-react';
-import { useEffect } from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { signup } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 
 const SignupSchema = z.object({
@@ -20,18 +21,11 @@ const SignupSchema = z.object({
   password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" className="w-full" disabled={pending}>
-      {pending ? 'Creating Account...' : 'Create Account'}
-    </Button>
-  );
-}
-
 export function SignupForm() {
-  const [state, dispatch] = useFormState(signup, undefined);
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const auth = useAuth();
 
   const form = useForm<z.infer<typeof SignupSchema>>({
     resolver: zodResolver(SignupSchema),
@@ -42,18 +36,31 @@ export function SignupForm() {
     },
   });
   
-  useEffect(() => {
-    if (state?.message) {
+  const onSubmit = async (values: z.infer<typeof SignupSchema>) => {
+    if (!auth) return;
+    setIsLoading(true);
+    try {
+      await createUserWithEmailAndPassword(auth, values.email, values.password);
       toast({
-        title: 'Account Creation',
-        description: state.message,
+        title: 'Account Created',
+        description: 'You have successfully created an account.',
       });
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Signup Error',
+        description: error.message,
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }, [state, toast]);
+  };
+
 
   return (
     <Form {...form}>
-      <form action={dispatch} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-4">
           <FormField
             control={form.control}
@@ -104,7 +111,9 @@ export function SignupForm() {
             )}
           />
         </div>
-        <SubmitButton />
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? 'Creating Account...' : 'Create Account'}
+        </Button>
       </form>
     </Form>
   );
