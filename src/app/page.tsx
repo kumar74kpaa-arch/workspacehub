@@ -81,7 +81,7 @@ export default function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button asChild size="lg" className="font-semibold">
-                  <Link href="/signup">Reserve Workspace</Link>
+                  <Link href="/login">Reserve Workspace</Link>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="font-semibold">
                   <Link href="#memberships">View Memberships</Link>
@@ -159,8 +159,8 @@ export default function Home() {
                     </ul>
                   </CardContent>
                   <CardFooter>
-                    <Button className="w-full font-semibold" variant={plan.popular ? 'default' : 'outline'}>
-                      Reserve Workspace
+                    <Button asChild className="w-full font-semibold" variant={plan.popular ? 'default' : 'outline'}>
+                      <Link href="/login">Reserve Workspace</Link>
                     </Button>
                   </CardFooter>
                 </Card>
