@@ -29,30 +29,31 @@ if (!workstationImage || !conferenceHallImage || !miniMeetingRoomImage) {
 }
 
 export const mockWorkspaces: Workspace[] = [
-  ...Array.from({ length: 16 }, (_, i) => ({
-    id: `workstation-${i + 1}`,
-    name: `Workstation ${i + 1}`,
-    type: 'desk' as const,
-    capacity: 1,
-    imageUrl: workstationImage.imageUrl,
-    imageHint: workstationImage.imageHint,
-  })),
-  {
-    id: 'conference-hall',
-    name: 'Conference Hall',
-    type: 'room',
-    capacity: 12,
-    imageUrl: conferenceHallImage.imageUrl,
-    imageHint: conferenceHallImage.imageHint,
-  },
-  {
-    id: 'mini-meeting-room',
-    name: 'Mini Meeting Room',
-    type: 'room',
-    capacity: 4,
-    imageUrl: miniMeetingRoomImage.imageUrl,
-    imageHint: miniMeetingRoomImage.imageHint,
-  },
+    {
+        id: 'workstation',
+        name: 'Workstation',
+        type: 'desk' as const,
+        capacity: 1,
+        // The booking component will handle the visual representation
+        imageUrl: '',
+        imageHint: '',
+    },
+    {
+        id: 'conference-hall',
+        name: 'Conference Hall',
+        type: 'room',
+        capacity: 12,
+        imageUrl: conferenceHallImage.imageUrl,
+        imageHint: conferenceHallImage.imageHint,
+    },
+    {
+        id: 'mini-meeting-room',
+        name: 'Mini Meeting Room',
+        type: 'room',
+        capacity: 4,
+        imageUrl: miniMeetingRoomImage.imageUrl,
+        imageHint: miniMeetingRoomImage.imageHint,
+    },
 ];
 
 export const getMockBookings = (): (Booking & { workspaceName: string, workspaceType: 'desk' | 'room' })[] => {
@@ -60,46 +61,63 @@ export const getMockBookings = (): (Booking & { workspaceName: string, workspace
     
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
-    tomorrow.setHours(10, 0, 0, 0);
+    
+    const today_10am = new Date(today);
+    today_10am.setHours(10, 0, 0, 0);
+    const today_12pm = new Date(today);
+    today_12pm.setHours(12, 0, 0, 0);
 
-    const threeDaysFromNow = new Date(today);
-    threeDaysFromNow.setDate(today.getDate() + 3);
-    threeDaysFromNow.setHours(14, 0, 0, 0);
+    const today_2pm = new Date(today);
+    today_2pm.setHours(14, 0, 0, 0);
+    const today_3pm = new Date(today);
+    today_3pm.setHours(15, 0, 0, 0);
 
-    const twoDaysAgo = new Date(today);
-    twoDaysAgo.setDate(today.getDate() - 2);
-    twoDaysAgo.setHours(13, 0, 0, 0);
-
+    const tomorrow_2pm = new Date(tomorrow);
+    tomorrow_2pm.setHours(14, 0, 0, 0);
+    const tomorrow_5pm = new Date(tomorrow);
+    tomorrow_5pm.setHours(17, 0, 0, 0);
 
     return [
+      // Desk bookings for today
       {
-        id: 'booking-1',
-        userId: 'user-1',
-        workspaceId: 'workstation-5',
-        workspaceName: 'Workstation 5',
+        id: 'booking-ws-1',
+        userId: 'user-2',
+        workspaceId: 'WS-05',
+        workspaceName: 'Workstation 05',
         workspaceType: 'desk',
-        startTime: tomorrow,
-        endTime: new Date(tomorrow.getTime() + 2 * 60 * 60 * 1000), // 2 hours later
+        startTime: today_10am,
+        endTime: today_12pm,
         status: 'confirmed',
       },
+       {
+        id: 'booking-ws-2',
+        userId: 'user-3',
+        workspaceId: 'WS-12',
+        workspaceName: 'Workstation 12',
+        workspaceType: 'desk',
+        startTime: today_2pm,
+        endTime: today_3pm,
+        status: 'confirmed',
+      },
+      // Room bookings
       {
-        id: 'booking-2',
+        id: 'booking-room-1',
         userId: 'user-1',
         workspaceId: 'conference-hall',
         workspaceName: 'Conference Hall',
         workspaceType: 'room',
-        startTime: threeDaysFromNow,
-        endTime: new Date(threeDaysFromNow.getTime() + 3 * 60 * 60 * 1000), // 3 hours later
+        startTime: tomorrow_2pm,
+        endTime: tomorrow_5pm,
         status: 'confirmed',
       },
-      {
-        id: 'booking-3',
+       {
+        id: 'booking-room-2',
         userId: 'user-1',
-        workspaceId: 'workstation-1',
-        workspaceName: 'Workstation 1',
-        workspaceType: 'desk',
-        startTime: twoDaysAgo,
-        endTime: new Date(twoDaysAgo.getTime() + 4 * 60 * 60 * 1000), // 4 hours later
+        workspaceId: 'mini-meeting-room',
+        workspaceName: 'Mini Meeting Room',
+        workspaceType: 'room',
+        startTime: today_10am,
+        endTime: today_12pm,
         status: 'confirmed',
       },
     ];
