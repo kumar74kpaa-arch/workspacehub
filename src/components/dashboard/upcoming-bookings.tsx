@@ -9,6 +9,8 @@ import type { Booking } from '@/lib/definitions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore, useUser } from '@/firebase';
 import { collection, query, where, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export function UpcomingBookings() {
   const { user } = useUser();
@@ -23,15 +25,13 @@ export function UpcomingBookings() {
     };
     setLoading(true);
 
-    const now = new Date();
     const q = query(
         collection(firestore, 'bookings'),
-        where('userId', '==', user.uid),
-        where('startTime', '>=', now),
-        orderBy('startTime', 'asc'),
+        where('userId', '==', user.uid)
     );
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
+        const now = new Date();
         const bookingsData = snapshot.docs.map(doc => {
             const data = doc.data();
             return {
@@ -40,12 +40,19 @@ export function UpcomingBookings() {
                 startTime: (data.startTime as Timestamp).toDate(),
                 endTime: (data.endTime as Timestamp).toDate(),
             } as Booking;
-        }).slice(0, 3);
+        })
+        .filter(booking => booking.startTime >= now)
+        .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
+        .slice(0, 3);
 
         setUpcoming(bookingsData);
         setLoading(false);
-    }, (error) => {
-        console.error("Error fetching upcoming bookings:", error);
+    }, async (error) => {
+        const permissionError = new FirestorePermissionError({
+            path: 'bookings',
+            operation: 'list',
+        });
+        errorEmitter.emit('permission-error', permissionError);
         setLoading(false);
     });
 
