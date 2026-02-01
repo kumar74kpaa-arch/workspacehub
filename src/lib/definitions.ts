@@ -14,6 +14,7 @@ export type Workspace = {
   capacity: number;
   imageUrl: string;
   imageHint: string;
+  isActive?: boolean;
 };
 
 export type Booking = {

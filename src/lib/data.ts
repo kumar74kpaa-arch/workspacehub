@@ -36,6 +36,7 @@ export const getMockWorkspaces = (): Workspace[] => [
         capacity: 1,
         imageUrl: workstationImage.imageUrl,
         imageHint: workstationImage.imageHint,
+        isActive: true,
     })),
     {
         id: 'conference-hall',
@@ -44,6 +45,7 @@ export const getMockWorkspaces = (): Workspace[] => [
         capacity: 12,
         imageUrl: conferenceHallImage.imageUrl,
         imageHint: conferenceHallImage.imageHint,
+        isActive: true,
     },
     {
         id: 'mini-meeting-room',
@@ -52,5 +54,6 @@ export const getMockWorkspaces = (): Workspace[] => [
         capacity: 4,
         imageUrl: miniMeetingRoomImage.imageUrl,
         imageHint: miniMeetingRoomImage.imageHint,
+        isActive: false,
     },
 ];

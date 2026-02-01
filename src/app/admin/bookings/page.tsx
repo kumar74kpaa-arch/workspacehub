@@ -86,7 +86,8 @@ export default function AdminBookingsPage() {
   const groupedBookings = groupBookingsByWorkspace(bookings);
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden">
+       <div className="absolute top-0 right-0 -z-0 h-40 w-40 rounded-full bg-secondary/20 blur-3xl" />
       <CardHeader>
         <CardTitle className="animate-float">Bookings by Date</CardTitle>
         <CardDescription>
@@ -147,23 +148,26 @@ export default function AdminBookingsPage() {
                         <div
                           key={booking.id}
                           className={cn(
-                            'flex items-center justify-between p-3 rounded-md border text-sm',
-                            conflict ? 'bg-destructive/10 border-destructive text-destructive-foreground' : 'bg-secondary'
+                            'rounded-xl border bg-card p-4 shadow-sm transition hover:shadow-md',
+                            conflict ? 'border-destructive bg-destructive/10' : ''
                           )}
                         >
-                          <div>
-                            <span className="font-medium">
-                              {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
-                            </span>
-                            <span className="text-muted-foreground mx-2">|</span>
-                            <span>{booking.userName}</span>
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="font-medium">
+                                {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
+                              </p>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                Booked by: {booking.userName}
+                              </p>
+                            </div>
+                            {conflict && (
+                              <Badge variant="destructive" className="gap-1.5">
+                                <AlertTriangle className="h-3.5 w-3.5" />
+                                Conflict
+                              </Badge>
+                            )}
                           </div>
-                          {conflict && (
-                            <Badge variant="destructive" className="gap-1.5">
-                               <AlertTriangle className="h-3.5 w-3.5"/>
-                               Conflict
-                            </Badge>
-                          )}
                         </div>
                       );
                     })}

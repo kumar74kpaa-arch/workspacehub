@@ -104,11 +104,18 @@ export default {
           '50%': { transform: 'translateY(6px)' },
           '100%': { transform: 'translateY(0px)' },
         },
+        'floatSlow': {
+          '0%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-12px)' },
+          '100%': { transform: 'translateY(0px)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'float': 'float 8s ease-in-out infinite',
+        'floatSlow': 'floatSlow 14s ease-in-out infinite',
+        'floatSlowDelay': 'floatSlow 18s ease-in-out infinite',
       },
     },
   },
