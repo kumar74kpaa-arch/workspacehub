@@ -10,11 +10,16 @@ export function FirebaseErrorListener() {
 
   useEffect(() => {
     const handleError = (error: FirestorePermissionError) => {
-      console.error("Firestore Permission Error:", error.toString())
+      // Throwing the error in development will show the Next.js error overlay
+      if (process.env.NODE_ENV === 'development') {
+        throw error;
+      }
+      
+      // In production, we'll just show a toast
       toast({
         variant: "destructive",
         title: "Permission Denied",
-        description: error.message,
+        description: "You do not have permission to perform this action.",
       })
     }
 

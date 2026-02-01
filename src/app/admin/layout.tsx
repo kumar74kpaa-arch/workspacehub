@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Home,
   Calendar,
@@ -11,6 +11,7 @@ import {
   FileText,
   PanelLeft,
   Search,
+  Loader2,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -34,6 +35,9 @@ import {
 import { UserNav } from '@/components/dashboard/user-nav';
 import { Logo } from '@/components/logo';
 import { cn } from '@/lib/utils';
+import { useUser, useFirestore } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 
 const navItems = [
   { href: '/admin', icon: Home, label: 'Overview' },
@@ -44,12 +48,61 @@ const navItems = [
   { href: '/admin/payments', icon: FileText, label: 'Payments' },
 ];
 
+function AdminLoadingScreen() {
+  return (
+    <div className="flex min-h-screen w-full items-center justify-center bg-background">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <p className="text-muted-foreground">Verifying permissions...</p>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading: authLoading } = useUser();
+  const firestore = useFirestore();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingRole, setCheckingRole] = useState(true);
+
+  useEffect(() => {
+    if (authLoading) {
+      return;
+    }
+    if (!user || !firestore) {
+      router.replace('/login');
+      return;
+    }
+
+    const checkAdminStatus = async () => {
+      const userDocRef = doc(firestore, 'users', user.uid);
+      try {
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists() && userDoc.data().role === 'admin') {
+          setIsAdmin(true);
+        } else {
+          router.replace('/dashboard');
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        router.replace('/dashboard');
+      } finally {
+        setCheckingRole(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [user, authLoading, firestore, router]);
+
+  if (authLoading || checkingRole || !isAdmin) {
+    return <AdminLoadingScreen />;
+  }
 
   return (
     <SidebarProvider>
