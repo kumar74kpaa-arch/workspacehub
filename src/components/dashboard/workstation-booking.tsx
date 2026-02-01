@@ -36,15 +36,16 @@ export function WorkstationBooking() {
     const dayStart = startOfDay(date);
     const dayEnd = endOfDay(date);
 
+    // To avoid a composite index, we query only on the date range
+    // and filter for workspaceType on the client.
     const q = query(
       collection(firestore, 'bookings'),
-      where('workspaceType', '==', 'desk'),
       where('startTime', '>=', dayStart),
       where('startTime', '<=', dayEnd)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const bookingsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
+      const bookingsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking)).filter(b => b.workspaceType === 'desk');
       setBookings(bookingsData);
       setIsLoadingBookings(false);
     }, (error) => {
@@ -61,7 +62,7 @@ export function WorkstationBooking() {
   const getBookingForWorkstation = (workstationId: string) => {
     if (!date) return null;
     return bookings.find(
-      (b) => b.workspaceId.toLowerCase() === workstationId.toLowerCase() && isSameDay(b.startTime, date)
+      (b) => b.workspaceId.toLowerCase() === workstationId.toLowerCase() && isSameDay(new Date(b.startTime), date)
     );
   };
   

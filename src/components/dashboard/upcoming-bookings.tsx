@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import type { Booking } from '@/lib/definitions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, query, where, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, Timestamp } from 'firebase/firestore';
 
 export function UpcomingBookings() {
   const { user } = useUser();
@@ -23,16 +23,15 @@ export function UpcomingBookings() {
     };
     setLoading(true);
 
-    const now = new Date();
+    // To avoid requiring a composite index, we query only by user ID
+    // and then filter/sort the results on the client.
     const q = query(
         collection(firestore, 'bookings'),
-        where('userId', '==', user.uid),
-        where('startTime', '>=', now),
-        orderBy('startTime', 'asc'),
-        limit(3)
+        where('userId', '==', user.uid)
     );
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
+        const now = new Date();
         const bookingsData = snapshot.docs.map(doc => {
             const data = doc.data();
             return {
@@ -41,7 +40,11 @@ export function UpcomingBookings() {
                 startTime: (data.startTime as Timestamp).toDate(),
                 endTime: (data.endTime as Timestamp).toDate(),
             } as Booking;
-        });
+        })
+        .filter(booking => booking.startTime >= now)
+        .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
+        .slice(0, 3);
+
         setUpcoming(bookingsData);
         setLoading(false);
     }, (error) => {
