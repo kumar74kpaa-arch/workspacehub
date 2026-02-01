@@ -16,7 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { Workspace } from '@/lib/definitions';
 import { useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { collection, query, where, getDocs, addDoc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { hasBookingConflict } from '@/lib/checkBookingConflict';
 
 interface MeetingRoomBookingProps {
     rooms: Workspace[];
@@ -66,18 +67,14 @@ export function MeetingRoomBooking({ rooms }: MeetingRoomBookingProps) {
     }
 
     try {
-      // Check for overlapping bookings
-      const bookingsRef = collection(firestore, 'bookings');
-      const q = query(
-        bookingsRef, 
-        where('workspaceId', '==', selectedRoomId),
-        where('status', '==', 'confirmed'),
-        where('startTime', '<', endDateTime),
-        where('endTime', '>', startDateTime)
-      );
-      const querySnapshot = await getDocs(q);
+      const conflict = await hasBookingConflict({
+        firestore,
+        workspaceId: selectedRoomId,
+        startTime: startDateTime,
+        endTime: endDateTime,
+      });
 
-      if (!querySnapshot.empty) {
+      if (conflict) {
         toast({
             variant: 'destructive',
             title: 'Booking Conflict',
@@ -88,7 +85,7 @@ export function MeetingRoomBooking({ rooms }: MeetingRoomBookingProps) {
       }
       
       // Create new booking
-      await addDoc(bookingsRef, {
+      await addDoc(collection(firestore, 'bookings'), {
         userId: user.uid,
         workspaceId: selectedRoom.id,
         workspaceName: selectedRoom.name,
