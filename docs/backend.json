@@ -45,6 +45,54 @@
         "provider",
         "createdAt"
       ]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Represents a booking for a workspace.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who made the booking."
+        },
+        "workspaceId": {
+          "type": "string",
+          "description": "The ID of the workspace being booked."
+        },
+        "workspaceName": {
+          "type": "string",
+          "description": "The name of the workspace at the time of booking."
+        },
+        "workspaceType": {
+          "type": "string",
+          "description": "The type of workspace.",
+          "enum": ["desk", "room"]
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The start time of the booking."
+        },
+        "endTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The end time of the booking."
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the booking.",
+          "enum": ["confirmed", "pending", "cancelled"]
+        }
+      },
+      "required": [
+        "userId",
+        "workspaceId",
+        "workspaceName",
+        "workspaceType",
+        "startTime",
+        "endTime",
+        "status"
+      ]
     }
   },
   "auth": {
@@ -59,6 +107,12 @@
         "$ref": "#/entities/UserProfile"
       },
       "description": "Stores public user profile data."
+    },
+    "/bookings/{bookingId}": {
+      "schema": {
+        "$ref": "#/entities/Booking"
+      },
+      "description": "Stores all workspace bookings made by users."
     }
   }
 }

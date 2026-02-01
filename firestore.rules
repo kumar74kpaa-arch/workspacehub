@@ -34,5 +34,17 @@ service cloud.firestore {
       // Only admins can delete users
       allow delete: if isAdmin();
     }
+
+    // Rules for the bookings collection
+    match /bookings/{bookingId} {
+      // Authenticated users can view bookings to check for availability.
+      allow get, list: if request.auth != null;
+
+      // A user can create a booking for themselves.
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      
+      // A user can update/delete their own booking. Admins can manage any booking.
+      allow update, delete: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin();
+    }
   }
 }

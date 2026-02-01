@@ -2,29 +2,57 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { getMockBookings } from '@/lib/data';
 import { ArrowUpRight, Calendar, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState, useEffect } from 'react';
 import type { Booking } from '@/lib/definitions';
 import { Skeleton } from '@/components/ui/skeleton';
-
-type UpcomingBooking = Booking & { workspaceName: string; workspaceType: 'desk' | 'room' };
+import { useFirestore, useUser } from '@/firebase';
+import { collection, query, where, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
 
 export function UpcomingBookings() {
-  const [upcoming, setUpcoming] = useState<UpcomingBooking[]>([]);
-  const [isClient, setIsClient] = useState(false);
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const [upcoming, setUpcoming] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // This runs only on the client, after hydration
-    const mockBookings = getMockBookings();
-    const futureBookings = mockBookings.filter(b => b.startTime > new Date()).slice(0, 3);
-    setUpcoming(futureBookings);
-    setIsClient(true);
-  }, []);
+    if (!firestore || !user) {
+        setLoading(false);
+        return;
+    };
+    setLoading(true);
 
-  if (!isClient) {
-    // On the server, and during initial client render, show a skeleton loader.
+    const now = new Date();
+    const q = query(
+        collection(firestore, 'bookings'),
+        where('userId', '==', user.uid),
+        where('startTime', '>=', now),
+        orderBy('startTime', 'asc'),
+        limit(3)
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const bookingsData = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                startTime: (data.startTime as Timestamp).toDate(),
+                endTime: (data.endTime as Timestamp).toDate(),
+            } as Booking;
+        });
+        setUpcoming(bookingsData);
+        setLoading(false);
+    }, (error) => {
+        console.error("Error fetching upcoming bookings:", error);
+        setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [firestore, user]);
+
+  if (loading) {
     return (
       <Card>
         <CardHeader className="flex flex-row items-center">
@@ -92,7 +120,7 @@ export function UpcomingBookings() {
                    <Clock className="h-3 w-3" /> {format(booking.startTime, "EEEE, MMM d 'at' h:mm a")}
                 </p>
               </div>
-              <div className="font-medium">{booking.workspaceType === 'desk' ? 'Desk' : 'Room'}</div>
+              <div className="font-medium capitalize">{booking.workspaceType}</div>
             </div>
           ))
         ) : (

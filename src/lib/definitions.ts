@@ -20,6 +20,8 @@ export type Booking = {
   id: string;
   userId: string;
   workspaceId: string;
+  workspaceName: string;
+  workspaceType: 'desk' | 'room';
   startTime: Date;
   endTime: Date;
   status: 'confirmed' | 'pending' | 'cancelled';
