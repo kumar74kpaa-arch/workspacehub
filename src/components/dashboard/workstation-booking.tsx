@@ -33,16 +33,12 @@ export function WorkstationBooking() {
     if (!firestore || !date) return;
 
     setIsLoadingBookings(true);
-    const dayStart = new Date(date);
-    dayStart.setHours(0,0,0,0);
-    const dayEnd = new Date(date);
-    dayEnd.setHours(23,59,59,999);
+    const dateStr = format(date, 'yyyy-MM-dd');
 
     const q = query(
       collection(firestore, 'bookings'),
       where('workspaceType', '==', 'desk'),
-      where('startTime', '>=', dayStart),
-      where('startTime', '<=', dayEnd)
+      where('date', '==', dateStr)
     );
 
     getDocs(q).then((snapshot) => {
@@ -61,7 +57,7 @@ export function WorkstationBooking() {
   const getBookingForWorkstation = (workstationId: string) => {
     if (!date) return null;
     return bookings.find(
-      (b) => b.workspaceId.toLowerCase() === workstationId.toLowerCase() && isSameDay(new Date(b.startTime), date)
+      (b) => b.workspaceId.toLowerCase() === workstationId.toLowerCase()
     );
   };
   
@@ -90,9 +86,11 @@ export function WorkstationBooking() {
 
         await addDoc(collection(firestore, "bookings"), {
             userId: user.uid,
+            userName: user.displayName || user.email,
             workspaceId: workstationId,
             workspaceName: `Workstation ${workstationId}`,
             workspaceType: 'desk',
+            date: format(date, 'yyyy-MM-dd'),
             startTime: Timestamp.fromDate(dayStart),
             endTime: Timestamp.fromDate(dayEnd),
             status: 'confirmed'
@@ -104,16 +102,11 @@ export function WorkstationBooking() {
         });
 
         // Re-fetch bookings for the day to update UI
-        const dayStartQuery = new Date(date);
-        dayStartQuery.setHours(0,0,0,0);
-        const dayEndQuery = new Date(date);
-        dayEndQuery.setHours(23,59,59,999);
-
+        const dateStr = format(date, 'yyyy-MM-dd');
         const q = query(
             collection(firestore, 'bookings'),
             where('workspaceType', '==', 'desk'),
-            where('startTime', '>=', dayStartQuery),
-            where('startTime', '<=', dayEndQuery)
+            where('date', '==', dateStr)
         );
         const snapshot = await getDocs(q);
         const bookingsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
@@ -189,7 +182,7 @@ export function WorkstationBooking() {
                             <TooltipContent>
                                 <p className="flex items-center gap-2">
                                     <Clock className="h-4 w-4" />
-                                    Booked for the day
+                                    Booked by {booking?.userName}
                                 </p>
                             </TooltipContent>
                         )}

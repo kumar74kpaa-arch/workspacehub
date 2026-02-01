@@ -87,9 +87,11 @@ export function MeetingRoomBooking({ rooms }: MeetingRoomBookingProps) {
       // Create new booking
       await addDoc(collection(firestore, 'bookings'), {
         userId: user.uid,
+        userName: user.displayName || user.email,
         workspaceId: selectedRoom.id,
         workspaceName: selectedRoom.name,
         workspaceType: 'room',
+        date: format(date, 'yyyy-MM-dd'),
         startTime: Timestamp.fromDate(startDateTime),
         endTime: Timestamp.fromDate(endDateTime),
         status: 'confirmed',

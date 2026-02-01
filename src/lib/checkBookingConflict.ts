@@ -6,7 +6,7 @@ import {
   Timestamp,
   Firestore,
 } from "firebase/firestore";
-import { startOfDay, endOfDay } from 'date-fns';
+import { format } from 'date-fns';
 
 export async function hasBookingConflict({
   firestore,
@@ -19,15 +19,13 @@ export async function hasBookingConflict({
   startTime: Date;
   endTime: Date;
 }) {
-  const dayStart = startOfDay(startTime);
-  const dayEnd = endOfDay(startTime);
+  const dateStr = format(startTime, 'yyyy-MM-dd');
 
   const q = query(
     collection(firestore, "bookings"),
     where("workspaceId", "==", workspaceId),
     where("status", "==", "confirmed"),
-    where("startTime", ">=", dayStart),
-    where("startTime", "<=", dayEnd)
+    where("date", "==", dateStr)
   );
 
   const snapshot = await getDocs(q);
@@ -41,6 +39,7 @@ export async function hasBookingConflict({
     const existingStart = (booking.startTime as Timestamp).toDate();
     const existingEnd = (booking.endTime as Timestamp).toDate();
 
+    // OVERLAP LOGIC
     return startTime < existingEnd && endTime > existingStart;
   });
 }
