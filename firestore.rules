@@ -19,16 +19,18 @@ service cloud.firestore {
 
     // Rules for the users collection
     match /users/{userId} {
-      // Admins can get any user document, users can only get their own
-      allow get: if isUser(userId) || isAdmin();
+      // A user can get their own document. An admin's `get` call for their own role check is also allowed here.
+      allow get: if isUser(userId);
       
-      // Only admins can list all user documents
+      // An admin can list all user documents.
       allow list: if isAdmin();
       
       // A user can create their own document on signup, but cannot assign themselves as admin.
       allow create: if isUser(userId) && request.resource.data.role == 'user';
       
       // An admin can update any user. A user can update their own document, but cannot change their role.
+      // An admin getting another user document for a client-side read is not explicitly allowed,
+      // but is not required by the current app functionality.
       allow update: if isAdmin() || (isUser(userId) && request.resource.data.role == resource.data.role);
 
       // Only admins can delete users
