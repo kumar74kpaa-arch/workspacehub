@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { format, parse, startOfDay, endOfDay } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { Calendar as CalendarIcon, Clock, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -68,30 +68,16 @@ export function MeetingRoomBooking({ rooms }: MeetingRoomBookingProps) {
     try {
       // Check for overlapping bookings
       const bookingsRef = collection(firestore, 'bookings');
-      const dayStart = startOfDay(date);
-      const dayEnd = endOfDay(date);
-
-      // To avoid composite indexes, we get all confirmed bookings for the selected day
-      // and filter for our specific room and time on the client.
       const q = query(
         bookingsRef, 
+        where('workspaceId', '==', selectedRoomId),
         where('status', '==', 'confirmed'),
-        where('startTime', '>=', dayStart),
-        where('startTime', '<=', dayEnd)
+        where('startTime', '<', endDateTime),
+        where('endTime', '>', startDateTime)
       );
       const querySnapshot = await getDocs(q);
-      
-      const isOverlapping = querySnapshot.docs
-        .filter(doc => doc.data().workspaceId === selectedRoomId) // filter for room
-        .some(doc => {
-          const booking = doc.data();
-          const bookingStart = (booking.startTime as Timestamp).toDate();
-          const bookingEnd = (booking.endTime as Timestamp).toDate();
-          // Logic: (StartA < EndB) and (EndA > StartB)
-          return startDateTime < bookingEnd && endDateTime > bookingStart;
-      });
 
-      if (isOverlapping) {
+      if (!querySnapshot.empty) {
         toast({
             variant: 'destructive',
             title: 'Booking Conflict',

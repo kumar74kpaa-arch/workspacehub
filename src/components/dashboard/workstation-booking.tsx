@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { format, isSameDay, startOfDay, endOfDay } from 'date-fns';
+import { format, isSameDay, startOfDay } from 'date-fns';
 import { Calendar as CalendarIcon, Clock, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { collection, query, where, getDocs, addDoc, Timestamp, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, Timestamp } from 'firebase/firestore';
 import type { Booking } from '@/lib/definitions';
 
 
@@ -33,27 +33,26 @@ export function WorkstationBooking() {
     if (!firestore || !date) return;
 
     setIsLoadingBookings(true);
-    const dayStart = startOfDay(date);
-    const dayEnd = endOfDay(date);
+    const dayStart = new Date(date);
+    dayStart.setHours(0,0,0,0);
+    const dayEnd = new Date(date);
+    dayEnd.setHours(23,59,59,999);
 
-    // To avoid a composite index, we query only on the date range
-    // and filter for workspaceType on the client.
     const q = query(
       collection(firestore, 'bookings'),
+      where('workspaceType', '==', 'desk'),
       where('startTime', '>=', dayStart),
       where('startTime', '<=', dayEnd)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const bookingsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking)).filter(b => b.workspaceType === 'desk');
+    getDocs(q).then((snapshot) => {
+      const bookingsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
       setBookings(bookingsData);
       setIsLoadingBookings(false);
-    }, (error) => {
+    }).catch(error => {
       console.error("Error fetching workstation bookings:", error);
       setIsLoadingBookings(false);
     });
-    
-    return () => unsubscribe();
 
   }, [date, firestore]);
 
@@ -103,6 +102,22 @@ export function WorkstationBooking() {
             title: 'Workstation Booked!',
             description: `You have booked ${workstationId} for ${format(date, 'PPP')}.`,
         });
+
+        // Re-fetch bookings for the day to update UI
+        const dayStartQuery = new Date(date);
+        dayStartQuery.setHours(0,0,0,0);
+        const dayEndQuery = new Date(date);
+        dayEndQuery.setHours(23,59,59,999);
+
+        const q = query(
+            collection(firestore, 'bookings'),
+            where('workspaceType', '==', 'desk'),
+            where('startTime', '>=', dayStartQuery),
+            where('startTime', '<=', dayEndQuery)
+        );
+        const snapshot = await getDocs(q);
+        const bookingsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
+        setBookings(bookingsData);
 
     } catch (error) {
         console.error("Error booking workstation: ", error);
