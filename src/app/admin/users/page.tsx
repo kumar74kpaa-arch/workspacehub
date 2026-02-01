@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { collection, query, orderBy, onSnapshot, Timestamp, doc, deleteDoc } from 'firebase/firestore';
+import { useFirestore, useFirebaseApp } from '@/firebase';
 import { MoreHorizontal, PlusCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -21,7 +21,7 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
@@ -32,8 +32,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { EditUserForm } from '@/components/admin/edit-user-form';
+import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
-interface UserProfile {
+
+export interface UserProfile {
   id: string;
   displayName: string;
   photoURL?: string;
@@ -43,7 +50,7 @@ interface UserProfile {
   createdAt: Timestamp;
 }
 
-function UserRow({ user }: { user: UserProfile }) {
+function UserRow({ user, onEdit, onDelete }: { user: UserProfile, onEdit: (user: UserProfile) => void, onDelete: (user: UserProfile) => void }) {
   const getInitials = (name: string) => name?.split(' ').map((n) => n[0]).join('') || '';
   const joinedDate = user.createdAt?.toDate();
 
@@ -82,8 +89,8 @@ function UserRow({ user }: { user: UserProfile }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>Edit</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(user)}>Edit</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive" onClick={() => onDelete(user)}>Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>
@@ -96,6 +103,9 @@ export default function UsersPage() {
   const firestore = useFirestore();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userToEdit, setUserToEdit] = useState<UserProfile | null>(null);
+  const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!firestore) {
@@ -109,16 +119,41 @@ export default function UsersPage() {
       const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserProfile));
       setUsers(usersData);
       setLoading(false);
-    }, (error) => {
-      console.error("Error fetching users:", error);
+    }, async (error) => {
+      const permissionError = new FirestorePermissionError({
+          path: 'users',
+          operation: 'list',
+      });
+      errorEmitter.emit('permission-error', permissionError);
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, [firestore]);
 
+  const handleDeleteUser = () => {
+    if (!firestore || !userToDelete) return;
+
+    const docRef = doc(firestore, 'users', userToDelete.id);
+    
+    deleteDoc(docRef)
+        .then(() => {
+            toast({ title: 'User deleted', description: `${userToDelete.displayName} has been removed.` });
+            setUserToDelete(null);
+        })
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'delete',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            setUserToDelete(null);
+        });
+  };
+
 
   return (
+    <>
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -165,7 +200,7 @@ export default function UsersPage() {
                 </TableRow>
               ))
             ) : users.length > 0 ? (
-              users.map(user => <UserRow key={user.id} user={user} />)
+              users.map(user => <UserRow key={user.id} user={user} onEdit={setUserToEdit} onDelete={setUserToDelete} />)
             ) : (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">
@@ -177,5 +212,42 @@ export default function UsersPage() {
         </Table>
       </CardContent>
     </Card>
+
+    {userToEdit && (
+      <Dialog open={!!userToEdit} onOpenChange={(open) => !open && setUserToEdit(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+                Make changes to {userToEdit.displayName}'s profile here. Click save when you're done.
+            </DialogDescription>
+          </DialogHeader>
+          <EditUserForm user={userToEdit} onFinished={() => setUserToEdit(null)} />
+        </DialogContent>
+      </Dialog>
+    )}
+
+    {userToDelete && (
+      <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the user account for <span className="font-semibold">{userToDelete.displayName}</span> and remove their data from our servers.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                    className={buttonVariants({ variant: "destructive" })}
+                    onClick={handleDeleteUser}
+                >
+                    Delete User
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    )}
+    </>
   );
 }
