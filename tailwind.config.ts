@@ -78,6 +78,10 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      boxShadow: {
+        'architect': '0 8px 30px rgba(0,0,0,0.04)',
+        'architect-hover': '0 16px 40px rgba(0,0,0,0.06)',
+      },
       keyframes: {
         'accordion-down': {
           from: {
@@ -95,10 +99,16 @@ export default {
             height: '0',
           },
         },
+        'float': {
+          '0%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(6px)' },
+          '100%': { transform: 'translateY(0px)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'float': 'float 8s ease-in-out infinite',
       },
     },
   },

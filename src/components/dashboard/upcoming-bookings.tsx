@@ -124,7 +124,7 @@ export function UpcomingBookings() {
             </div>
           ))
         ) : (
-          <p className="text-sm text-muted-foreground p-2">You have no upcoming bookings.</p>
+          <p className="p-8 text-center text-sm text-muted-foreground">You have no upcoming bookings.</p>
         )}
       </CardContent>
     </Card>

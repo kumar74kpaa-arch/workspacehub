@@ -56,7 +56,7 @@ export default function DashboardPage() {
             {user ? (
                 <>
                     <div className="grid gap-4">
-                        <h1 className="text-3xl font-bold tracking-tight">
+                        <h1 className="text-3xl font-bold tracking-tight animate-float">
                         Welcome {user.displayName?.split(' ')[0] || user.email?.split('@')[0] || 'back'}!
                         </h1>
                         <p className="text-muted-foreground">

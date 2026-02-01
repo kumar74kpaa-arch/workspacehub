@@ -203,7 +203,7 @@ export default function UsersPage() {
               users.map(user => <UserRow key={user.id} user={user} onEdit={setUserToEdit} onDelete={setUserToDelete} />)
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-48 text-center">
                   No users found.
                 </TableCell>
               </TableRow>

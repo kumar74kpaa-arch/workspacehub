@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Booking } from '@/lib/definitions';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 // Helper to group bookings by workspace
 const groupBookingsByWorkspace = (bookings: Booking[]) => {
@@ -87,7 +88,7 @@ export default function AdminBookingsPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bookings by Date</CardTitle>
+        <CardTitle className="animate-float">Bookings by Date</CardTitle>
         <CardDescription>
           View all bookings for a specific day. Conflicts are highlighted automatically.
         </CardDescription>
@@ -172,9 +173,12 @@ export default function AdminBookingsPage() {
             })}
           </div>
         ) : (
-          <p className="text-muted-foreground text-center py-8">
-            No bookings found for {selectedDate ? format(selectedDate, 'PPP') : 'the selected date'}.
-          </p>
+          <>
+            <Separator className="my-4" />
+            <p className="py-12 text-center text-sm text-muted-foreground">
+              No bookings found for {selectedDate ? format(selectedDate, 'PPP') : 'the selected date'}.
+            </p>
+          </>
         )}
       </CardContent>
     </Card>

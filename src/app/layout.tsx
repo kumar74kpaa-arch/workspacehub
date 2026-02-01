@@ -38,6 +38,8 @@ export default function RootLayout({
         />
       </head>
       <body className={cn('min-h-screen bg-background font-body antialiased', fontSans.variable, fontHeadline.variable)}>
+        <div className="absolute top-0 right-0 -z-10 h-[420px] w-[420px] translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f1eee9] opacity-60 blur-[80px] dark:hidden" />
+        <div className="absolute bottom-0 left-0 -z-10 h-[420px] w-[420px] -translate-x-1/2 translate-y-1/2 rounded-full bg-[#f1eee9] opacity-60 blur-[80px] dark:hidden" />
         <FirebaseProvider>
           <div className="relative flex min-h-screen flex-col">
             {children}
