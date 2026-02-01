@@ -43,7 +43,7 @@ const amenities = [
   {
     icon: MapPin,
     name: 'Prime Location',
-    description: 'Centrally located with excellent connectivity and nearby amenities.',
+    description: 'Ground, 17/109, Lower, Vikram Vihar, Lajpat Nagar 4, New Delhi, Delhi 110024',
   },
   {
     icon: Clock,
