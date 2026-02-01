@@ -9,7 +9,6 @@ import { MeetingRoomBooking } from '@/components/dashboard/meeting-room-booking'
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
 import type { Workspace } from '@/lib/definitions';
-import { AiOptimizer } from '@/components/dashboard/ai-optimizer';
 
 export default function DashboardPage() {
   const { user, loading } = useUser();
@@ -88,7 +87,6 @@ export default function DashboardPage() {
             </div>
         </div>
         <div className="lg:col-span-1 space-y-8">
-            {user && <AiOptimizer />}
         </div>
     </div>
   );
