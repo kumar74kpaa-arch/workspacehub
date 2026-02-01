@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { redirectUserBasedOnRole } from '@/firebase/auth/actions';
 
 const GoogleIcon = () => (
     <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
@@ -44,15 +45,9 @@ export function GoogleSignInButton({ buttonText = 'Sign in with Google' }: { but
           provider: 'google',
           createdAt: serverTimestamp(),
         });
-        router.push('/dashboard');
-      } else {
-        const userData = userDoc.data();
-        if (userData?.role === 'admin') {
-          router.push('/admin');
-        } else {
-          router.push('/dashboard');
-        }
       }
+      
+      await redirectUserBasedOnRole(firestore, user.uid, router);
       
       toast({
         title: 'Success',

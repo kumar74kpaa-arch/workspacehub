@@ -13,9 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore } from '@/firebase';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { GoogleSignInButton } from './google-signin-button';
+import { loginUserWithPassword, redirectUserBasedOnRole, signupUserWithPassword } from '@/firebase/auth/actions';
 
 const LoginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -56,18 +55,8 @@ export function LoginForm() {
     if (!auth || !firestore) return;
     setIsLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-      const user = userCredential.user;
-
-      const userDocRef = doc(firestore, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (userDoc.exists() && userDoc.data()?.role === 'admin') {
-        router.push('/admin');
-      } else {
-        router.push('/dashboard');
-      }
-
+      const user = await loginUserWithPassword(auth, values);
+      await redirectUserBasedOnRole(firestore, user.uid, router);
       toast({
         title: 'Success',
         description: 'You have successfully signed in.',
@@ -87,22 +76,7 @@ export function LoginForm() {
     if (!auth || !firestore) return;
     setIsLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-      const user = userCredential.user;
-
-      await updateProfile(user, {
-        displayName: values.name,
-      });
-
-      const userDocRef = doc(firestore, 'users', user.uid);
-      await setDoc(userDocRef, {
-        displayName: values.name,
-        email: user.email,
-        role: 'user',
-        provider: 'password',
-        createdAt: serverTimestamp(),
-      });
-
+      await signupUserWithPassword(auth, firestore, values);
       toast({
         title: 'Account Created',
         description: 'You have successfully created an account.',
