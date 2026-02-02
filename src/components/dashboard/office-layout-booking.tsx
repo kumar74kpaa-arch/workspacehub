@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { hasBookingConflict } from '@/lib/checkBookingConflict';
+import { Badge } from '@/components/ui/badge';
 
 const layoutElements = {
     workstations: [
@@ -35,7 +36,7 @@ const layoutElements = {
     ],
     meetingRooms: [
         { id: 'conference-hall', name: 'Conference Hall', top: '8%', left: '3%', width: '22%', height: '38%' },
-        { id: 'mini-meeting-room', name: 'Mini Meeting Room', top: '8%', left: '70%', width: '18%', height: '30%' },
+        { id: 'mini-meeting-room', name: 'Mini Meeting Room', top: '8%', left: '70%', width: '22%', height: '30%' },
     ],
     decor: [
         // Desks
@@ -271,15 +272,24 @@ export function OfficeLayoutBooking({ rooms }: { rooms: Workspace[] }) {
                     <button
                       onClick={() => handleBookWorkstation(ws.id)}
                       disabled={isBooked || !!bookingInProgress || isLoading}
-                      className="absolute z-10 w-8 h-8 flex items-center justify-center rounded-md transition-colors"
+                      className={cn(
+                        "absolute z-10 flex flex-col items-center justify-center w-14 h-10 rounded-md transition-colors border text-xs font-semibold",
+                        isMyBooking 
+                          ? 'bg-blue-500 text-white border-blue-600 cursor-default' 
+                          : isBooked 
+                          ? 'bg-muted text-muted-foreground border-border cursor-not-allowed' 
+                          : 'bg-card hover:bg-secondary border-border text-foreground',
+                        !!bookingInProgress && !isThisOneBooking && 'opacity-50 cursor-not-allowed',
+                        isThisOneBooking && 'animate-pulse'
+                      )}
                       style={{ top: ws.top, left: ws.left, transform: 'translate(-50%, -50%)' }}
                     >
-                      <Armchair className={cn(
-                          "w-6 h-6",
-                          isMyBooking ? 'text-blue-500' : isBooked ? 'text-destructive' : 'text-green-600 hover:text-green-500',
-                          (isBooked || !!bookingInProgress) && 'cursor-not-allowed',
-                          isThisOneBooking && 'animate-spin'
-                      )} />
+                      {isThisOneBooking ? <Loader2 className="w-4 h-4 animate-spin" /> : 
+                        <>
+                          <Armchair className="w-4 h-4" />
+                          <span className="mt-0.5">{ws.id.replace('WS-', '')}</span>
+                        </>
+                      }
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -300,19 +310,24 @@ export function OfficeLayoutBooking({ rooms }: { rooms: Workspace[] }) {
                     <TooltipTrigger asChild>
                         <button 
                             onClick={() => handleRoomClick(mr.id)}
-                            className="absolute z-10 bg-green-500/20 hover:bg-green-500/30 border-2 border-dashed border-green-600 rounded-md transition-colors flex items-center justify-center"
+                            disabled={isLoading}
+                            className="absolute z-10 bg-card hover:bg-secondary/80 border border-border rounded-lg transition-colors flex items-center justify-center p-2 shadow-sm"
                              style={{ top: mr.top, left: mr.left, width: mr.width, height: mr.height }}
                         >
                             <div className="text-center">
-                                <p className="font-bold text-green-800">{mr.name}</p>
-                                {isBookedToday && <p className="text-xs text-green-700">{roomBookings.length} booking(s) today</p>}
+                                <p className="font-bold text-foreground text-sm">{mr.name}</p>
+                                {isBookedToday && (
+                                    <Badge variant="secondary" className="mt-2 text-xs font-normal">
+                                        {roomBookings.length} booking(s)
+                                    </Badge>
+                                )}
                             </div>
                         </button>
                     </TooltipTrigger>
                      <TooltipContent>
-                        <p>{mr.name}</p>
+                        <p className="font-semibold">{mr.name}</p>
                         <p>Capacity: {roomData?.capacity}</p>
-                        <p>Click to see schedule & book</p>
+                        <p className="mt-1 text-xs">Click to see schedule & book</p>
                     </TooltipContent>
                  </Tooltip>
               )
