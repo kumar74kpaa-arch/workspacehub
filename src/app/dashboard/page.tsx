@@ -4,11 +4,10 @@ import { getMockWorkspaces } from '@/lib/data';
 import { OverviewCards } from '@/components/dashboard/overview-cards';
 import { UpcomingBookings } from '@/components/dashboard/upcoming-bookings';
 import { useUser } from '@/firebase';
-import { WorkstationBooking } from '@/components/dashboard/workstation-booking';
-import { MeetingRoomBooking } from '@/components/dashboard/meeting-room-booking';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
 import type { Workspace } from '@/lib/definitions';
+import { OfficeLayoutBooking } from '@/components/dashboard/office-layout-booking';
 
 export default function DashboardPage() {
   const { user, loading } = useUser();
@@ -36,10 +35,6 @@ export default function DashboardPage() {
                 <div className="space-y-8">
                     <Skeleton className="h-8 w-1/3" />
                     <Skeleton className="h-96" />
-                     <div className="grid sm:grid-cols-2 gap-4">
-                        <Skeleton className="h-64" />
-                        <Skeleton className="h-64" />
-                     </div>
                 </div>
             </div>
             <div className="lg:col-span-1">
@@ -77,13 +72,7 @@ export default function DashboardPage() {
             )}
 
             <div className="grid auto-rows-max items-start gap-4 md:gap-8">
-                <div>
-                  <h2 className="text-2xl font-bold mb-4">Available Workspaces</h2>
-                  <div className="grid gap-8">
-                      <WorkstationBooking />
-                      {meetingRooms.length > 0 && <MeetingRoomBooking rooms={meetingRooms} />}
-                  </div>
-                </div>
+                <OfficeLayoutBooking rooms={meetingRooms} />
             </div>
         </div>
         <div className="lg:col-span-1 space-y-8">
