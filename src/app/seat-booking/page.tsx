@@ -1,17 +1,74 @@
-import FloorLayout from "@/components/FloorLayout";
-import Legend from "@/components/Legend";
+import { Seat } from "@/components/Seat";
 
 export default function SeatBookingPage() {
   return (
-    <main className="min-h-screen bg-stone-100 p-10">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-semibold mb-2 text-gray-800">
-          Select Your Workspace
-        </h1>
-        <p className="text-gray-500 mb-6">A visual overview of our office space.</p>
-        <FloorLayout />
-        <Legend />
+    <div className="max-w-7xl mx-auto p-10">
+      <h1 className="text-3xl font-semibold mb-2">
+        Select Your Workspace
+      </h1>
+      <p className="text-muted-foreground mb-8">
+        A visual overview of our office space.
+      </p>
+
+      <div className="grid grid-cols-[1fr_2fr_1fr] gap-8">
+
+        {/* LEFT ZONE */}
+        <div className="space-y-6">
+          <div className="p-6 border rounded-xl h-64">
+            <h3 className="font-medium">MR-09</h3>
+            <p className="text-sm text-muted-foreground">
+              9 seats + 2 extra
+            </p>
+          </div>
+
+          <div className="p-6 border rounded-xl h-32 bg-gray-100">
+            Stairs
+          </div>
+        </div>
+
+        {/* CENTER ZONE */}
+        <div className="space-y-10">
+
+          {/* TOP DESKS */}
+          <div className="grid grid-cols-5 gap-4">
+            <Seat id="WS-01" />
+            <Seat id="WS-03" status="booked" />
+            <Seat id="WS-05" />
+            <Seat id="WS-07" />
+            <Seat id="WS-09" />
+
+            <Seat id="WS-02" />
+            <Seat id="WS-04" />
+            <Seat id="WS-06" status="selected" />
+            <Seat id="WS-08" />
+            <Seat id="WS-10" />
+          </div>
+
+          {/* CENTER DESKS */}
+          <div className="grid grid-cols-3 gap-6 justify-center">
+            <Seat id="WS-11" />
+            <Seat id="WS-13" />
+            <Seat id="WS-15" />
+
+            <Seat id="WS-12" />
+            <Seat id="WS-14" />
+            <Seat id="WS-16" />
+          </div>
+        </div>
+
+        {/* RIGHT ZONE */}
+        <div className="space-y-6">
+          <div className="p-6 border rounded-xl h-48 bg-gray-100">
+            Breakout Area
+          </div>
+          <div className="p-6 border rounded-xl h-32">
+            Pantry
+          </div>
+          <div className="p-6 border rounded-xl h-32">
+            Washroom
+          </div>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }

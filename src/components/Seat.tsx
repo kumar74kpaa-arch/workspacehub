@@ -1,28 +1,39 @@
 'use client';
 
-export default function Seat({ seat, selected, onSelect }: any) {
-  const disabled = seat.booked;
-
+export function Seat({
+  id,
+  status = "available",
+  onClick,
+}: {
+  id: string;
+  status?: "available" | "selected" | "booked";
+  onClick?: () => void;
+}) {
   return (
-    <div
-      onClick={() => !disabled && onSelect(seat.id)}
-      className={`group
-        relative p-4 rounded-xl text-center cursor-pointer
-        transition-all duration-200
-        ${disabled ? "bg-gray-300 cursor-not-allowed text-gray-500" : "bg-white hover:shadow-lg"}
-        ${selected ? "ring-2 ring-black" : ""}
+    <button
+      onClick={onClick}
+      disabled={status === "booked"}
+      className={`
+        w-24 h-16 rounded-xl border text-sm font-medium
+        transition-all
+        ${
+          status === "available" &&
+          "bg-white hover:border-black"
+        }
+        ${
+          status === "selected" &&
+          "bg-black text-white"
+        }
+        ${
+          status === "booked" &&
+          "bg-gray-300 text-gray-600 cursor-not-allowed"
+        }
       `}
     >
-      <div className="text-sm font-semibold">{seat.id}</div>
-
-      {/* Tooltip */}
-      <div className="absolute hidden group-hover:block bg-black text-white text-xs p-2 rounded-md -top-10 left-1/2 -translate-x-1/2 z-10">
-        Workstation · 1 Seat
-      </div>
-
-      {disabled && (
-        <span className="text-xs text-red-600 mt-1 block">Booked</span>
+      {id}
+      {status === "booked" && (
+        <div className="text-xs text-red-500">Booked</div>
       )}
-    </div>
+    </button>
   );
 }
