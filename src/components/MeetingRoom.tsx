@@ -1,6 +1,6 @@
 'use client';
 
-export default function MeetingRoom({ room, selected, onSelect }: any) {
+export default function MeetingRoom({ room, selected, onSelect, className }: any) {
   const disabled = room.booked;
   return (
     <div
@@ -9,6 +9,7 @@ export default function MeetingRoom({ room, selected, onSelect }: any) {
         p-6 rounded-2xl border transition cursor-pointer
         ${disabled ? "bg-gray-300 cursor-not-allowed text-gray-500" : "bg-white hover:shadow-xl"}
         ${selected ? "ring-2 ring-black" : ""}
+        ${className || ''}
       `}
     >
       <h3 className="font-semibold text-lg">{room.id}</h3>
