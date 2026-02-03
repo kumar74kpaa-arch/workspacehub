@@ -15,10 +15,6 @@ function Legend() {
         <div className="w-4 h-4 rounded bg-gray-300" />
         <span className="text-sm text-muted-foreground">Booked</span>
       </div>
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-4 rounded bg-gray-100" />
-        <span className="text-sm text-muted-foreground">Not in use</span>
-      </div>
     </div>
   );
 }
@@ -83,14 +79,14 @@ export default function SeatBookingPage() {
 
         {/* RIGHT ZONE */}
         <div className="space-y-6">
-          <div className="p-6 border rounded-xl h-48 bg-gray-100">
+          <div className="p-6 border rounded-xl h-48">
             Breakout Area
           </div>
           <div className="p-6 border rounded-xl h-32">
-            Washroom
+            Pantry
           </div>
           <div className="p-6 border rounded-xl h-32">
-            Pantry
+            Washroom
           </div>
         </div>
       </div>
