@@ -1,4 +1,5 @@
 import { Seat } from "@/components/Seat";
+import Image from "next/image";
 
 function Legend() {
   return (
@@ -28,6 +29,16 @@ export default function SeatBookingPage() {
       <p className="text-muted-foreground mb-8">
         A visual overview of our office space.
       </p>
+
+      <div className="my-8 rounded-lg overflow-hidden border shadow-sm">
+        <Image
+          src="https://i.ibb.co/FzVJw17/floorplan.png"
+          alt="Office Floor Plan"
+          width={1200}
+          height={600}
+          className="w-full h-auto object-contain"
+        />
+      </div>
 
       <Legend />
 
