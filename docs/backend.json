@@ -91,6 +91,15 @@
           "type": "string",
           "description": "The status of the booking.",
           "enum": ["confirmed", "pending", "cancelled"]
+        },
+        "isExtendedHours": {
+            "type": "boolean",
+            "description": "Indicates if the booking falls into extended hours."
+        },
+        "pricingType": {
+            "type": "string",
+            "description": "The pricing type of the booking.",
+            "enum": ["standard", "extended"]
         }
       },
       "required": [

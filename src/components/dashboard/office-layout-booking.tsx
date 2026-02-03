@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { format, parse, startOfDay } from 'date-fns';
-import { Calendar as CalendarIcon, Clock, Loader2, Users, Armchair } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Loader2, Users, Armchair, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
@@ -20,6 +20,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { hasBookingConflict } from '@/lib/checkBookingConflict';
 import { Badge } from '@/components/ui/badge';
+import { validateBookingTime } from '@/lib/validateBookingTime';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const layoutElements = {
     workstations: [
@@ -55,11 +57,18 @@ function MeetingRoomDialog({ room, date, onOpenChange, onBooked }: { room: Works
   const [startTime, setStartTime] = React.useState('09:00');
   const [endTime, setEndTime] = React.useState('10:00');
   const [isReserving, setIsReserving] = React.useState(false);
-  
+  const [validationResult, setValidationResult] = React.useState(validateBookingTime(parse(startTime, 'HH:mm', date), parse(endTime, 'HH:mm', date)));
+
   const { user } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    const start = parse(startTime, 'HH:mm', date);
+    const end = parse(endTime, 'HH:mm', date);
+    setValidationResult(validateBookingTime(start, end));
+  }, [startTime, endTime, date]);
 
   const handleReserveClick = async () => {
     if (!user || !firestore) {
@@ -70,14 +79,13 @@ function MeetingRoomDialog({ room, date, onOpenChange, onBooked }: { room: Works
     setIsReserving(true);
 
     const startDateTime = parse(startTime, 'HH:mm', date);
-    startDateTime.setSeconds(0,0);
     const endDateTime = parse(endTime, 'HH:mm', date);
-    endDateTime.setSeconds(0,0);
 
-    if (startDateTime >= endDateTime) {
-        toast({ variant: 'destructive', title: 'Invalid Time', description: 'End time must be after start time.' });
-        setIsReserving(false);
-        return;
+    const timeValidation = validateBookingTime(startDateTime, endDateTime);
+    if (!timeValidation.valid) {
+      toast({ variant: 'destructive', title: 'Invalid Time', description: timeValidation.reason });
+      setIsReserving(false);
+      return;
     }
 
     try {
@@ -98,6 +106,8 @@ function MeetingRoomDialog({ room, date, onOpenChange, onBooked }: { room: Works
         date: format(date, 'yyyy-MM-dd'),
         startTime: Timestamp.fromDate(startDateTime),
         endTime: Timestamp.fromDate(endDateTime),
+        isExtendedHours: timeValidation.extended,
+        pricingType: timeValidation.extended ? 'extended' : 'standard',
         status: 'confirmed',
       });
 
@@ -119,24 +129,44 @@ function MeetingRoomDialog({ room, date, onOpenChange, onBooked }: { room: Works
           <DialogTitle>Reserve {room.name}</DialogTitle>
           <DialogDescription>Book for {format(date, 'PPP')}. Capacity: {room.capacity} people.</DialogDescription>
         </DialogHeader>
-        <div className="grid grid-cols-2 gap-4 py-4">
-            <div className="flex flex-col gap-2">
-                <Label htmlFor="start-time">Start Time</Label>
-                <div className="relative">
-                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input id="start-time" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="pl-10" step="1800" />
+        <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="start-time">Start Time</Label>
+                    <div className="relative">
+                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="start-time" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="pl-10" step="1800" />
+                    </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="end-time">End Time</Label>
+                    <div className="relative">
+                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="end-time" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="pl-10" step="1800" />
+                    </div>
                 </div>
             </div>
-            <div className="flex flex-col gap-2">
-                <Label htmlFor="end-time">End Time</Label>
-                <div className="relative">
-                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input id="end-time" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="pl-10" step="1800" />
-                </div>
-            </div>
+            {validationResult.extended && (
+                <Alert className="bg-yellow-50 border-yellow-300 text-yellow-900 [&>svg]:text-yellow-600">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle className="font-semibold">Extended Hours Selected</AlertTitle>
+                    <AlertDescription>
+                        {validationResult.message}
+                    </AlertDescription>
+                </Alert>
+            )}
+            {!validationResult.valid && (
+                <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Invalid Time</AlertTitle>
+                    <AlertDescription>
+                        {validationResult.reason}
+                    </AlertDescription>
+                </Alert>
+            )}
         </div>
         <DialogFooter>
-          <Button onClick={handleReserveClick} disabled={isReserving}>
+          <Button onClick={handleReserveClick} disabled={isReserving || !validationResult.valid}>
             {isReserving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Confirm Reservation'}
           </Button>
         </DialogFooter>
@@ -207,7 +237,9 @@ export function OfficeLayoutBooking({ rooms }: { rooms: Workspace[] }) {
             userId: user.uid, userName: user.displayName || user.email,
             workspaceId: workstationId, workspaceName: `Workstation ${workstationId}`, workspaceType: 'desk',
             date: format(date, 'yyyy-MM-dd'), startTime: Timestamp.fromDate(dayStart), endTime: Timestamp.fromDate(dayEnd),
-            status: 'confirmed'
+            status: 'confirmed',
+            isExtendedHours: false,
+            pricingType: 'standard'
         });
         toast({ title: 'Workstation Booked!', description: `You have booked ${workstationId} for ${format(date, 'PPP')}.`});
         fetchBookings(); // Re-fetch to update UI

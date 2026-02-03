@@ -28,6 +28,8 @@ export type Booking = {
   startTime: Date;
   endTime: Date;
   status: 'confirmed' | 'pending' | 'cancelled';
+  isExtendedHours?: boolean;
+  pricingType?: 'standard' | 'extended';
 };
 
 export type MembershipPlan = {
