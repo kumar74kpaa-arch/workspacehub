@@ -62,10 +62,10 @@ export default function SeatBookingPage() {
             Breakout Area
           </div>
           <div className="p-6 border rounded-xl h-32">
-            Pantry
+            Washroom
           </div>
           <div className="p-6 border rounded-xl h-32">
-            Washroom
+            Pantry
           </div>
         </div>
       </div>
