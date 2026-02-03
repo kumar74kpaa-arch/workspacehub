@@ -1,5 +1,28 @@
 import { Seat } from "@/components/Seat";
 
+function Legend() {
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 my-6 border-y py-3">
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-4 rounded border bg-white" />
+        <span className="text-sm text-muted-foreground">Available</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-4 rounded bg-black" />
+        <span className="text-sm text-muted-foreground">Selected</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-4 rounded bg-gray-300" />
+        <span className="text-sm text-muted-foreground">Booked</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-4 rounded bg-gray-100" />
+        <span className="text-sm text-muted-foreground">Not in use</span>
+      </div>
+    </div>
+  );
+}
+
 export default function SeatBookingPage() {
   return (
     <div className="max-w-7xl mx-auto p-10">
@@ -9,6 +32,8 @@ export default function SeatBookingPage() {
       <p className="text-muted-foreground mb-8">
         A visual overview of our office space.
       </p>
+
+      <Legend />
 
       <div className="grid grid-cols-[1fr_2fr_1fr] gap-8">
 
