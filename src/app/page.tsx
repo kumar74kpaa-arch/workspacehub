@@ -102,7 +102,7 @@ const membershipPlans = [
     name: 'Day Pass',
     price: '₹599',
     period: 'per day',
-    features: ['Flexible access', 'High-speed WiFi', 'Coffee & snacks'],
+    features: ['Flexible access', 'High-speed WiFi', 'Tea & Coffee'],
   },
   {
     name: 'Quarterly',
