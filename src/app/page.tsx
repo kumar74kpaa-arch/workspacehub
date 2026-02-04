@@ -108,7 +108,7 @@ const membershipPlans = [
     name: 'Quarterly',
     price: '₹14,999',
     period: 'per quarter',
-    features: ['24/7 access', 'Dedicated desk option', '12 hours meeting room credit'],
+    features: ['Dedicated desk option', '12 hours meeting room credit'],
     popular: true,
   },
   {
