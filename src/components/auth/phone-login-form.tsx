@@ -61,7 +61,15 @@ export function PhoneLoginForm() {
       toast({ title: 'OTP Sent', description: 'Please check your phone for the verification code.' });
     } catch (error: any) {
       console.error("OTP Error", error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Failed to send OTP. Please check the phone number or try again later.' });
+      if (error.code === 'auth/billing-not-enabled') {
+        toast({ 
+          variant: 'destructive', 
+          title: 'Phone Sign-In Unavailable', 
+          description: 'This feature is not enabled for the project. Please use another sign-in method.' 
+        });
+      } else {
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to send OTP. Please check the phone number or try again later.' });
+      }
     } finally {
       setIsLoading(false);
     }
