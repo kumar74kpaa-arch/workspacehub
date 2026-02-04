@@ -61,15 +61,18 @@ export function PhoneLoginForm() {
       toast({ title: 'OTP Sent', description: 'Please check your phone for the verification code.' });
     } catch (error: any) {
       console.error("OTP Error", error);
-      if (error.code === 'auth/billing-not-enabled') {
-        toast({ 
-          variant: 'destructive', 
-          title: 'Phone Sign-In Unavailable', 
-          description: 'This feature is not enabled for the project. Please use another sign-in method.' 
+      if (error.code === "auth/billing-not-enabled") {
+        toast({
+          title: "OTP Temporarily Disabled",
+          description:
+            "Phone login will be activated once SMS billing is enabled.",
+          variant: "destructive",
         });
-      } else {
-        toast({ variant: 'destructive', title: 'Error', description: 'Failed to send OTP. Please check the phone number or try again later.' });
+        return;
       }
+      
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to send OTP. Please check the phone number or try again later.' });
+
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +115,7 @@ export function PhoneLoginForm() {
     <div className="pt-4">
         <div id="recaptcha-container"></div>
         {step === 'phone' ? (
-            <form onSubmit={onSendOtp} className="space-y-6">
+            <form onSubmit={onSendOtp} className="space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
                     <div className="relative">
@@ -133,6 +136,9 @@ export function PhoneLoginForm() {
                 <Button type="submit" className="w-full" disabled={isLoading || phone.length !== 10}>
                     {isLoading ? <Loader2 className="animate-spin" /> : 'Send OTP'}
                 </Button>
+                 <p className="text-xs text-muted-foreground text-center pt-2">
+                    Phone OTP login will be activated after production setup.
+                </p>
             </form>
         ) : (
             <form onSubmit={onVerifyOtp} className="space-y-6">
