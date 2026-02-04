@@ -48,3 +48,21 @@ export type Payment = {
   status: 'succeeded' | 'failed';
   invoiceUrl?: string;
 };
+
+export type Space = {
+  slug: string;
+  name: string;
+  description: string;
+  keyAmenities: string[];
+  imageUrl: string;
+  imageHint: string;
+  status: 'available' | 'coming-soon';
+  details: {
+    overview: string;
+    amenities: {
+      category: string;
+      items: { name: string; description: string }[];
+    }[];
+    rules: string[];
+  };
+};
