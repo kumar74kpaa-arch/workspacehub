@@ -1,7 +1,7 @@
 import type { Space } from './definitions';
 import { PlaceHolderImages } from './placeholder-images';
 
-const mainOfficeImage = PlaceHolderImages.find((img) => img.id === 'hero-image');
+const mainOfficeImage = PlaceHolderImages.find((img) => img.id === 'main-office-hub-hero');
 
 export const spacesData: Space[] = [
   {
@@ -10,7 +10,7 @@ export const spacesData: Space[] = [
     description: 'Our flagship location with a full suite of amenities designed for productivity and collaboration.',
     keyAmenities: ['Conference Room', 'Workstations', 'Gaming Zone'],
     imageUrl: mainOfficeImage?.imageUrl || '',
-    imageHint: mainOfficeImage?.imageHint || 'modern office',
+    imageHint: mainOfficeImage?.imageHint || 'stylish office',
     status: 'available',
     details: {
       overview: "Welcome to our premier co-working destination. The Main Office Hub is more than just a place to work; it's a community of professionals and a center for innovation. With state-of-the-art facilities and a vibrant atmosphere, it's the perfect environment to grow your business.",

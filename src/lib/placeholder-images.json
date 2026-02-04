@@ -83,6 +83,12 @@
       "description": "Workstations with ergonomic chairs.",
       "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-10.jpg",
       "imageHint": "office workstations"
+    },
+    {
+      "id": "main-office-hub-hero",
+      "description": "Stylish interior of the Main Office Co-working Hub, from Miglanis Associates.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-1.jpg",
+      "imageHint": "stylish office"
     }
   ]
 }
