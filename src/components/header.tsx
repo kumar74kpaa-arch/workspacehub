@@ -20,8 +20,8 @@ export function Header() {
             <Link href="/#tour" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Tour
             </Link>
-            <Link href="/contact" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Contact
+            <Link href="/#location" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              Location
             </Link>
              <Link href="/dashboard" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Workspace
