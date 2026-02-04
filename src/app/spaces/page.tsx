@@ -11,7 +11,7 @@ export default function SpacesPage() {
         <div className="container py-12 md:py-24">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-headline font-bold tracking-tight sm:text-5xl">
-              Our Spaces
+              Explore Spaces
             </h1>
             <p className="mt-4 text-lg text-muted-foreground">
               Explore our network of unique co-working environments.

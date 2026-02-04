@@ -15,7 +15,7 @@ export function Footer() {
         </div>
         <div className="flex flex-col items-center md:items-end gap-4">
             <div className="flex gap-4 sm:gap-6 text-muted-foreground">
-                <Link href="/#our-spaces" className="text-sm hover:text-foreground underline-offset-4 hover:underline">Our Spaces</Link>
+                <Link href="/spaces" className="text-sm hover:text-foreground underline-offset-4 hover:underline">Explore Spaces</Link>
                 <Link href="/terms-and-conditions" className="text-sm hover:text-foreground underline-offset-4 hover:underline">Terms & Conditions</Link>
                 <Link href="/privacy-policy" className="text-sm hover:text-foreground underline-offset-4 hover:underline">Privacy Policy</Link>
                 <Link href="/faq" className="text-sm hover:text-foreground underline-offset-4 hover:underline">FAQs</Link>
