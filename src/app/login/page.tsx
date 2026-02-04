@@ -13,8 +13,8 @@ export default function LoginPage() {
               <Logo />
             </Link>
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome</CardTitle>
-          <CardDescription>Sign in or create an account to continue.</CardDescription>
+          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+          <CardDescription>Sign in to access your workspace.</CardDescription>
         </CardHeader>
         <CardContent>
           <LoginForm />

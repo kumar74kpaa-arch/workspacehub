@@ -2,7 +2,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   Wifi,
-  Coffee,
   Printer,
   Users,
   CheckCircle,
@@ -11,7 +10,25 @@ import {
   ChevronRight,
   MapPin,
   ArrowUpRight,
+  ShieldCheck,
+  Briefcase,
+  HeartHandshake,
+  Sparkles,
+  Network,
+  Phone,
+  Coffee,
+  Car,
+  Wind,
+  Shield,
+  UserCheck,
+  Dice5,
 } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -21,38 +38,62 @@ import { Footer } from '@/components/footer';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import LocationMap from '@/components/LocationMap';
 
-const amenities = [
+const amenitiesByCategory = [
   {
-    icon: Wifi,
-    name: 'High-Speed WiFi',
-    description: 'Blazing fast internet to keep you productive.',
+    category: 'Technology',
+    icon: Network,
+    items: [
+      { icon: Wifi, name: 'High-Speed Internet', description: 'Blazing fast fiber internet to keep you productive.' },
+      { icon: Printer, name: 'Printing Services', description: 'On-demand B&W and color printing (paid service).' },
+      { icon: Phone, name: 'Private Phone Booths', description: 'Soundproof booths for private calls and video conferences.' },
+    ]
   },
   {
-    icon: Coffee,
-    name: 'Gourmet Coffee',
-    description: 'Unlimited premium coffee to fuel your day.',
+    category: 'Professional',
+    icon: Briefcase,
+    items: [
+      { icon: Users, name: 'Meeting & Conference Rooms', description: 'A range of rooms for team collaboration and client meetings.' },
+      { icon: UserCheck, name: 'Onsite Staff', description: 'Our team is here to help you with any needs from 9 AM to 6 PM.' },
+    ]
   },
   {
-    icon: Printer,
-    name: 'Printing Services',
-    description: 'On-demand printing and scanning facilities.',
+    category: 'Lifestyle',
+    icon: HeartHandshake,
+    items: [
+      { icon: Coffee, name: 'Gourmet Pantry', description: 'Unlimited premium coffee, tea, and filtered water to fuel your day.' },
+      { icon: Sparkles, name: 'Breakout Room', description: 'A space to relax, network, or have an informal discussion.' },
+      { icon: Dice5, name: 'Games', description: 'Challenge a colleague to a game of Carrom (free to use).' },
+      { icon: Car, name: 'Parking', description: 'Convenient on-site parking is available (at own risk).' },
+    ]
   },
   {
-    icon: Users,
-    name: 'Meeting Rooms',
-    description: 'Bookable rooms for team collaboration.',
-  },
-  {
-    icon: MapPin,
-    name: 'Prime Location',
-    description: 'Ground, 17/109, Lower, Vikram Vihar, Lajpat Nagar 4, New Delhi, Delhi 110024',
-  },
-  {
-    icon: Clock,
-    name: 'Flexible Hours',
-    description: '24/7 access for members. Work on your schedule, not ours.',
+    category: 'Health & Safety',
+    icon: ShieldCheck,
+    items: [
+      { icon: Wind, name: 'Air Conditioning', description: 'Fully air-conditioned workspace for your comfort.' },
+      { icon: Shield, name: '24/7 Security', description: 'Secure access and surveillance to ensure your safety.' },
+      { icon: Sparkles, name: 'Professional Cleaning', description: 'Regular cleaning and sanitization of all areas.' },
+    ]
   },
 ];
+
+const whyChooseUs = [
+    {
+        icon: MapPin,
+        title: "Prime Location",
+        description: "Situated in a key business district for easy access and great connectivity."
+    },
+    {
+        icon: ShieldCheck,
+        title: "Healthcare & Hygiene",
+        description: "Regularly sanitized spaces and focus on health protocols for a safe environment."
+    },
+    {
+        icon: Briefcase,
+        title: "Professional Environment",
+        description: "A space designed for focus and productivity, free from cafe-style distractions."
+    }
+]
 
 const membershipPlans = [
   {
@@ -121,27 +162,65 @@ export default function Home() {
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
               <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                Amenities for Success
+                World-Class Amenities
               </h2>
               <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                Everything you need to do your best work, all in one place.
+                We are committed to providing a healthy and comfortable workspace for everyone.
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-              {amenities.map((amenity) => (
-                <Card key={amenity.name} className="flex flex-col items-center text-center p-6 bg-card hover:shadow-lg transition-shadow duration-300">
-                  <div className="p-4 bg-accent/10 rounded-full mb-4">
-                    <amenity.icon className="h-8 w-8 text-accent" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">{amenity.name}</h3>
-                  <p className="text-muted-foreground">{amenity.description}</p>
+            <div className="max-w-4xl mx-auto">
+              <Accordion type="single" collapsible className="w-full">
+                {amenitiesByCategory.map((category) => (
+                  <AccordionItem value={category.category} key={category.category}>
+                    <AccordionTrigger className="text-xl font-semibold">
+                        <div className="flex items-center gap-4">
+                            <category.icon className="h-6 w-6 text-accent" />
+                            {category.category}
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 pl-14">
+                        {category.items.map((amenity) => (
+                          <div key={amenity.name} className="flex items-start gap-3">
+                             <amenity.icon className="h-5 w-5 text-accent/80 mt-0.5" />
+                            <div>
+                               <h4 className="font-medium">{amenity.name}</h4>
+                               <p className="text-sm text-muted-foreground">{amenity.description}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+          </div>
+        </section>
+
+        <section id="why-us" className="w-full py-24 lg:py-32 bg-background">
+          <div className="container px-4 md:px-6">
+            <div className="text-center space-y-4 mb-16">
+              <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">Why Choose Workspace Hub?</h2>
+              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+                An environment designed for deep work and professional growth.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {whyChooseUs.map((item) => (
+                <Card key={item.title} className="p-6 text-center flex flex-col items-center">
+                    <div className="p-3 bg-accent/10 rounded-full mb-4">
+                        <item.icon className="h-7 w-7 text-accent" />
+                    </div>
+                    <CardTitle className="text-xl mb-2">{item.title}</CardTitle>
+                    <CardDescription>{item.description}</CardDescription>
                 </Card>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="memberships" className="w-full py-24 lg:py-32">
+        <section id="memberships" className="w-full py-24 lg:py-32 bg-secondary/50">
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
               <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
@@ -183,7 +262,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="tour" className="w-full py-24 lg:py-32 bg-secondary/50">
+        <section id="tour" className="w-full py-24 lg:py-32">
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
               <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
@@ -210,7 +289,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="availability" className="w-full py-24 lg:py-32 bg-background">
+        <section id="availability" className="w-full py-24 lg:py-32 bg-secondary/50">
           <div className="container px-4 md:px-6">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
@@ -262,7 +341,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="location" className="w-full py-24 lg:py-32 bg-secondary/50">
+        <section id="location" className="w-full py-24 lg:py-32 bg-background">
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
               <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">

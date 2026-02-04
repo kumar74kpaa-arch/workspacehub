@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { format, parse, startOfDay } from 'date-fns';
 import { Calendar as CalendarIcon, Clock, Loader2, Users, Armchair, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -8,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -57,6 +59,7 @@ function MeetingRoomDialog({ room, date, onOpenChange, onBooked }: { room: Works
   const [startTime, setStartTime] = React.useState('09:00');
   const [endTime, setEndTime] = React.useState('10:00');
   const [isReserving, setIsReserving] = React.useState(false);
+  const [agreedToTerms, setAgreedToTerms] = React.useState(false);
   const [validationResult, setValidationResult] = React.useState(validateBookingTime(parse(startTime, 'HH:mm', date), parse(endTime, 'HH:mm', date)));
 
   const { user } = useUser();
@@ -164,9 +167,20 @@ function MeetingRoomDialog({ room, date, onOpenChange, onBooked }: { room: Works
                     </AlertDescription>
                 </Alert>
             )}
+             <div className="items-top flex space-x-2 pt-2">
+                <Checkbox id="terms1" onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)} />
+                <div className="grid gap-1.5 leading-none">
+                    <label htmlFor="terms1" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    I agree to the <Link href="/terms-and-conditions" target="_blank" className="underline text-primary">Terms & Conditions</Link>.
+                    </label>
+                    <p className="text-sm text-muted-foreground">
+                    Booking implies agreement to all terms, including charges for extra seating and paid services.
+                    </p>
+                </div>
+            </div>
         </div>
         <DialogFooter>
-          <Button onClick={handleReserveClick} disabled={isReserving || !validationResult.valid}>
+          <Button onClick={handleReserveClick} disabled={isReserving || !validationResult.valid || !agreedToTerms}>
             {isReserving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Confirm Reservation'}
           </Button>
         </DialogFooter>
@@ -182,6 +196,7 @@ export function OfficeLayoutBooking({ rooms }: { rooms: Workspace[] }) {
   const [isLoading, setIsLoading] = React.useState(true);
   const [bookingInProgress, setBookingInProgress] = React.useState<string | null>(null);
   const [selectedRoom, setSelectedRoom] = React.useState<Workspace | null>(null);
+  const [agreedToTerms, setAgreedToTerms] = React.useState(false);
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -222,6 +237,10 @@ export function OfficeLayoutBooking({ rooms }: { rooms: Workspace[] }) {
       router.push('/login'); return;
     }
     if (!date) return;
+    if (!agreedToTerms) {
+        toast({ variant: "destructive", title: "Terms and Conditions", description: "You must agree to the terms and conditions to book a space." });
+        return;
+    }
 
     setBookingInProgress(workstationId);
     try {
@@ -254,6 +273,10 @@ export function OfficeLayoutBooking({ rooms }: { rooms: Workspace[] }) {
   const handleRoomClick = (roomId: string) => {
     if (!user) { router.push('/login'); return; }
     if (!date) return;
+    if (!agreedToTerms) {
+        toast({ variant: "destructive", title: "Terms and Conditions", description: "You must agree to the terms and conditions to book a space." });
+        return;
+    }
     const roomData = rooms.find(r => r.id === roomId);
     if (roomData) setSelectedRoom(roomData);
   }
@@ -265,20 +288,31 @@ export function OfficeLayoutBooking({ rooms }: { rooms: Workspace[] }) {
         <CardDescription>Select a date and click on an available desk or room in the layout below.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex flex-col gap-2">
-          <Label>Select Date</Label>
-          <Popover open={isCalendarOpen} onOpenChange={setCalendarOpen}>
-            <PopoverTrigger asChild>
-              <Button variant={'outline'} className={cn('w-[280px] justify-start text-left font-normal', !date && 'text-muted-foreground')}>
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, 'PPP') : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar mode="single" selected={date} onSelect={(day) => { setDate(day); setCalendarOpen(false); }} initialFocus disabled={(day) => day < startOfDay(new Date())} />
-            </PopoverContent>
-          </Popover>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+          <div className="flex flex-col gap-2">
+            <Label>Select Date</Label>
+            <Popover open={isCalendarOpen} onOpenChange={setCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button variant={'outline'} className={cn('w-[280px] justify-start text-left font-normal', !date && 'text-muted-foreground')}>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, 'PPP') : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar mode="single" selected={date} onSelect={(day) => { setDate(day); setCalendarOpen(false); }} initialFocus disabled={(day) => day < startOfDay(new Date())} />
+              </PopoverContent>
+            </Popover>
+          </div>
+            <div className="items-top flex space-x-2 pt-6">
+                <Checkbox id="terms-main" onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)} />
+                <div className="grid gap-1.5 leading-none">
+                    <label htmlFor="terms-main" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    I agree to the <Link href="/terms-and-conditions" target="_blank" className="underline text-primary">Terms & Conditions</Link>.
+                    </label>
+                </div>
+            </div>
         </div>
+
 
         <div className="relative w-full bg-muted/30 rounded-lg aspect-[2/1] p-4 overflow-hidden">
           {isLoading && <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-20"><Loader2 className="h-8 w-8 animate-spin" /></div>}
