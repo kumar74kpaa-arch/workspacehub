@@ -100,22 +100,22 @@ const whyChooseUs = [
 const membershipPlans = [
   {
     name: 'Day Pass',
-    price: '₹2,000',
+    price: '₹599',
     period: 'per day',
     features: ['Flexible access', 'High-speed WiFi', 'Coffee & snacks'],
   },
   {
-    name: 'Monthly',
-    price: '₹20,000',
-    period: 'per month',
-    features: ['24/7 access', 'Dedicated desk option', '4 hours meeting room credit'],
+    name: 'Quarterly',
+    price: '₹14,999',
+    period: 'per quarter',
+    features: ['24/7 access', 'Dedicated desk option', '12 hours meeting room credit'],
     popular: true,
   },
   {
     name: 'Annual',
-    price: '₹2,00,000',
+    price: '₹65,999',
     period: 'per year',
-    features: ['All monthly benefits', '1 month free', 'Company mailbox service'],
+    features: ['All quarterly benefits', '1 month free', 'Company mailbox service'],
   },
 ];
 
