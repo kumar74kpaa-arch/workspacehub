@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { format, parse, startOfDay } from 'date-fns';
 import { Calendar as CalendarIcon, Clock, Loader2, Users, Armchair, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -24,36 +25,9 @@ import { hasBookingConflict } from '@/lib/checkBookingConflict';
 import { Badge } from '@/components/ui/badge';
 import { validateBookingTime } from '@/lib/validateBookingTime';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { seatMap } from '@/lib/seatMap';
+import type { SeatHotspot } from '@/lib/seatMap';
 
-const layoutElements = {
-    workstations: [
-        // Top row
-        { id: 'WS-01', top: '10%', left: '30%' }, { id: 'WS-02', top: '22%', left: '30%' },
-        { id: 'WS-03', top: '10%', left: '38%' }, { id: 'WS-04', top: '22%', left: '38%' },
-        { id: 'WS-05', top: '10%', left: '50%' }, { id: 'WS-06', top: '22%', left: '50%' },
-        // Bottom row
-        { id: 'WS-07', top: '65%', left: '30%' }, { id: 'WS-08', top: '77%', left: '30%' },
-        { id: 'WS-09', top: '65%', left: '38%' }, { id: 'WS-10', top: '77%', left: '38%' },
-        { id: 'WS-11', top: '55%', left: '52%' }, { id: 'WS-12', top: '55%', left: '58%' },
-        { id: 'WS-13', top: '65%', left: '70%' }, { id: 'WS-14', top: '77%', left: '70%' },
-        { id: 'WS-15', top: '65%', left: '82%' }, { id: 'WS-16', top: '77%', left: '82%' },
-    ],
-    meetingRooms: [
-        { id: 'conference-hall', name: 'Conference Hall', top: '8%', left: '3%', width: '22%', height: '38%' },
-        { id: 'mini-meeting-room', name: 'Mini Meeting Room', top: '8%', left: '70%', width: '22%', height: '30%' },
-    ],
-    decor: [
-        // Desks
-        { top: '8%', left: '29%', width: '18%', height: '20%', type: 'desk' },
-        { top: '8%', left: '49%', width: '9%', height: '20%', type: 'desk' },
-        { top: '63%', left: '29%', width: '18%', height: '20%', type: 'desk' },
-        { top: '63%', left: '69%', width: '22%', height: '20%', type: 'desk' },
-        // Walls and other
-        { top: '5%', left: '68%', width: '1px', height: '35%', type: 'wall' },
-        { top: '40%', left: '68%', width: '30%', height: '1px', type: 'wall' },
-        { top: '40%', right: '2%', width: '28%', height: '55%', label: 'Pantry/Restroom' },
-    ]
-};
 
 function MeetingRoomDialog({ room, date, onOpenChange, onBooked }: { room: Workspace, date: Date, onOpenChange: (open: boolean) => void, onBooked: () => void }) {
   const [startTime, setStartTime] = React.useState('09:00');
@@ -189,6 +163,30 @@ function MeetingRoomDialog({ room, date, onOpenChange, onBooked }: { room: Works
   );
 }
 
+function Legend() {
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 my-6 border-y py-3">
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-4 rounded border-2 border-blue-500 bg-blue-500/20" />
+        <span className="text-sm text-muted-foreground">Available</span>
+      </div>
+       <div className="flex items-center gap-2">
+        <div className="w-4 h-4 rounded border-2 border-green-500 bg-green-500/20" />
+        <span className="text-sm text-muted-foreground">Your Booking</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-4 rounded border-2 border-gray-400 bg-gray-400/30" />
+        <span className="text-sm text-muted-foreground">Booked</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-4 rounded border-2 border-gray-300 bg-gray-300/30" />
+        <span className="text-sm text-muted-foreground">Utility</span>
+      </div>
+    </div>
+  );
+}
+
+
 export function OfficeLayoutBooking({ rooms }: { rooms: Workspace[] }) {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [bookings, setBookings] = React.useState<Booking[]>([]);
@@ -224,14 +222,10 @@ export function OfficeLayoutBooking({ rooms }: { rooms: Workspace[] }) {
     fetchBookings();
   }, [date, fetchBookings]);
 
-  const getBookingForWorkstation = (workstationId: string) => {
-    return bookings.find(b => b.workspaceType === 'desk' && b.workspaceId === workstationId);
+  const getBookingForSpot = (spotId: string) => {
+    return bookings.find(b => b.workspaceId === spotId);
   };
   
-  const getBookingsForRoom = (roomId: string) => {
-    return bookings.filter(b => b.workspaceType === 'room' && b.workspaceId === roomId);
-  };
-
   const handleBookWorkstation = async (workstationId: string) => {
     if (!user || !firestore) {
       router.push('/login'); return;
@@ -244,7 +238,7 @@ export function OfficeLayoutBooking({ rooms }: { rooms: Workspace[] }) {
 
     setBookingInProgress(workstationId);
     try {
-        if (getBookingForWorkstation(workstationId)) {
+        if (getBookingForSpot(workstationId)) {
             toast({ variant: "destructive", title: "Already Booked", description: "This workstation is booked." });
             return;
         }
@@ -270,15 +264,24 @@ export function OfficeLayoutBooking({ rooms }: { rooms: Workspace[] }) {
     }
   };
   
-  const handleRoomClick = (roomId: string) => {
+  const handleSpotClick = (spot: SeatHotspot) => {
+    if (spot.disabled) return;
     if (!user) { router.push('/login'); return; }
     if (!date) return;
+
     if (!agreedToTerms) {
         toast({ variant: "destructive", title: "Terms and Conditions", description: "You must agree to the terms and conditions to book a space." });
         return;
     }
-    const roomData = rooms.find(r => r.id === roomId);
-    if (roomData) setSelectedRoom(roomData);
+    
+    if (spot.type === 'workstation') {
+        handleBookWorkstation(spot.id);
+    } else if (spot.type === 'meeting-room') {
+        const roomData = rooms.find(r => r.id === spot.id);
+        if (roomData) setSelectedRoom(roomData);
+    } else if (spot.type === 'breakout') {
+        toast({ title: 'Breakout Area', description: 'This area is first-come, first-served and cannot be booked.' });
+    }
   }
 
   return (
@@ -312,94 +315,76 @@ export function OfficeLayoutBooking({ rooms }: { rooms: Workspace[] }) {
                 </div>
             </div>
         </div>
+        
+        <Legend />
 
-
-        <div className="relative w-full bg-muted/30 rounded-lg aspect-[2/1] p-4 overflow-hidden">
-          {isLoading && <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-20"><Loader2 className="h-8 w-8 animate-spin" /></div>}
-          
-          <TooltipProvider>
-            {/* Decor Elements */}
-            {layoutElements.decor.map((el, i) => (
-                <div key={`dec-${i}`} className={cn("absolute bg-secondary/80 rounded-sm", el.label && "flex items-center justify-center text-muted-foreground text-sm")} style={{ top: el.top, left: el.left, right: el.right, width: el.width, height: el.height }}>
-                   {el.label}
-                </div>
-            ))}
+        <div className="relative w-full max-w-6xl mx-auto">
+            {isLoading && <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-20"><Loader2 className="h-8 w-8 animate-spin" /></div>}
             
-            {/* Workstations */}
-            {layoutElements.workstations.map((ws) => {
-              const booking = getBookingForWorkstation(ws.id);
-              const isBooked = !!booking;
-              const isMyBooking = isBooked && booking.userId === user?.uid;
-              const isThisOneBooking = bookingInProgress === ws.id;
+            <Image
+                src="https://i.ibb.co/2k33n6x/layout-plan.png"
+                alt="Office Layout"
+                width={2000}
+                height={1414}
+                className="w-full rounded-lg"
+                priority
+            />
 
-              return (
-                <Tooltip key={ws.id}>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => handleBookWorkstation(ws.id)}
-                      disabled={isBooked || !!bookingInProgress || isLoading}
-                      className={cn(
-                        "absolute z-10 flex flex-col items-center justify-center w-14 h-10 rounded-md transition-colors border text-xs font-semibold",
-                        isMyBooking 
-                          ? 'bg-blue-500 text-white border-blue-600 cursor-default' 
-                          : isBooked 
-                          ? 'bg-muted text-muted-foreground border-border cursor-not-allowed' 
-                          : 'bg-card hover:bg-secondary border-border text-foreground',
-                        !!bookingInProgress && !isThisOneBooking && 'opacity-50 cursor-not-allowed',
-                        isThisOneBooking && 'animate-pulse'
-                      )}
-                      style={{ top: ws.top, left: ws.left, transform: 'translate(-50%, -50%)' }}
-                    >
-                      {isThisOneBooking ? <Loader2 className="w-4 h-4 animate-spin" /> : 
-                        <>
-                          <Armchair className="w-4 h-4" />
-                          <span className="mt-0.5">{ws.id.replace('WS-', '')}</span>
-                        </>
-                      }
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                      <p className="font-semibold">{ws.id}</p>
-                      {isMyBooking ? <p>Booked by you</p> : isBooked ? <p>Booked by {booking.userName}</p> : <p>Available</p>}
-                  </TooltipContent>
-                </Tooltip>
-              );
-            })}
+            <TooltipProvider>
+                {seatMap.map((spot) => {
+                const booking = getBookingForSpot(spot.id);
+                const isBooked = !!booking;
+                const isMyBooking = isBooked && booking?.userId === user?.uid;
+                const isThisOneBooking = bookingInProgress === spot.id;
 
-            {/* Meeting Rooms */}
-            {layoutElements.meetingRooms.map((mr) => {
-              const roomData = rooms.find(r => r.id === mr.id);
-              const roomBookings = getBookingsForRoom(mr.id);
-              const isBookedToday = roomBookings.length > 0;
-              return (
-                 <Tooltip key={mr.id}>
+                let stateClass = 'border-blue-500 bg-blue-500/20 hover:bg-blue-500/40 cursor-pointer'; // Available
+                if (spot.disabled) {
+                    stateClass = 'border-gray-300 bg-gray-300/30 cursor-not-allowed'; // Utility
+                } else if (spot.type === 'breakout') {
+                    stateClass = 'border-purple-500 bg-purple-500/20 cursor-help';
+                }
+                else if (isMyBooking) {
+                    stateClass = 'border-green-500 bg-green-500/20 cursor-default'; // My Booking
+                }
+                else if (isBooked) {
+                    stateClass = 'border-gray-400 bg-gray-400/30 cursor-not-allowed'; // Booked by others
+                }
+
+                return (
+                    <Tooltip key={spot.id}>
                     <TooltipTrigger asChild>
-                        <button 
-                            onClick={() => handleRoomClick(mr.id)}
-                            disabled={isLoading}
-                            className="absolute z-10 bg-card hover:bg-secondary/80 border border-border rounded-lg transition-colors flex items-center justify-center p-2 shadow-sm"
-                             style={{ top: mr.top, left: mr.left, width: mr.width, height: mr.height }}
+                        <button
+                            onClick={() => handleSpotClick(spot)}
+                            disabled={spot.disabled || isBooked || !!bookingInProgress || isLoading}
+                            className={cn("absolute border-2 text-xs font-semibold transition-colors flex items-center justify-center", stateClass)}
+                            style={{
+                                top: spot.top,
+                                left: spot.left,
+                                width: spot.width,
+                                height: spot.height,
+                                transform: spot.type === 'workstation' ? 'translate(-50%, -50%)' : 'none',
+                                borderRadius: spot.type === 'workstation' ? '0.375rem' : '0.125rem'
+                            }}
+                            title={spot.id}
                         >
-                            <div className="text-center">
-                                <p className="font-bold text-foreground text-sm">{mr.name}</p>
-                                {isBookedToday && (
-                                    <Badge variant="secondary" className="mt-2 text-xs font-normal">
-                                        {roomBookings.length} booking(s)
-                                    </Badge>
-                                )}
-                            </div>
+                            {isThisOneBooking ? <Loader2 className="w-4 h-4 animate-spin" /> : 
+                                <span className={cn("font-bold text-[10px] sm:text-xs", spot.type === 'workstation' ? 'text-black/80' : 'text-foreground')}>
+                                    {spot.label || spot.id.replace('WS-','')}
+                                </span>
+                            }
                         </button>
                     </TooltipTrigger>
                      <TooltipContent>
-                        <p className="font-semibold">{mr.name}</p>
-                        <p>Capacity: {roomData?.capacity}</p>
-                        <p className="mt-1 text-xs">Click to see schedule & book</p>
+                        <p className="font-semibold">{spot.label || spot.id}</p>
+                        {spot.disabled ? <p>Utility</p> :
+                         spot.type === 'breakout' ? <p>First-come, first-served</p> :
+                         isMyBooking ? <p>Booked by you</p> : 
+                         isBooked ? <p>Booked by {booking?.userName}</p> : <p>Available</p>}
                     </TooltipContent>
-                 </Tooltip>
-              )
-            })}
-
-          </TooltipProvider>
+                    </Tooltip>
+                );
+                })}
+            </TooltipProvider>
         </div>
         {selectedRoom && date && (
           <MeetingRoomDialog

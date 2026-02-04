@@ -22,9 +22,8 @@ export const mockAdmin: User = {
 
 const workstationImage = PlaceHolderImages.find((img) => img.id === 'workstation-image');
 const conferenceHallImage = PlaceHolderImages.find((img) => img.id === 'conference-hall-image');
-const miniMeetingRoomImage = PlaceHolderImages.find((img) => img.id === 'mini-meeting-room-image');
 
-if (!workstationImage || !conferenceHallImage || !miniMeetingRoomImage) {
+if (!workstationImage || !conferenceHallImage) {
   throw new Error('Required placeholder images for workspaces are missing.');
 }
 
@@ -39,21 +38,12 @@ export const getMockWorkspaces = (): Workspace[] => [
         isActive: true,
     })),
     {
-        id: 'conference-hall',
-        name: 'Conference Hall',
+        id: 'MR-12',
+        name: 'Meeting Room 12',
         type: 'room' as const,
         capacity: 12,
         imageUrl: conferenceHallImage.imageUrl,
         imageHint: conferenceHallImage.imageHint,
         isActive: true,
-    },
-    {
-        id: 'mini-meeting-room',
-        name: 'Mini Meeting Room',
-        type: 'room' as const,
-        capacity: 4,
-        imageUrl: miniMeetingRoomImage.imageUrl,
-        imageHint: miniMeetingRoomImage.imageHint,
-        isActive: false,
     },
 ];
