@@ -23,9 +23,6 @@ export function Header() {
             <Link href="/spaces" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Explore Spaces
             </Link>
-             <Link href="/dashboard" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Workspace
-            </Link>
           </nav>
         </div>
         {/* Mobile header can be added here */}
