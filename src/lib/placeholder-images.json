@@ -3,7 +3,7 @@
     {
       "id": "hero-image",
       "description": "Bright and modern workspace with a view of the city.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-3-400x284.jpg",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-1.jpg",
       "imageHint": "modern office"
     },
     {
@@ -39,62 +39,50 @@
     {
       "id": "tour-image-1",
       "description": "A collaborative workspace area.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-4-400x284.jpg",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-2.jpg",
       "imageHint": "collaborative workspace"
     },
     {
       "id": "tour-image-2",
       "description": "Another view of the workspace.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-5-400x284.jpg",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-4.jpg",
       "imageHint": "office interior"
     },
     {
       "id": "tour-image-3",
       "description": "Modern office interior with stylish lighting.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-2-400x284.jpg",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-6.jpg",
       "imageHint": "modern office"
     },
     {
       "id": "tour-image-4",
       "description": "Spacious conference hall.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-6.jpg",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-7.jpg",
       "imageHint": "conference hall"
     },
     {
       "id": "tour-image-5",
       "description": "Cosy corner with unique chairs.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-7.jpg",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-8.jpg",
       "imageHint": "office corner"
     },
     {
       "id": "tour-image-6",
       "description": "Open plan office space.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-12.jpg",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-9.jpg",
       "imageHint": "open office"
     },
     {
       "id": "tour-image-7",
       "description": "Another view of the open office.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-13.jpg",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-10.jpg",
       "imageHint": "office view"
     },
     {
       "id": "tour-image-8",
       "description": "Workstations with ergonomic chairs.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-17.jpg",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-12.jpg",
       "imageHint": "office workstations"
-    },
-    {
-      "id": "tour-image-9",
-      "description": "A row of modern workstations.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-16.jpg",
-      "imageHint": "workstation row"
-    },
-    {
-      "id": "tour-image-10",
-      "description": "Well-lit office corridor.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-1.jpg",
-      "imageHint": "office corridor"
     }
   ]
 }

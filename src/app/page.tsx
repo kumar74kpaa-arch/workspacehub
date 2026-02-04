@@ -264,31 +264,6 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="our-spaces" className="w-full py-24 lg:py-32 bg-background">
-          <div className="container px-4 md:px-6">
-            <div className="text-center space-y-4 mb-16">
-              <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                Our Spaces
-              </h2>
-              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                Explore our network of unique co-working environments.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              {spacesData.map((space) => (
-                <SpaceCard key={space.slug} space={space} />
-              ))}
-            </div>
-            <div className="mt-16 text-center">
-              <Button asChild size="lg" className="font-semibold">
-                <Link href="/spaces">
-                  View All Spaces <ArrowUpRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-
         <section id="tour" className="w-full py-24 lg:py-32">
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
