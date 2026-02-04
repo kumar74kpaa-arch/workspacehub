@@ -6,7 +6,8 @@ import { spacesData } from '@/lib/spaces-data';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Info } from 'lucide-react';
+import { CheckCircle, Info, ArrowUpRight } from 'lucide-react';
+import MiglanisLocationMap from '@/components/MiglanisLocationMap';
 
 export default function SpaceDetailPage({ params }: { params: { slug: string } }) {
   const space = spacesData.find((s) => s.slug === params.slug);
@@ -93,6 +94,37 @@ export default function SpaceDetailPage({ params }: { params: { slug: string } }
               ))}
             </div>
           </section>
+
+          {/* Location Section - Conditionally Rendered */}
+          {space.slug === 'main-office-hub' && (
+            <section id="location" className="w-full py-24 lg:py-32 bg-background">
+              <div className="container px-4 md:px-6">
+                <div className="text-center space-y-4 mb-16">
+                  <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
+                    Our Location
+                  </h2>
+                  <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+                    We're conveniently located. Find us using the map below or get directions.
+                  </p>
+                </div>
+                <div className="max-w-4xl mx-auto">
+                  <MiglanisLocationMap />
+                  <div className="mt-8 flex justify-center">
+                    <Button asChild size="lg">
+                      <a
+                        href="https://maps.google.com/?q=Miglanis%20%26%20Associates%20Private%20Limited"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold"
+                      >
+                        Get Directions <ArrowUpRight className="ml-2 h-4 w-4" />
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
         </div>
       </main>
       <Footer />
