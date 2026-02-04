@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { spacesData } from '@/lib/spaces-data';
@@ -28,7 +29,9 @@ export default function SpaceDetailPage({ params }: { params: { slug: string } }
               <p className="text-lg text-muted-foreground">
                 {space.details.overview}
               </p>
-              <Button size="lg" className="font-semibold">Book This Space</Button>
+              <Button asChild size="lg" className="font-semibold">
+                <Link href="/dashboard">Book This Space</Link>
+              </Button>
             </div>
             <div className="relative h-80 w-full">
                 <Image
