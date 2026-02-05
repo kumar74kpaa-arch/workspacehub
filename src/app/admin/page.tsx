@@ -1,5 +1,5 @@
-import { OverviewCards } from '@/components/admin/overview-cards';
-import { RevenueChart } from '@/components/admin/revenue-chart';
+import { OverviewCards } from '@/app/admin/overview-cards';
+import { RevenueChart } from '@/app/admin/revenue-chart';
 import { RecentActivity } from '@/components/admin/recent-activity';
 
 export default function AdminDashboardPage() {
