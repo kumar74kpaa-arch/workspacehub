@@ -4,6 +4,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
+  User,
 } from 'firebase/auth';
 import {
   doc,
@@ -55,22 +56,34 @@ export const loginUserWithPassword = async (
 
 export const redirectUserBasedOnRole = async (
   firestore: Firestore,
-  userId: string,
+  user: User,
   router: AppRouterInstance
 ) => {
-  const userRef = doc(firestore, 'users', userId);
+  const userRef = doc(firestore, 'users', user.uid);
   const snap = await getDoc(userRef);
 
+  let userRole = 'user';
+
   if (snap.exists()) {
-    const role = snap.data().role;
-    if (role === 'admin') {
-      router.push('/admin');
-    } else {
-      router.push('/dashboard');
-    }
+    userRole = snap.data().role;
   } else {
-    // This case would be for a new user, likely from a social provider,
-    // who doesn't have a doc yet. Default to the user dashboard.
+    // The user document doesn't exist, so we create it.
+    // This handles cases for first-time social/phone logins gracefully.
+    await setDoc(userRef, {
+      displayName: user.displayName || `User ${user.uid.substring(0,5)}`,
+      email: user.email,
+      photoURL: user.photoURL,
+      role: 'user', // Default role for new users
+      provider: user.providerData?.[0]?.providerId?.replace('.com', '') || 'password',
+      createdAt: serverTimestamp(),
+    });
+    // The role is 'user' for the subsequent redirection logic.
+    userRole = 'user';
+  }
+
+  if (userRole === 'admin') {
+    router.push('/admin');
+  } else {
     router.push('/dashboard');
   }
 };

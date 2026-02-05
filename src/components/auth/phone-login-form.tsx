@@ -14,7 +14,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Phone, KeyRound } from 'lucide-react';
 import { redirectUserBasedOnRole } from '@/firebase/auth/actions';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 declare global {
   interface Window {
@@ -80,28 +79,14 @@ export function PhoneLoginForm() {
 
   const onVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!window.confirmationResult) return;
+    if (!window.confirmationResult || !firestore) return;
     setIsLoading(true);
 
     try {
       const result = await window.confirmationResult.confirm(otp);
       const user = result.user;
 
-      const userDocRef = doc(firestore!, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
-          displayName: `User ${user.uid.substring(0, 5)}`,
-          email: user.email, // phone users might not have email
-          photoURL: user.photoURL,
-          role: 'user',
-          provider: 'phone',
-          createdAt: serverTimestamp(),
-        });
-      }
-
-      await redirectUserBasedOnRole(firestore!, user.uid, router);
+      await redirectUserBasedOnRole(firestore, user, router);
       toast({ title: 'Success', description: 'You have successfully signed in.' });
     } catch (error: any) {
        console.error("Verification Error", error);

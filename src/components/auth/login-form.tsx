@@ -52,7 +52,7 @@ export function LoginForm() {
     setIsLoading(true);
     try {
       const user = await loginUserWithPassword(auth, values);
-      await redirectUserBasedOnRole(firestore, user.uid, router);
+      await redirectUserBasedOnRole(firestore, user, router);
       toast({ title: 'Success', description: 'You have successfully signed in.' });
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Authentication Error', description: error.message });
@@ -65,9 +65,9 @@ export function LoginForm() {
     if (!auth || !firestore) return;
     setIsLoading(true);
     try {
-      await signupUserWithPassword(auth, firestore, values);
+      const user = await signupUserWithPassword(auth, firestore, values);
+      await redirectUserBasedOnRole(firestore, user, router);
       toast({ title: 'Account Created', description: 'You have successfully created an account.' });
-      router.push('/dashboard');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Signup Error', description: error.message });
     } finally {

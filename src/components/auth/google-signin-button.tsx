@@ -6,7 +6,6 @@ import { useAuth, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { redirectUserBasedOnRole } from '@/firebase/auth/actions';
 
 const GoogleIcon = () => (
@@ -33,21 +32,7 @@ export function GoogleSignInButton({ buttonText = 'Sign in with Google' }: { but
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      const userDocRef = doc(firestore, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
-          displayName: user.displayName,
-          email: user.email,
-          photoURL: user.photoURL,
-          role: 'user',
-          provider: 'google',
-          createdAt: serverTimestamp(),
-        });
-      }
-      
-      await redirectUserBasedOnRole(firestore, user.uid, router);
+      await redirectUserBasedOnRole(firestore, user, router);
       
       toast({
         title: 'Success',
