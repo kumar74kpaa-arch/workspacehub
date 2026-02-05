@@ -18,7 +18,7 @@ import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.
 export const signupUserWithPassword = async (
   auth: Auth,
   firestore: Firestore,
-  values: { name: string; email: string; password: string }
+  values: { displayName: string; email: string; password: string }
 ) => {
   const userCredential = await createUserWithEmailAndPassword(
     auth,
@@ -28,12 +28,12 @@ export const signupUserWithPassword = async (
   const user = userCredential.user;
 
   await updateProfile(user, {
-    displayName: values.name,
+    displayName: values.displayName,
   });
 
   const userDocRef = doc(firestore, 'users', user.uid);
   await setDoc(userDocRef, {
-    displayName: values.name,
+    displayName: values.displayName,
     email: user.email,
     role: 'user',
     provider: 'password',

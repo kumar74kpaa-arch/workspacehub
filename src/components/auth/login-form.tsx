@@ -24,7 +24,7 @@ const LoginSchema = z.object({
 });
 
 const SignupSchema = z.object({
-    name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+    displayName: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
     email: z.string().email({ message: 'Please enter a valid email.' }),
     password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
@@ -44,7 +44,7 @@ export function LoginForm() {
 
   const signupForm = useForm<z.infer<typeof SignupSchema>>({
     resolver: zodResolver(SignupSchema),
-    defaultValues: { name: '', email: '', password: '' },
+    defaultValues: { displayName: '', email: '', password: '' },
   });
 
   const handleLogin = async (values: z.infer<typeof LoginSchema>) => {
@@ -92,7 +92,7 @@ export function LoginForm() {
              <Form {...signupForm}>
                 <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-6 pt-4">
                   <div className="space-y-4">
-                    <FormField control={signupForm.control} name="name" render={({ field }) => (
+                    <FormField control={signupForm.control} name="displayName" render={({ field }) => (
                         <FormItem>
                           <FormLabel>Name</FormLabel>
                           <FormControl><div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="John Doe" {...field} className="pl-10" /></div></FormControl>
