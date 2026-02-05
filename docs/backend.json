@@ -1,5 +1,46 @@
 {
   "entities": {
+    "Office": {
+      "title": "Office",
+      "description": "Represents a physical office location.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the office."
+        }
+      },
+      "required": ["name"]
+    },
+    "Workspace": {
+      "title": "Workspace",
+      "description": "Represents a bookable resource like a desk or a room.",
+      "type": "object",
+      "properties": {
+        "officeId": {
+          "type": "string",
+          "description": "The ID of the office this workspace belongs to."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the workspace."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["desk", "room"]
+        },
+        "capacity": {
+          "type": "number"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "isBookable": {
+          "type": "boolean"
+        }
+      },
+      "required": ["officeId", "name", "type", "capacity", "isActive", "isBookable"]
+    },
     "UserProfile": {
       "title": "User Profile",
       "description": "Represents a user's public profile information.",
@@ -51,6 +92,10 @@
       "description": "Represents a booking for a workspace.",
       "type": "object",
       "properties": {
+        "officeId": {
+            "type": "string",
+            "description": "The ID of the office where the booking is made."
+        },
         "userId": {
           "type": "string",
           "description": "The ID of the user who made the booking."
@@ -103,6 +148,7 @@
         }
       },
       "required": [
+        "officeId",
         "userId",
         "userName",
         "workspaceId",
@@ -133,6 +179,18 @@
         "$ref": "#/entities/Booking"
       },
       "description": "Stores all workspace bookings made by users."
+    },
+    "/offices/{officeId}": {
+      "schema": {
+        "$ref": "#/entities/Office"
+      },
+      "description": "Stores office locations."
+    },
+    "/resources/{resourceId}": {
+      "schema": {
+        "$ref": "#/entities/Workspace"
+      },
+      "description": "Stores all bookable resources across all offices."
     }
   }
 }

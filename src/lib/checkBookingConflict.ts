@@ -10,11 +10,13 @@ import { format } from 'date-fns';
 
 export async function hasBookingConflict({
   firestore,
+  officeId,
   workspaceId,
   startTime,
   endTime,
 }: {
   firestore: Firestore;
+  officeId: string;
   workspaceId: string;
   startTime: Date;
   endTime: Date;
@@ -23,6 +25,7 @@ export async function hasBookingConflict({
 
   const q = query(
     collection(firestore, "bookings"),
+    where("officeId", "==", officeId),
     where("workspaceId", "==", workspaceId),
     where("status", "==", "confirmed"),
     where("date", "==", dateStr)

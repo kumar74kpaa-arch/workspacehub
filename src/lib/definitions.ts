@@ -1,3 +1,8 @@
+export type Office = {
+  id: string;
+  name: string;
+};
+
 export type User = {
   id: string;
   name: string;
@@ -9,16 +14,19 @@ export type User = {
 
 export type Workspace = {
   id: string;
+  officeId: string;
   name: string;
   type: 'desk' | 'room';
   capacity: number;
   imageUrl: string;
   imageHint: string;
   isActive?: boolean;
+  isBookable?: boolean;
 };
 
 export type Booking = {
   id: string;
+  officeId: string;
   userId: string;
   userName: string;
   workspaceId: string;
