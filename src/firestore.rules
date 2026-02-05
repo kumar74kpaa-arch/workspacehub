@@ -1,0 +1,52 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Deny all reads and writes by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isUser(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      // Check if the user is authenticated and if their role in the users collection is 'admin'
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Rules for the users collection
+    match /users/{userId} {
+      // A user can get their own document. An admin's `get` call for their own role check is also allowed here.
+      allow get: if isUser(userId);
+      
+      // An admin can list all user documents.
+      allow list: if isAdmin();
+      
+      // A user can create their own document on signup, but cannot assign themselves as admin.
+      allow create: if isUser(userId) && request.resource.data.role == 'user';
+      
+      // An admin can update any user. A user can update their own document, but cannot change their role.
+      // An admin getting another user document for a client-side read is not explicitly allowed,
+      // but is not required by the current app functionality.
+      allow update: if isAdmin() || (isUser(userId) && request.resource.data.role == resource.data.role);
+
+      // Only admins can delete users
+      allow delete: if isAdmin();
+    }
+
+    // Rules for the bookings collection
+    match /bookings/{bookingId} {
+      // Authenticated users can view bookings to check for availability.
+      allow get, list: if request.auth != null;
+
+      // A user can create a booking for themselves.
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      
+      // A user can update/delete their own booking. Admins can manage any booking.
+      allow update, delete: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin();
+    }
+  }
+}
