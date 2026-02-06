@@ -15,7 +15,7 @@ import {
   HeartHandshake,
   Sparkles,
   Network,
-  Phone,
+  Video,
   Coffee,
   Car,
   Wind,
@@ -47,7 +47,7 @@ const amenitiesByCategory = [
     items: [
       { icon: Wifi, name: 'High-Speed Internet', description: 'Blazing fast fiber internet to keep you productive.' },
       { icon: Printer, name: 'Printing Services', description: 'On-demand B&W and color printing (paid service).' },
-      { icon: Phone, name: 'Private Phone Booths', description: 'Soundproof booths for private calls and video conferences.' },
+      { icon: Video, name: 'Video Conferencing', description: 'Rooms equipped for seamless video conferences.' },
     ]
   },
   {
