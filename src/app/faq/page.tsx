@@ -10,7 +10,7 @@ import {
 const faqItems = [
   {
     question: "What are the operating hours?",
-    answer: "Our standard operating hours are from 8:00 AM to 8:00 PM, Monday to Saturday. Members with monthly or annual plans have 24/7 access."
+    answer: "Our standard operating hours are from 8:00 AM to 8:00 PM, Monday to Saturday."
   },
   {
     question: "Is there a trial day pass?",
