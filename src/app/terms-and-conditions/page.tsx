@@ -15,12 +15,12 @@ export default function TermsAndConditionsPage() {
               Welcome to 9to5 Workspace. By accessing our premises or using our services, you agree to comply with and be bound by the following terms and conditions. Please review them carefully.
             </p>
 
-            <h2>1. Use of Facility</h2>
+            <h2 className="font-bold">1. Use of Facility</h2>
             <p>
               The workspace is intended for professional use only. We strive to maintain a focused and productive environment. Activities such as loud conversations, gossip, or general "café-like" gatherings that may disturb others are strictly prohibited.
             </p>
 
-            <h2>2. Bookings and Payments</h2>
+            <h2 className="font-bold">2. Bookings and Payments</h2>
             <ul>
               <li>All bookings must be made through our official platform.</li>
               <li>Making a booking implies your full agreement to all our terms and conditions.</li>
@@ -28,19 +28,19 @@ export default function TermsAndConditionsPage() {
               <li>Early and Late hours (8AM-9AM) and (5PM-8PM) are subject to additional charges.</li>
             </ul>
 
-            <h2>3. Services and Charges</h2>
+            <h2 className="font-bold">3. Services and Charges</h2>
             <ul>
-              <li>Printing & Scanning: These services are not included in the standard membership or day pass fees and will be charged separately based on usage.</li>
+              <li>Printing &amp; Scanning: These services are not included in the standard membership or day pass fees and will be charged separately based on usage.</li>
               <li>Extra Seating: Additional seating in Conference and meeting rooms beyond the standard capacity will incur extra charges.</li>
             </ul>
 
-            <h2>4. Conduct and Responsibility</h2>
+            <h2 className="font-bold">4. Conduct and Responsibility</h2>
             <ul>
               <li>Parking: On-site parking is available but is entirely at the vehicle owner's risk. 9to5 Workspace is not liable for any theft, damage, or loss.</li>
               <li>Personal Belongings: You are responsible for your own belongings. We are not responsible for any lost or stolen items.</li>
             </ul>
 
-            <h2>5. Cancellations and Refunds</h2>
+            <h2 className="font-bold">5. Cancellations and Refunds</h2>
             <ul>
               <li>Cancellation policies vary by booking type. Please refer to your booking confirmation for details.</li>
               <li>In the event of a government-mandated shutdown or other force majeure event, we will refund any pre-paid bookings for the affected period. Such refunds will be processed without any interest.</li>
