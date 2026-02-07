@@ -17,11 +17,11 @@ export function Header() {
             <Link href="/#memberships" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Memberships
             </Link>
-            <Link href="/#tour" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Tour
-            </Link>
             <Link href="/spaces" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Explore Spaces
+              Our Spaces
+            </Link>
+             <Link href="/#location" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              Location
             </Link>
           </nav>
         </div>

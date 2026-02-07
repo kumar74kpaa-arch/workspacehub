@@ -4,7 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { format, parse, startOfDay } from 'date-fns';
-import { Calendar as CalendarIcon, Clock, Loader2, Users, Armchair, AlertTriangle } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Loader2, Users, Armchair, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
@@ -27,7 +27,6 @@ import { validateBookingTime } from '@/lib/validateBookingTime';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { officeLayouts } from '@/lib/officeLayouts';
 import type { SeatHotspot } from '@/lib/officeLayouts';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { offices } from '@/lib/offices';
 import { allResources } from '@/lib/resources';
 
@@ -52,7 +51,7 @@ function MeetingRoomDialog({ officeId, room, date, onOpenChange, onBooked }: { o
 
   const handleReserveClick = async () => {
     if (!user || !firestore) {
-      router.push('/login');
+      router.push(`/login?redirect_uri=/seat-booking?office=${officeId}`);
       return;
     }
     
@@ -190,12 +189,11 @@ function Legend() {
   );
 }
 
-export function OfficeLayoutBooking() {
-  const [selectedOfficeId, setSelectedOfficeId] = React.useState<string | null>(null);
+export default function SeatBookingClient({ officeId }: { officeId?: string }) {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [bookings, setBookings] = React.useState<Booking[]>([]);
   const [isCalendarOpen, setCalendarOpen] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [bookingInProgress, setBookingInProgress] = React.useState<string | null>(null);
   const [selectedRoom, setSelectedRoom] = React.useState<Workspace | null>(null);
   const [agreedToTerms, setAgreedToTerms] = React.useState(false);
@@ -205,17 +203,18 @@ export function OfficeLayoutBooking() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const selectedOfficeLayout = selectedOfficeId ? officeLayouts[selectedOfficeId] : null;
-  const currentResources = selectedOfficeId ? allResources.filter(r => r.officeId === selectedOfficeId) : [];
+  const selectedOffice = offices.find(o => o.id === officeId);
+  const selectedOfficeLayout = selectedOffice ? officeLayouts[selectedOffice.id] : null;
+  const currentResources = selectedOffice ? allResources.filter(r => r.officeId === selectedOffice.id) : [];
 
   const fetchBookings = React.useCallback(async () => {
-    if (!firestore || !date || !selectedOfficeId) return;
+    if (!firestore || !date || !selectedOffice) return;
     setIsLoading(true);
     const dateStr = format(date, 'yyyy-MM-dd');
     const q = query(
         collection(firestore, 'bookings'), 
         where('date', '==', dateStr),
-        where('officeId', '==', selectedOfficeId)
+        where('officeId', '==', selectedOffice.id)
     );
     try {
         const snapshot = await getDocs(q);
@@ -227,23 +226,24 @@ export function OfficeLayoutBooking() {
     } finally {
         setIsLoading(false);
     }
-  }, [date, firestore, toast, selectedOfficeId]);
+  }, [date, firestore, toast, selectedOffice]);
 
   React.useEffect(() => {
-    if (selectedOfficeId && date) {
+    if (selectedOffice && date) {
         fetchBookings();
     } else {
         setBookings([]);
+        setIsLoading(false);
     }
-  }, [selectedOfficeId, date, fetchBookings]);
+  }, [selectedOffice, date, fetchBookings]);
 
   const getBookingForSpot = (spotId: string) => {
     return bookings.find(b => b.workspaceId === spotId);
   };
   
   const handleBookWorkstation = async (workstationId: string) => {
-    if (!user || !firestore || !selectedOfficeId) {
-      router.push('/login'); return;
+    if (!user || !firestore || !selectedOffice) {
+      router.push(`/login?redirect_uri=/seat-booking?office=${officeId}`); return;
     }
     if (!date) return;
     if (!agreedToTerms) {
@@ -262,7 +262,7 @@ export function OfficeLayoutBooking() {
         const dayEnd = new Date(date); dayEnd.setHours(17,0,0,0);
 
         await addDoc(collection(firestore, "bookings"), {
-            officeId: selectedOfficeId,
+            officeId: selectedOffice.id,
             userId: user.uid, userName: user.displayName || user.email,
             workspaceId: workstationId, workspaceName: `Workstation ${workstationId.split('-').pop()}`, workspaceType: 'desk',
             date: format(date, 'yyyy-MM-dd'), startTime: Timestamp.fromDate(dayStart), endTime: Timestamp.fromDate(dayEnd),
@@ -270,7 +270,7 @@ export function OfficeLayoutBooking() {
             isExtendedHours: false,
             pricingType: 'standard'
         });
-        toast({ title: 'Workstation Booked!', description: `You have booked ${workstationId} for ${format(date, 'PPP')}.`});
+        toast({ title: 'Workstation Booked!', description: `You have booked a workstation for ${format(date, 'PPP')}.`});
         fetchBookings(); // Re-fetch to update UI
     } catch (error) {
         console.error("Error booking workstation: ", error);
@@ -282,8 +282,8 @@ export function OfficeLayoutBooking() {
   
   const handleSpotClick = (spot: SeatHotspot) => {
     if (spot.disabled) return;
-    if (!user) { router.push('/login'); return; }
-    if (!date || !selectedOfficeId) return;
+    if (!user) { router.push(`/login?redirect_uri=/seat-booking?office=${officeId}`); return; }
+    if (!date || !selectedOffice) return;
 
     if (!agreedToTerms) {
         toast({ variant: "destructive", title: "Terms and Conditions", description: "You must agree to the terms and conditions to book a space." });
@@ -300,32 +300,35 @@ export function OfficeLayoutBooking() {
     }
   }
 
+  if (!selectedOffice || !selectedOfficeLayout) {
+    return (
+      <div className="text-center py-20">
+        <h2 className="text-2xl font-semibold mb-4">Workspace Not Found</h2>
+        <p className="text-muted-foreground mb-6">The workspace you're looking for doesn't seem to exist.</p>
+        <Button asChild>
+          <Link href="/spaces"><ArrowLeft className="mr-2" /> Back to Spaces</Link>
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Reserve Your Space</CardTitle>
-        <CardDescription>Select an office and date, then click on an available desk or room in the layout below.</CardDescription>
+        <CardTitle>Reserve Your Space at {selectedOffice.name}</CardTitle>
+        <CardDescription>Select a date, then click on an available desk or room in the layout below.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
           <div className="flex flex-col gap-2">
-            <Label>Select Office</Label>
-            <Select onValueChange={setSelectedOfficeId} value={selectedOfficeId || ''}>
-                <SelectTrigger className="w-[280px]">
-                    <SelectValue placeholder="Choose an office location" />
-                </SelectTrigger>
-                <SelectContent>
-                    {offices.map(office => (
-                        <SelectItem key={office.id} value={office.id}>{office.name}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            <Label>Selected Office</Label>
+            <Input value={selectedOffice.name} disabled className="w-[280px]"/>
           </div>
           <div className="flex flex-col gap-2">
             <Label>Select Date</Label>
             <Popover open={isCalendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
-                <Button variant={'outline'} className={cn('w-[280px] justify-start text-left font-normal', !date && 'text-muted-foreground')} disabled={!selectedOfficeId}>
+                <Button variant={'outline'} className={cn('w-[280px] justify-start text-left font-normal', !date && 'text-muted-foreground')}>
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {date ? format(date, 'PPP') : <span>Pick a date</span>}
                 </Button>
@@ -336,101 +339,97 @@ export function OfficeLayoutBooking() {
             </Popover>
           </div>
             <div className="items-top flex space-x-2 pt-6">
-                <Checkbox id="terms-main" onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)} disabled={!selectedOfficeId} />
+                <Checkbox id="terms-main" onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)} />
                 <div className="grid gap-1.5 leading-none">
-                    <label htmlFor="terms-main" className={cn("text-sm font-medium leading-none", !selectedOfficeId ? "cursor-not-allowed opacity-70" : "peer-disabled:cursor-not-allowed peer-disabled:opacity-70")}>
+                    <label htmlFor="terms-main" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     I agree to the <Link href="/terms-and-conditions" target="_blank" className="underline text-primary">Terms & Conditions</Link>.
                     </label>
                 </div>
             </div>
         </div>
         
-        {selectedOfficeId && (
-            <>
-                <Legend />
-                <div className="relative w-full max-w-6xl mx-auto">
-                    {isLoading && <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-20"><Loader2 className="h-8 w-8 animate-spin" /></div>}
-                    
-                    {selectedOfficeLayout && (
-                        <>
-                        <Image
-                            src={selectedOfficeLayout.imageUrl}
-                            alt={selectedOfficeLayout.name}
-                            width={2000}
-                            height={1414}
-                            className={cn("w-full rounded-lg", isLoading && 'opacity-50')}
-                            priority
-                        />
-
-                        <TooltipProvider>
-                            {selectedOfficeLayout.hotspots.map((spot) => {
-                            const booking = getBookingForSpot(spot.id);
-                            const isBooked = !!booking;
-                            const isMyBooking = isBooked && booking?.userId === user?.uid;
-                            const isThisOneBooking = bookingInProgress === spot.id;
-
-                            let stateClass = 'border-blue-500 bg-blue-500/20 hover:bg-blue-500/40 cursor-pointer'; // Available
-                            if (spot.disabled) {
-                                stateClass = 'border-gray-300 bg-gray-300/30 cursor-not-allowed'; // Utility
-                            } else if (spot.type === 'breakout') {
-                                stateClass = 'border-purple-500 bg-purple-500/20 cursor-help';
-                            }
-                            else if (isMyBooking) {
-                                stateClass = 'border-green-500 bg-green-500/20 cursor-default'; // My Booking
-                            }
-                            else if (isBooked) {
-                                stateClass = 'border-gray-400 bg-gray-400/30 cursor-not-allowed'; // Booked by others
-                            }
-
-                            return (
-                                <Tooltip key={spot.id}>
-                                <TooltipTrigger asChild>
-                                    <button
-                                        onClick={() => handleSpotClick(spot)}
-                                        disabled={spot.disabled || isBooked || !!bookingInProgress || isLoading}
-                                        className={cn("absolute border-2 text-xs font-semibold transition-colors flex items-center justify-center", stateClass)}
-                                        style={{
-                                            top: spot.top,
-                                            left: spot.left,
-                                            width: spot.width,
-                                            height: spot.height,
-                                            transform: spot.type === 'workstation' ? 'translate(-50%, -50%)' : 'none',
-                                            borderRadius: spot.type === 'workstation' ? '0.375rem' : '0.125rem'
-                                        }}
-                                        title={spot.id}
-                                    >
-                                        {isThisOneBooking ? <Loader2 className="w-4 h-4 animate-spin" /> : 
-                                            <span className={cn("font-bold text-[10px] sm:text-xs", spot.type === 'workstation' ? 'text-black/80' : 'text-foreground')}>
-                                                {spot.label || spot.id.split('-').pop()}
-                                            </span>
-                                        }
-                                    </button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p className="font-semibold">{spot.label || spot.id}</p>
-                                    {spot.disabled ? <p>Utility</p> :
-                                    spot.type === 'breakout' ? <p>First-come, first-served</p> :
-                                    isMyBooking ? <p>Booked by you</p> : 
-                                    isBooked ? <p>Booked by {booking?.userName}</p> : <p>Available</p>}
-                                </TooltipContent>
-                                </Tooltip>
-                            );
-                            })}
-                        </TooltipProvider>
-                        </>
-                    )}
-                </div>
-                {selectedRoom && date && selectedOfficeId && (
-                <MeetingRoomDialog
-                    officeId={selectedOfficeId}
-                    room={selectedRoom}
-                    date={date}
-                    onOpenChange={(open) => !open && setSelectedRoom(null)}
-                    onBooked={fetchBookings}
+        <>
+            <Legend />
+            <div className="relative w-full max-w-6xl mx-auto">
+                {isLoading && <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-20"><Loader2 className="h-8 w-8 animate-spin" /></div>}
+                
+                <>
+                <Image
+                    src={selectedOfficeLayout.imageUrl}
+                    alt={selectedOfficeLayout.name}
+                    width={2000}
+                    height={1414}
+                    className="w-full rounded-lg"
+                    priority
                 />
-                )}
-            </>
-        )}
+
+                <TooltipProvider>
+                    {selectedOfficeLayout.hotspots.map((spot) => {
+                    const booking = getBookingForSpot(spot.id);
+                    const isBooked = !!booking;
+                    const isMyBooking = isBooked && booking?.userId === user?.uid;
+                    const isThisOneBooking = bookingInProgress === spot.id;
+
+                    let stateClass = 'border-blue-500 bg-blue-500/20 hover:bg-blue-500/40 cursor-pointer'; // Available
+                    if (spot.disabled) {
+                        stateClass = 'border-gray-300 bg-gray-300/30 cursor-not-allowed'; // Utility
+                    } else if (spot.type === 'breakout') {
+                        stateClass = 'border-purple-500 bg-purple-500/20 cursor-help';
+                    }
+                    else if (isMyBooking) {
+                        stateClass = 'border-green-500 bg-green-500/20 cursor-default'; // My Booking
+                    }
+                    else if (isBooked) {
+                        stateClass = 'border-gray-400 bg-gray-400/30 cursor-not-allowed'; // Booked by others
+                    }
+
+                    return (
+                        <Tooltip key={spot.id}>
+                        <TooltipTrigger asChild>
+                            <button
+                                onClick={() => handleSpotClick(spot)}
+                                disabled={spot.disabled || isBooked || !!bookingInProgress || isLoading}
+                                className={cn("absolute border-2 text-xs font-semibold transition-colors flex items-center justify-center", stateClass)}
+                                style={{
+                                    top: spot.top,
+                                    left: spot.left,
+                                    width: spot.width,
+                                    height: spot.height,
+                                    transform: spot.type === 'workstation' ? 'translate(-50%, -50%)' : 'none',
+                                    borderRadius: spot.type === 'workstation' ? '0.375rem' : '0.125rem'
+                                }}
+                                title={spot.id}
+                            >
+                                {isThisOneBooking ? <Loader2 className="w-4 h-4 animate-spin" /> : 
+                                    <span className={cn("font-bold text-[10px] sm:text-xs", spot.type === 'workstation' ? 'text-black/80' : 'text-foreground')}>
+                                        {spot.label || spot.id.split('-').pop()}
+                                    </span>
+                                }
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p className="font-semibold">{spot.label || spot.id}</p>
+                            {spot.disabled ? <p>Utility</p> :
+                            spot.type === 'breakout' ? <p>First-come, first-served</p> :
+                            isMyBooking ? <p>Booked by you</p> : 
+                            isBooked ? <p>Booked by {booking?.userName}</p> : <p>Available</p>}
+                        </TooltipContent>
+                        </Tooltip>
+                    );
+                    })}
+                </TooltipProvider>
+                </>
+            </div>
+            {selectedRoom && date && selectedOffice && (
+            <MeetingRoomDialog
+                officeId={selectedOffice.id}
+                room={selectedRoom}
+                date={date}
+                onOpenChange={(open) => !open && setSelectedRoom(null)}
+                onBooked={fetchBookings}
+            />
+            )}
+        </>
       </CardContent>
     </Card>
   );

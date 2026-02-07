@@ -121,7 +121,6 @@ const membershipPlans = [
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-image');
-  const tourImages = PlaceHolderImages.filter((img) => img.id.startsWith('tour-image'));
 
   return (
     <>
@@ -160,7 +159,23 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="amenities" className="w-full py-24 lg:py-32 bg-secondary/50">
+        <section id="compare-spaces" className="w-full py-24 lg:py-32 bg-secondary/50">
+          <div className="container px-4 md:px-6">
+            <div className="text-center space-y-4 mb-16">
+              <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">Choose Your Workspace</h2>
+              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+                We offer two unique environments, each tailored to different work styles.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {spacesData.map((space) => (
+                <SpaceCard key={space.slug} space={space} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="amenities" className="w-full py-24 lg:py-32 bg-background">
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
               <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
@@ -200,7 +215,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="why-us" className="w-full py-24 lg:py-32 bg-background">
+        <section id="why-us" className="w-full py-24 lg:py-32 bg-secondary/50">
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
               <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">Why Choose Workspace Hub?</h2>
@@ -222,7 +237,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="memberships" className="w-full py-24 lg:py-32 bg-secondary/50">
+        <section id="memberships" className="w-full py-24 lg:py-32 bg-background">
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
               <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
@@ -264,86 +279,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="tour" className="w-full py-24 lg:py-32">
-          <div className="container px-4 md:px-6">
-            <div className="text-center space-y-4 mb-16">
-              <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                Tour the Space
-              </h2>
-              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                Get a feel for our vibrant and inspiring environment.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {tourImages.map((image) => (
-                <div key={image.id} className="overflow-hidden rounded-lg group">
-                  <Image
-                    src={image.imageUrl}
-                    alt={image.description}
-                    width={600}
-                    height={400}
-                    className="h-full w-full object-cover object-center transform group-hover:scale-105 transition-transform duration-300"
-                    data-ai-hint={image.imageHint}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="availability" className="w-full py-24 lg:py-32 bg-secondary/50">
-          <div className="container px-4 md:px-6">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl">
-                  Real-Time Availability
-                </h2>
-                <p className="mt-4 text-muted-foreground md:text-lg">
-                  Check our live occupancy to find the perfect time to come in. Workspace Hub helps you plan your day for maximum productivity.
-                </p>
-                <Button asChild className="mt-6 font-semibold">
-                  <Link href="/dashboard">
-                    Explore Spaces <ChevronRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-              <div className="grid grid-cols-2 gap-6">
-                <Card className="p-6">
-                  <CardHeader className="p-0 flex-row items-center justify-between">
-                    <CardTitle className="text-lg">Hot Desks</CardTitle>
-                    <Users className="h-6 w-6 text-accent" />
-                  </CardHeader>
-                  <CardContent className="p-0 pt-4">
-                    <p className="text-4xl font-bold">12/30</p>
-                    <p className="text-sm text-muted-foreground">Available Now</p>
-                  </CardContent>
-                </Card>
-                <Card className="p-6">
-                  <CardHeader className="p-0 flex-row items-center justify-between">
-                    <CardTitle className="text-lg">Meeting Rooms</CardTitle>
-                    <Clock className="h-6 w-6 text-accent" />
-                  </CardHeader>
-                  <CardContent className="p-0 pt-4">
-                    <p className="text-4xl font-bold">3/5</p>
-                    <p className="text-sm text-muted-foreground">Available Today</p>
-                  </CardContent>
-                </Card>
-                <Card className="p-6 col-span-2">
-                  <CardHeader className="p-0 flex-row items-center justify-between">
-                    <CardTitle className="text-lg">Today's Peak Time</CardTitle>
-                    <BarChart className="h-6 w-6 text-accent" />
-                  </CardHeader>
-                  <CardContent className="p-0 pt-4">
-                    <p className="text-3xl font-bold">2:00 PM - 4:00 PM</p>
-                    <p className="text-sm text-muted-foreground">Based on historical data</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="location" className="w-full py-24 lg:py-32 bg-background">
+        <section id="location" className="w-full py-24 lg:py-32 bg-secondary/50">
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
               <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">

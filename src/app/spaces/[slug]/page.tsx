@@ -1,13 +1,31 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
+import type { Metadata } from 'next';
+import { CheckCircle, Info } from 'lucide-react';
+
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { spacesData } from '@/lib/spaces-data';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Info, ArrowUpRight } from 'lucide-react';
-import MiglanisLocationMap from '@/components/MiglanisLocationMap';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
+
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const space = spacesData.find((s) => s.slug === params.slug);
+  if (!space) {
+    return {
+      title: 'Space Not Found',
+    };
+  }
+
+  return {
+    title: `${space.name} | Workspace Hub`,
+    description: space.details.overview,
+  };
+}
 
 export default function SpaceDetailPage({ params }: { params: { slug: string } }) {
   const space = spacesData.find((s) => s.slug === params.slug);
@@ -16,118 +34,154 @@ export default function SpaceDetailPage({ params }: { params: { slug: string } }
     notFound();
   }
 
+  const themeClass = space.slug === 'banyan' ? 'theme-banyan' : 'theme-olive';
+  const ctaButtonClass = space.slug === 'banyan' ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'bg-lime-600 hover:bg-lime-700 text-white';
+
   return (
-    <>
+    <div className={cn(themeClass)}>
       <Header />
-      <main className="flex-1">
-        <div className="container py-12 md:py-24 max-w-5xl mx-auto">
-          {/* Hero Section */}
-          <section className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <h1 className="text-4xl font-headline font-bold tracking-tight sm:text-5xl">
-                {space.name}
-              </h1>
-              <p className="text-lg text-muted-foreground">
-                {space.details.overview}
-              </p>
-              <Button asChild size="lg" className="font-semibold">
-                <Link href="/dashboard">Book This Space</Link>
-              </Button>
-            </div>
-            <div className="relative h-80 w-full">
+      <main className="flex-1 bg-background/80">
+        {/* Hero Section */}
+        <section className="relative w-full py-24 md:py-32 lg:py-40">
+            <div className="absolute inset-0">
                 <Image
                     src={space.imageUrl}
                     alt={space.name}
                     fill
-                    className="object-cover rounded-lg shadow-lg"
+                    className="object-cover"
                     data-ai-hint={space.imageHint}
                 />
+                <div className="absolute inset-0 bg-black/50" />
             </div>
-          </section>
-
-          {/* Amenities Section */}
-          <section className="mt-24">
-            <div className="text-center mb-12">
-                <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl">
-                    What's Included
-                </h2>
-                <p className="mt-3 text-muted-foreground md:text-lg max-w-2xl mx-auto">
-                    A complete list of amenities available at {space.name}.
+            <div className="container relative px-4 md:px-6 text-center text-white space-y-6">
+                <h1 className="text-4xl font-headline font-bold tracking-tight sm:text-5xl md:text-6xl">
+                    {space.name}
+                </h1>
+                <p className="max-w-3xl mx-auto md:text-xl">
+                    {space.description}
                 </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button asChild size="lg" className={cn('font-semibold', ctaButtonClass)}>
+                        <Link href={`/seat-booking?office=${space.slug}`}>Book {space.name}</Link>
+                    </Button>
+                    <Button asChild size="lg" variant="outline" className="font-semibold bg-transparent text-white border-white hover:bg-white hover:text-black">
+                        <Link href="#gallery">View Gallery</Link>
+                    </Button>
+                </div>
             </div>
-            <div className="grid md:grid-cols-2 gap-8">
-                {space.details.amenities.map(category => (
-                    <div key={category.category} className="rounded-lg border bg-card p-6">
-                        <h3 className="font-semibold text-lg mb-4">{category.category}</h3>
-                        <ul className="space-y-3">
-                            {category.items.map(item => (
-                                <li key={item.name} className="flex items-start gap-3">
-                                    <CheckCircle className="h-5 w-5 text-accent mt-0.5 shrink-0" />
-                                    <div>
-                                        <p className="font-medium">{item.name}</p>
-                                        <p className="text-sm text-muted-foreground">{item.description}</p>
-                                    </div>
+        </section>
+
+        {/* About Section */}
+        <section className="py-24 lg:py-32">
+            <div className="container px-4 md:px-6 max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+                <div className="space-y-4">
+                    <h2 className="text-3xl font-headline font-bold tracking-tight">About {space.name}</h2>
+                    <p className="text-muted-foreground text-lg">
+                        {space.details.overview}
+                    </p>
+                </div>
+                <Card className="p-6">
+                    <CardHeader className="p-0 pb-4">
+                        <CardTitle>Key Features</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                         <ul className="space-y-3">
+                            {space.keyAmenities.map((feature) => (
+                                <li key={feature} className="flex items-center gap-3">
+                                <CheckCircle className="h-5 w-5 text-accent" />
+                                <span>{feature}</span>
                                 </li>
                             ))}
                         </ul>
-                    </div>
-                ))}
+                    </CardContent>
+                </Card>
             </div>
-          </section>
+        </section>
 
-          {/* Rules & Disclaimers */}
-          <section className="mt-24">
-             <div className="text-center mb-12">
-                <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl">
-                    Good to Know
+        {/* Amenities Section */}
+        <section className="py-24 lg:py-32 bg-secondary/30">
+            <div className="container px-4 md:px-6">
+                <div className="text-center mb-16">
+                    <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl">
+                        What's Included
+                    </h2>
+                    <p className="mt-3 text-muted-foreground md:text-lg max-w-2xl mx-auto">
+                        A complete list of amenities available at {space.name}.
+                    </p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    {space.details.amenities.map(category => (
+                        <div key={category.category} className="space-y-4">
+                            <h3 className="font-semibold text-xl mb-4">{category.category}</h3>
+                            <ul className="space-y-4">
+                                {category.items.map(item => (
+                                    <li key={item.name} className="flex items-start gap-4">
+                                        <CheckCircle className="h-5 w-5 text-accent mt-1 shrink-0" />
+                                        <div>
+                                            <p className="font-medium">{item.name}</p>
+                                            <p className="text-sm text-muted-foreground">{item.description}</p>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+        
+        {/* Gallery Section */}
+        <section id="gallery" className="py-24 lg:py-32">
+             <div className="container px-4 md:px-6">
+                <div className="text-center mb-16">
+                    <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl">
+                        Gallery
+                    </h2>
+                    <p className="mt-3 text-muted-foreground md:text-lg max-w-2xl mx-auto">
+                        A glimpse into the {space.name} workspace.
+                    </p>
+                </div>
+                <Tabs defaultValue={space.details.gallery[0].id} className="max-w-4xl mx-auto">
+                    <TabsList className="grid w-full grid-cols-4">
+                        {space.details.gallery.map(item => (
+                            <TabsTrigger key={item.id} value={item.id}>{item.title}</TabsTrigger>
+                        ))}
+                    </TabsList>
+                    {space.details.gallery.map(item => (
+                         <TabsContent key={item.id} value={item.id} className="mt-6">
+                            <Card>
+                                <CardContent className="p-0">
+                                    <Image 
+                                        src={item.imageUrl}
+                                        alt={item.title}
+                                        width={1200}
+                                        height={800}
+                                        className="aspect-[3/2] object-cover rounded-lg"
+                                    />
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                    ))}
+                </Tabs>
+             </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-24 lg:py-32 bg-secondary/30">
+            <div className="container px-4 md:px-6 text-center">
+                 <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl">
+                    Ready to Join?
                 </h2>
-                <p className="mt-3 text-muted-foreground md:text-lg max-w-2xl mx-auto">
-                    Important information and rules for using this space.
+                <p className="mt-3 text-muted-foreground md:text-lg max-w-2xl mx-auto mb-8">
+                    Reserve your spot at {space.name} today and elevate your workday.
                 </p>
+                <Button asChild size="lg" className={cn('font-semibold', ctaButtonClass)}>
+                    <Link href={`/seat-booking?office=${space.slug}`}>Reserve Your Seat at {space.name}</Link>
+                </Button>
             </div>
-            <div className="max-w-2xl mx-auto space-y-4">
-              {space.details.rules.map((rule, index) => (
-                <div key={index} className="flex items-start gap-3 p-4 bg-secondary/50 rounded-lg">
-                    <Info className="h-5 w-5 text-accent mt-0.5 shrink-0" />
-                    <p className="text-muted-foreground text-sm">{rule}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Location Section - Conditionally Rendered */}
-          {space.slug === 'main-office-hub' && (
-            <section id="location" className="w-full py-24 lg:py-32 bg-background">
-              <div className="container px-4 md:px-6">
-                <div className="text-center space-y-4 mb-16">
-                  <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                    Our Location
-                  </h2>
-                  <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                    We're conveniently located. Find us using the map below or get directions.
-                  </p>
-                </div>
-                <div className="max-w-4xl mx-auto">
-                  <MiglanisLocationMap />
-                  <div className="mt-8 flex justify-center">
-                    <Button asChild size="lg">
-                      <a
-                        href="https://maps.google.com/?q=Miglanis%20%26%20Associates%20Private%20Limited"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-semibold"
-                      >
-                        Get Directions <ArrowUpRight className="ml-2 h-4 w-4" />
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-        </div>
+        </section>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

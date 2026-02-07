@@ -37,58 +37,64 @@
       "imageHint": "woman portrait"
     },
     {
-      "id": "tour-image-1",
-      "description": "A collaborative workspace area.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-3.jpg",
-      "imageHint": "collaborative workspace"
+      "id": "banyan-hero",
+      "description": "Premium interior of The Banyan workspace.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-1.jpg",
+      "imageHint": "stylish office"
     },
     {
-      "id": "tour-image-2",
-      "description": "Another view of the workspace.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-2.jpg",
-      "imageHint": "office interior"
+      "id": "olive-hero",
+      "description": "Vibrant and collaborative space at The Olive.",
+      "imageUrl": "https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=1974&auto=format&fit=crop",
+      "imageHint": "collaborative office"
     },
     {
-      "id": "tour-image-3",
-      "description": "Modern office interior with stylish lighting.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-4.jpg",
-      "imageHint": "modern office"
+      "id": "banyan-gallery-layout",
+      "description": "Layout plan of The Banyan workspace.",
+      "imageUrl": "https://i.ibb.co/2k33n6x/layout-plan.png",
+      "imageHint": "floor plan"
     },
     {
-      "id": "tour-image-4",
-      "description": "Spacious conference hall.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-5.jpg",
-      "imageHint": "conference hall"
-    },
-    {
-      "id": "tour-image-5",
-      "description": "Cosy corner with unique chairs.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-6.jpg",
-      "imageHint": "office corner"
-    },
-    {
-      "id": "tour-image-6",
-      "description": "Open plan office space.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-8.jpg",
-      "imageHint": "open office"
-    },
-    {
-      "id": "tour-image-7",
-      "description": "Another view of the open office.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-9.jpg",
-      "imageHint": "office view"
-    },
-    {
-      "id": "tour-image-8",
-      "description": "Workstations with ergonomic chairs.",
+      "id": "banyan-gallery-workstation",
+      "description": "Elegant workstations at The Banyan.",
       "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-10.jpg",
       "imageHint": "office workstations"
     },
     {
-      "id": "main-office-hub-hero",
-      "description": "Stylish interior of the Main Office Co-working Hub, from Miglanis Associates.",
-      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-1.jpg",
-      "imageHint": "stylish office"
+      "id": "banyan-gallery-meeting",
+      "description": "The main conference room at The Banyan.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-5.jpg",
+      "imageHint": "conference room"
+    },
+    {
+      "id": "banyan-gallery-breakout",
+      "description": "Relaxing breakout area at The Banyan.",
+      "imageUrl": "https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-6.jpg",
+      "imageHint": "office lounge"
+    },
+    {
+      "id": "olive-gallery-layout",
+      "description": "Layout plan of The Olive workspace.",
+      "imageUrl": "https://i.ibb.co/2k33n6x/layout-plan.png",
+      "imageHint": "floor plan"
+    },
+    {
+      "id": "olive-gallery-workstation",
+      "description": "Collaborative workstations at The Olive.",
+      "imageUrl": "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=2070&auto=format&fit=crop",
+      "imageHint": "modern workstations"
+    },
+    {
+      "id": "olive-gallery-meeting",
+      "description": "Meeting room for team discussions at The Olive.",
+      "imageUrl": "https://images.unsplash.com/photo-1572021335469-31706a17aaef?q=80&w=2070&auto=format&fit=crop",
+      "imageHint": "meeting room"
+    },
+    {
+      "id": "olive-gallery-breakout",
+      "description": "Fun breakout area with games at The Olive.",
+      "imageUrl": "https://images.unsplash.com/photo-1593349480503-685d37441556?q=80&w=1974&auto=format&fit=crop",
+      "imageHint": "games room"
     }
   ]
 }
