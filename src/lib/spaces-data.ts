@@ -66,12 +66,12 @@ export const spacesData: Space[] = [
     slug: 'olive',
     name: 'The Olive',
     description: 'A vibrant, collaborative workspace for modern professionals who thrive in a dynamic community setting.',
-    keyAmenities: ['Meeting Room', 'Gaming Zone', 'Flexible Seating'],
+    keyAmenities: ['Meeting Room', 'Flexible Seating'],
     imageUrl: PlaceHolderImages.find(p => p.id === 'olive-hero')?.imageUrl || '',
     imageHint: 'collaborative office',
     status: 'available',
     details: {
-      overview: "The Olive is a vibrant and flexible workspace designed for collaboration and creativity. It's a perfect fit for startups, freelancers, and teams looking for a dynamic environment. With a mix of workstations, a meeting room, and a fun breakout area with games, The Olive encourages both productivity and community interaction.",
+      overview: "The Olive is a vibrant and flexible workspace designed for collaboration and creativity. It's a perfect fit for startups, freelancers, and teams looking for a dynamic environment. With a mix of workstations, a meeting room, and a fun breakout area, The Olive encourages both productivity and community interaction.",
       amenities: [
         {
           category: 'Work & Meeting',
@@ -86,7 +86,6 @@ export const spacesData: Space[] = [
         {
             category: 'Lifestyle & Recreation',
             items: [
-                { name: 'Games (Carrom)', description: 'Take a break and challenge a colleague to a game of Carrom, free to use.' },
                 { name: 'Pantry', description: 'Includes tea & coffee facilities.' },
                 { name: 'Breakout Space', description: 'A casual space to unwind and connect with others.' },
                 { name: 'Air Conditioned', description: 'Comfortable temperature year-round.' },
@@ -98,7 +97,6 @@ export const spacesData: Space[] = [
       rules: [
         'Access from 8:00 AM to 6:00 PM.',
         'Please be mindful of noise levels in the open-plan areas.',
-        'Game zone usage is on a first-come, first-served basis.',
       ],
       gallery: [
         {
