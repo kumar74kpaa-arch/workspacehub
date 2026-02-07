@@ -1,11 +1,7 @@
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Mail, Phone } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Mail, Phone, Clock } from 'lucide-react';
 
 export default function ContactPage() {
   return (
@@ -21,53 +17,26 @@ export default function ContactPage() {
                 We'd love to hear from you. Get in touch with us for any inquiries.
                 </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <div>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Send us a message</CardTitle>
-                            <CardDescription>Fill out the form and we'll get back to you shortly.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">Name</Label>
-                                    <Input id="name" placeholder="John Doe" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input id="email" type="email" placeholder="john@example.com" />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="subject">Subject</Label>
-                                <Input id="subject" placeholder="Inquiry about..." />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="message">Message</Label>
-                                <Textarea id="message" placeholder="Your message here..." />
-                            </div>
-                            <Button className="w-full">Send Message</Button>
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="space-y-8">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Contact Information</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4 text-muted-foreground">
-                            <div className="flex items-center gap-4">
-                                <Mail className="h-5 w-5" />
-                                <span>studio@miglanis.com</span>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <Phone className="h-5 w-5" />
-                                <span>+91-8800337608</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+            <div className="max-w-md mx-auto">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Contact Information</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 text-muted-foreground">
+                        <div className="flex items-center gap-4">
+                            <Mail className="h-5 w-5" />
+                            <span>studio@miglanis.com</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <Phone className="h-5 w-5" />
+                            <span>+91-8800337608</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <Clock className="h-5 w-5" />
+                            <span>9AM to 5PM Monday to Saturday</span>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
       </main>
