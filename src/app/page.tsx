@@ -1,4 +1,5 @@
 
+
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -20,7 +21,6 @@ import {
   Coffee,
   Car,
   Wind,
-  Shield,
   UserCheck,
   Dice5,
 } from 'lucide-react';
@@ -74,7 +74,6 @@ const amenitiesByCategory = [
     icon: ShieldCheck,
     items: [
       { icon: Wind, name: 'Air Conditioning', description: 'Fully air-conditioned workspace for your comfort.' },
-      { icon: Shield, name: '24/7 Security', description: 'Secure access and surveillance to ensure your safety.' },
       { icon: Sparkles, name: 'Professional Cleaning', description: 'Regular cleaning and sanitization of all areas.' },
     ]
   },
