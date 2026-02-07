@@ -24,7 +24,7 @@ export function Header() {
               Tour
             </Link>
             <Link href="/spaces" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Explore Spaces
+              Bookings
             </Link>
             <Link href="/prices" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Prices
