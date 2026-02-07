@@ -16,7 +16,7 @@ export function Footer() {
                 <Link href="/faq" className="text-sm hover:text-foreground underline-offset-4 hover:underline">FAQs</Link>
             </div>
             <p className="text-sm text-muted-foreground text-center md:text-right">
-            &copy; {new Date().getFullYear()} 9to5 Workspace. All rights reserved.
+            &copy; {new Date().getFullYear()} 9to5. All rights reserved.
             </p>
         </div>
       </div>

@@ -12,7 +12,7 @@ export default function TermsAndConditionsPage() {
               Terms & Conditions
             </h1>
             <p>
-              Welcome to 9to5 Workspace. By accessing our premises or using our services, you agree to comply with and be bound by the following terms and conditions. Please review them carefully.
+              Welcome to 9to5. By accessing our premises or using our services, you agree to comply with and be bound by the following terms and conditions. Please review them carefully.
             </p>
 
             <h2 className="font-bold">1. Use of Facility</h2>
@@ -36,7 +36,7 @@ export default function TermsAndConditionsPage() {
 
             <h2 className="font-bold">4. Conduct and Responsibility</h2>
             <ul>
-              <li>Parking: On-site parking is available but is entirely at the vehicle owner's risk. 9to5 Workspace is not liable for any theft, damage, or loss.</li>
+              <li>Parking: On-site parking is available but is entirely at the vehicle owner's risk. 9to5 is not liable for any theft, damage, or loss.</li>
               <li>Personal Belongings: You are responsible for your own belongings. We are not responsible for any lost or stolen items.</li>
             </ul>
 

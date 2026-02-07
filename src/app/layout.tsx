@@ -17,7 +17,7 @@ const fontHeadline = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: '9to5 Workspace - A Calm Space to Work and Think',
+  title: '9to5 - A Calm Space to Work and Think',
   description:
     'Thoughtfully designed coworking for focused professionals.',
 };
