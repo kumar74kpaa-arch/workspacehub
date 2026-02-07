@@ -4,9 +4,14 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import LocationMap from '@/components/LocationMap';
 import BanyanLocationMap from '@/components/BanyanLocationMap';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, Train, Store } from 'lucide-react';
+import { MapPin, Train, Store, Navigation } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function LocationsPage() {
+  const banyanDirectionsUrl = "https://www.google.com/maps/dir/?api=1&destination=Miglanis+%26+Associates+Private+Limited,+86,+National+Park,+Lajpat+Nagar,+New+Delhi,+Delhi+110024";
+  const oliveDirectionsUrl = "https://www.google.com/maps/dir/?api=1&destination=Development+Solutions,+17/109,+Vikram+Vihar,+Lajpat+Nagar+4,+New+Delhi,+Delhi+110024";
+
   return (
     <>
       <Header />
@@ -33,6 +38,14 @@ export default function LocationsPage() {
                                 <p className="text-muted-foreground">Lower Ground Floor, 86, National Park, Lajpat Nagar, New Delhi, Delhi 110024</p>
                             </div>
                            <BanyanLocationMap />
+                            <div className="mt-4">
+                                <Button asChild className="w-full">
+                                    <Link href={banyanDirectionsUrl} target="_blank" rel="noopener noreferrer">
+                                        <Navigation className="mr-2 h-4 w-4" />
+                                        Get Directions
+                                    </Link>
+                                </Button>
+                            </div>
                            <Separator className="my-6" />
                            <div className="space-y-3 text-sm text-muted-foreground">
                              <div className="flex items-center gap-3">
@@ -60,6 +73,14 @@ export default function LocationsPage() {
                                 <p className="text-muted-foreground">Lower Ground, 17/109, Vikram Vihar, Lajpat Nagar 4, New Delhi, Delhi 110024</p>
                             </div>
                            <LocationMap />
+                           <div className="mt-4">
+                                <Button asChild className="w-full">
+                                    <Link href={oliveDirectionsUrl} target="_blank" rel="noopener noreferrer">
+                                        <Navigation className="mr-2 h-4 w-4" />
+                                        Get Directions
+                                    </Link>
+                                </Button>
+                            </div>
                            <Separator className="my-6" />
                            <div className="space-y-3 text-sm text-muted-foreground">
                              <div className="flex items-center gap-3">
@@ -68,7 +89,7 @@ export default function LocationsPage() {
                              </div>
                              <div className="flex items-center gap-3">
                                <Store className="h-4 w-4" />
-                               <span>Marketplace nearby</span>
+                               <span>Marketplace: Just across the road</span>
                              </div>
                            </div>
                          </div>
