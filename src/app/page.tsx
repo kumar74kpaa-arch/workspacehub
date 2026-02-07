@@ -245,34 +245,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        <section id="location" className="w-full py-24 lg:py-32 bg-secondary/50">
-          <div className="container px-4 md:px-6">
-            <div className="text-center space-y-4 mb-16">
-              <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                Our Location
-              </h2>
-              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                We're conveniently located in Lajpat Nagar. Find us using the map below or get directions.
-              </p>
-            </div>
-            <div className="max-w-4xl mx-auto">
-              <LocationMap />
-              <div className="mt-8 flex justify-center">
-                <Button asChild size="lg">
-                  <a
-                    href="https://maps.google.com/?q=Development+Solutions+Delhi"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold"
-                  >
-                    Get Directions <ArrowUpRight className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
       <Footer />
     </>
