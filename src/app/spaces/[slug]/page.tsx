@@ -38,6 +38,15 @@ export default function SpaceDetailPage({ params }: { params: { slug: string } }
   const themeClass = space.slug === 'banyan' ? 'theme-banyan' : 'theme-olive';
   const ctaButtonClass = space.slug === 'banyan' ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'bg-lime-600 hover:bg-lime-700 text-white';
 
+  const gridCols: { [key: number]: string } = {
+    2: 'grid-cols-2',
+    3: 'grid-cols-3',
+    4: 'grid-cols-4',
+  };
+  const galleryCount = space.details.gallery.length;
+  const gridClass = gridCols[galleryCount] || 'grid-cols-2';
+
+
   return (
     <div className={cn(themeClass)}>
       <Header />
@@ -140,7 +149,7 @@ export default function SpaceDetailPage({ params }: { params: { slug: string } }
                     </p>
                 </div>
                 <Tabs defaultValue={space.details.gallery[0].id} className="max-w-4xl mx-auto">
-                    <TabsList className="grid w-full grid-cols-4">
+                    <TabsList className={cn('grid w-full', gridClass)}>
                         {space.details.gallery.map(item => (
                             <TabsTrigger key={item.id} value={item.id}>{item.title}</TabsTrigger>
                         ))}

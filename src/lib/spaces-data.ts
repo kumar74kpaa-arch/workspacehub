@@ -41,7 +41,16 @@ export const spacesData: Space[] = [
         'Additional seats in meeting rooms are chargeable.',
       ],
       gallery: [
-        { id: 'banyan-gallery-layout', title: 'Layout View', imageUrls: [PlaceHolderImages.find(p => p.id === 'banyan-gallery-layout')?.imageUrl || ''] },
+        {
+          id: 'banyan-gallery-meeting',
+          title: 'Conference and Meeting Rooms',
+          imageUrls: [
+            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-3.jpg',
+            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-4.jpg',
+            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-5.jpg',
+            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-6.jpg',
+          ]
+        },
         {
           id: 'banyan-gallery-workstation',
           title: 'Workstations',
@@ -50,17 +59,6 @@ export const spacesData: Space[] = [
             'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-13.jpg',
           ]
         },
-        {
-          id: 'banyan-gallery-meeting',
-          title: 'Meeting Rooms',
-          imageUrls: [
-            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-3.jpg',
-            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-4.jpg',
-            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-5.jpg',
-            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-6.jpg',
-          ]
-        },
-        { id: 'banyan-gallery-breakout', title: 'Breakout Area', imageUrls: [PlaceHolderImages.find(p => p.id === 'banyan-gallery-breakout')?.imageUrl || ''] },
       ]
     }
   },
@@ -103,7 +101,6 @@ export const spacesData: Space[] = [
         'Game zone usage is on a first-come, first-served basis.',
       ],
       gallery: [
-        { id: 'olive-gallery-layout', title: 'Layout View', imageUrls: [PlaceHolderImages.find(p => p.id === 'olive-gallery-layout')?.imageUrl || ''] },
         { id: 'olive-gallery-workstation', title: 'Workstations', imageUrls: [
             'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-1.jpg',
             'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-10.jpg',
