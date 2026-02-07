@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -164,7 +165,7 @@ export default function Home() {
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
               <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                World-Class Amenities
+                Amenities
               </h2>
               <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
                 We are committed to providing a healthy and comfortable workspace for everyone.
