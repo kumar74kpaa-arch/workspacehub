@@ -104,9 +104,17 @@ export const spacesData: Space[] = [
       ],
       gallery: [
         { id: 'olive-gallery-layout', title: 'Layout View', imageUrls: [PlaceHolderImages.find(p => p.id === 'olive-gallery-layout')?.imageUrl || ''] },
-        { id: 'olive-gallery-workstation', title: 'Workstations', imageUrls: [PlaceHolderImages.find(p => p.id === 'olive-gallery-workstation')?.imageUrl || ''] },
-        { id: 'olive-gallery-meeting', title: 'Meeting Room', imageUrls: [PlaceHolderImages.find(p => p.id === 'olive-gallery-meeting')?.imageUrl || ''] },
-        { id: 'olive-gallery-breakout', title: 'Breakout Area', imageUrls: [PlaceHolderImages.find(p => p.id === 'olive-gallery-breakout')?.imageUrl || ''] },
+        { id: 'olive-gallery-workstation', title: 'Workstations', imageUrls: [
+            'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-1.jpg',
+            'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-10.jpg',
+            'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-8.jpg'
+        ] },
+        { id: 'olive-gallery-meeting', title: 'Meeting Room', imageUrls: [
+            'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-5.jpg'
+        ] },
+        { id: 'olive-gallery-breakout', title: 'Breakout Area', imageUrls: [
+            'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-6.jpg'
+        ] },
       ]
     }
   }
