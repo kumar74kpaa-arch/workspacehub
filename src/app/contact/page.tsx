@@ -59,11 +59,11 @@ export default function ContactPage() {
                         <CardContent className="space-y-4 text-muted-foreground">
                             <div className="flex items-center gap-4">
                                 <Mail className="h-5 w-5" />
-                                <span>contact@9to5workspace.com</span>
+                                <span>studio@miglanis.com</span>
                             </div>
                             <div className="flex items-center gap-4">
                                 <Phone className="h-5 w-5" />
-                                <span>+91 987 654 3210</span>
+                                <span>+91-8800337608</span>
                             </div>
                         </CardContent>
                     </Card>
