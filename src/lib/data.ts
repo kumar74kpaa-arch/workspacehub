@@ -15,7 +15,7 @@ export const mockUser: User = {
 export const mockAdmin: User = {
   id: 'admin-1',
   name: 'Maria Garcia',
-  email: 'maria.garcia@workspacehub.com',
+  email: 'maria.garcia@9to5workspace.com',
   avatarUrl: PlaceHolderImages.find((img) => img.id === 'user-avatar-2')?.imageUrl,
   role: 'admin',
 };

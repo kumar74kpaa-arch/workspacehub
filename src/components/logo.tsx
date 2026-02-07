@@ -1,6 +1,6 @@
 export function Logo() {
   return (
-    <div className="flex items-center justify-center gap-2" aria-label="Workspace Hub logo">
+    <div className="flex items-center justify-center gap-2" aria-label="9to5 Workspace logo">
       <svg
         width="24"
         height="24"
@@ -35,7 +35,7 @@ export function Logo() {
         />
       </svg>
 
-      <span className="font-bold text-lg font-headline">Workspace Hub</span>
+      <span className="font-bold text-lg font-headline">9to5 Workspace</span>
     </div>
   );
 }

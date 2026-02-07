@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 
   return {
-    title: `${space.name} | Workspace Hub`,
+    title: `${space.name} | 9to5 Workspace`,
     description: space.details.overview,
   };
 }

@@ -218,7 +218,7 @@ export default function Home() {
         <section id="why-us" className="w-full py-24 lg:py-32 bg-secondary/50">
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
-              <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">Why Choose Workspace Hub?</h2>
+              <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">Why Choose 9to5 Workspace?</h2>
               <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
                 An environment designed for deep work and professional growth.
               </p>

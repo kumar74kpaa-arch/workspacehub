@@ -66,7 +66,7 @@ export function UpcomingBookings() {
           <div className="grid gap-2">
             <CardTitle>Upcoming Bookings</CardTitle>
             <CardDescription>
-              Your next few reservations at Workspace Hub.
+              Your next few reservations at 9to5 Workspace.
             </CardDescription>
           </div>
           <Button asChild size="sm" className="ml-auto gap-1" disabled>
@@ -102,7 +102,7 @@ export function UpcomingBookings() {
         <div className="grid gap-2">
           <CardTitle>Upcoming Bookings</CardTitle>
           <CardDescription>
-            Your next few reservations at Workspace Hub.
+            Your next few reservations at 9to5 Workspace.
           </CardDescription>
         </div>
         <Button asChild size="sm" className="ml-auto gap-1">
