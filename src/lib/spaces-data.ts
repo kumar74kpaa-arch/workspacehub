@@ -67,7 +67,7 @@ export const spacesData: Space[] = [
     name: 'The Olive',
     description: 'A vibrant, collaborative workspace for modern professionals who thrive in a dynamic community setting.',
     keyAmenities: ['Meeting Room', 'Flexible Seating'],
-    imageUrl: PlaceHolderImages.find(p => p.id === 'olive-hero')?.imageUrl || '',
+    imageUrl: 'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-4.jpg',
     imageHint: 'collaborative office',
     status: 'available',
     details: {
