@@ -25,19 +25,19 @@ export default function TermsAndConditionsPage() {
               <li>All bookings must be made through our official platform.</li>
               <li>Making a booking implies your full agreement to all our terms and conditions.</li>
               <li>Payments for all services must be completed in advance.</li>
-              <li>Extended hours (6 PM - 8 PM) are subject to additional charges.</li>
+              <li>Early and Late hours (8AM-9AM) and (5PM-8PM) are subject to additional charges.</li>
             </ul>
 
             <h2>3. Services and Charges</h2>
             <ul>
-              <li><strong>Printing & Scanning:</strong> These services are not included in the standard membership or day pass fees and will be charged separately based on usage.</li>
-              <li><strong>Extra Seating:</strong> Additional seating in meeting rooms beyond the standard capacity will incur extra charges.</li>
+              <li>Printing & Scanning: These services are not included in the standard membership or day pass fees and will be charged separately based on usage.</li>
+              <li>Extra Seating: Additional seating in Conference and meeting rooms beyond the standard capacity will incur extra charges.</li>
             </ul>
 
             <h2>4. Conduct and Responsibility</h2>
             <ul>
-              <li><strong>Parking:</strong> On-site parking is available but is entirely at the vehicle owner's risk. 9to5 Workspace is not liable for any theft, damage, or loss.</li>
-              <li><strong>Personal Belongings:</strong> You are responsible for your own belongings. We are not responsible for any lost or stolen items.</li>
+              <li>Parking: On-site parking is available but is entirely at the vehicle owner's risk. 9to5 Workspace is not liable for any theft, damage, or loss.</li>
+              <li>Personal Belongings: You are responsible for your own belongings. We are not responsible for any lost or stolen items.</li>
             </ul>
 
             <h2>5. Cancellations and Refunds</h2>

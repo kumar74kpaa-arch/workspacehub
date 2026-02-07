@@ -1,5 +1,3 @@
-
-
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -22,6 +20,9 @@ import {
   Wind,
   UserCheck,
   Dice5,
+  Camera,
+  BriefcaseMedical,
+  ShieldAlert,
 } from 'lucide-react';
 import {
   Accordion,
@@ -46,7 +47,7 @@ const amenitiesByCategory = [
     icon: Network,
     items: [
       { icon: Wifi, name: 'High-Speed Internet', description: 'Blazing fast fiber internet to keep you productive.' },
-      { icon: Printer, name: 'Printing Services', description: 'On-demand B&W and color printing (paid service).' },
+      { icon: Printer, name: 'Print, Scan and Photocopy', description: 'On-demand B&W and color printing (paid service).' },
       { icon: Video, name: 'Video Conferencing', description: 'Rooms equipped for seamless video conferences.' },
     ]
   },
@@ -55,7 +56,6 @@ const amenitiesByCategory = [
     icon: Briefcase,
     items: [
       { icon: Users, name: 'Meeting & Conference Rooms', description: 'A range of rooms for team collaboration and client meetings.' },
-      { icon: UserCheck, name: 'Onsite Staff', description: 'Our team is here to help you with any needs from 9 AM to 6 PM.' },
     ]
   },
   {
@@ -65,6 +65,8 @@ const amenitiesByCategory = [
       { icon: Coffee, name: 'Pantry', description: 'premium coffee, tea, and filtered water to fuel your day.' },
       { icon: Sparkles, name: 'Breakout Room', description: 'A space to relax, network, or have an informal discussion.' },
       { icon: Car, name: 'Parking', description: 'Convenient on-site parking is available (at own risk).' },
+      { icon: UserCheck, name: 'Onsite staff', description: 'Our team is here to help you with any needs from 9AM to 5PM.' },
+      { icon: Dice5, name: 'Board Games with Carrom', description: 'Take a break and challenge a colleague.' },
     ]
   },
   {
@@ -73,6 +75,9 @@ const amenitiesByCategory = [
     items: [
       { icon: Wind, name: 'Air Conditioning', description: 'Fully air-conditioned workspace for your comfort.' },
       { icon: Sparkles, name: 'Professional Cleaning', description: 'Regular cleaning and sanitization of all areas.' },
+      { icon: Camera, name: 'CCTV Surveillance', description: 'For your safety and security.' },
+      { icon: BriefcaseMedical, name: 'First Aid kit', description: 'Available at reception for minor injuries.' },
+      { icon: ShieldAlert, name: 'Fire extinguishers', description: 'Available at reception.' },
     ]
   },
 ];
