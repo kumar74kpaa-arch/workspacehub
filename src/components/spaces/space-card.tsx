@@ -34,8 +34,8 @@ export function SpaceCard({ space }: { space: Space }) {
       </CardContent>
       <CardFooter>
         <Button asChild className="w-full font-semibold" disabled={space.status === 'coming-soon'}>
-            <Link href={`/spaces/${space.slug}`}>
-                View Details <ArrowUpRight className="ml-2 h-4 w-4" />
+            <Link href={`/seat-booking?office=${space.slug}`}>
+                Book a Space
             </Link>
         </Button>
       </CardFooter>
