@@ -28,7 +28,7 @@ export const spacesData: Space[] = [
             category: 'Lifestyle & Recreation',
             items: [
                 { name: 'Gaming Zone', description: 'Challenge a colleague to a game of Carrom or choose from a selection of board games. Note: Games are exclusive to this location.' },
-                { name: 'Gourmet Pantry', description: 'Unlimited premium coffee, tea, and snacks.' },
+                { name: 'Pantry', description: 'Unlimited premium coffee, tea, and snacks.' },
                 { name: 'Breakout Areas', description: 'Comfortable lounges to relax and network.' },
             ]
         }

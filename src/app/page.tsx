@@ -63,7 +63,7 @@ const amenitiesByCategory = [
     category: 'Lifestyle',
     icon: HeartHandshake,
     items: [
-      { icon: Coffee, name: 'Gourmet Pantry', description: 'Unlimited premium coffee, tea, and filtered water to fuel your day.' },
+      { icon: Coffee, name: 'Pantry', description: 'Unlimited premium coffee, tea, and filtered water to fuel your day.' },
       { icon: Sparkles, name: 'Breakout Room', description: 'A space to relax, network, or have an informal discussion.' },
       { icon: Dice5, name: 'Games', description: 'Challenge a colleague to a game of Carrom (free to use).' },
       { icon: Car, name: 'Parking', description: 'Convenient on-site parking is available (at own risk).' },
