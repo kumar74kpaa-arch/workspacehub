@@ -75,7 +75,7 @@ export type Space = {
     gallery: {
         id: string;
         title: string;
-        imageUrl: string;
+        imageUrls: string[];
     }[];
   };
 };

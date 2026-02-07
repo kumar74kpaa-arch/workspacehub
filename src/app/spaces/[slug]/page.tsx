@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -61,9 +62,6 @@ export default function SpaceDetailPage({ params }: { params: { slug: string } }
                     {space.description}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button asChild size="lg" className={cn('font-semibold', ctaButtonClass)}>
-                        <Link href={`/seat-booking?office=${space.slug}`}>Book {space.name}</Link>
-                    </Button>
                     <Button asChild size="lg" variant="outline" className="font-semibold bg-transparent text-white border-white hover:bg-white hover:text-black">
                         <Link href="#gallery">View Gallery</Link>
                     </Button>
@@ -149,17 +147,31 @@ export default function SpaceDetailPage({ params }: { params: { slug: string } }
                     </TabsList>
                     {space.details.gallery.map(item => (
                          <TabsContent key={item.id} value={item.id} className="mt-6">
-                            <Card>
-                                <CardContent className="p-0">
-                                    <Image 
-                                        src={item.imageUrl}
-                                        alt={item.title}
-                                        width={1200}
-                                        height={800}
-                                        className="aspect-[3/2] object-cover rounded-lg"
-                                    />
-                                </CardContent>
-                            </Card>
+                             <Carousel className="w-full">
+                                <CarouselContent>
+                                    {item.imageUrls.map((url, index) => (
+                                        <CarouselItem key={index}>
+                                            <Card>
+                                                <CardContent className="p-0">
+                                                    <Image 
+                                                        src={url}
+                                                        alt={`${item.title} - Image ${index + 1}`}
+                                                        width={1200}
+                                                        height={800}
+                                                        className="aspect-[3/2] object-cover rounded-lg"
+                                                    />
+                                                </CardContent>
+                                            </Card>
+                                        </CarouselItem>
+                                    ))}
+                                </CarouselContent>
+                                {item.imageUrls.length > 1 && (
+                                    <>
+                                        <CarouselPrevious className="hidden sm:flex" />
+                                        <CarouselNext className="hidden sm:flex" />
+                                    </>
+                                )}
+                            </Carousel>
                         </TabsContent>
                     ))}
                 </Tabs>

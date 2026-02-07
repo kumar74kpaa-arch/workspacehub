@@ -41,10 +41,26 @@ export const spacesData: Space[] = [
         'Additional seats in meeting rooms are chargeable.',
       ],
       gallery: [
-        { id: 'banyan-gallery-layout', title: 'Layout View', imageUrl: PlaceHolderImages.find(p => p.id === 'banyan-gallery-layout')?.imageUrl || '' },
-        { id: 'banyan-gallery-workstation', title: 'Workstations', imageUrl: PlaceHolderImages.find(p => p.id === 'banyan-gallery-workstation')?.imageUrl || '' },
-        { id: 'banyan-gallery-meeting', title: 'Meeting Rooms', imageUrl: PlaceHolderImages.find(p => p.id === 'banyan-gallery-meeting')?.imageUrl || '' },
-        { id: 'banyan-gallery-breakout', title: 'Breakout Area', imageUrl: PlaceHolderImages.find(p => p.id === 'banyan-gallery-breakout')?.imageUrl || '' },
+        { id: 'banyan-gallery-layout', title: 'Layout View', imageUrls: [PlaceHolderImages.find(p => p.id === 'banyan-gallery-layout')?.imageUrl || ''] },
+        {
+          id: 'banyan-gallery-workstation',
+          title: 'Workstations',
+          imageUrls: [
+            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-12.jpg',
+            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-13.jpg',
+          ]
+        },
+        {
+          id: 'banyan-gallery-meeting',
+          title: 'Meeting Rooms',
+          imageUrls: [
+            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-3.jpg',
+            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-4.jpg',
+            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-5.jpg',
+            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-6.jpg',
+          ]
+        },
+        { id: 'banyan-gallery-breakout', title: 'Breakout Area', imageUrls: [PlaceHolderImages.find(p => p.id === 'banyan-gallery-breakout')?.imageUrl || ''] },
       ]
     }
   },
@@ -87,10 +103,10 @@ export const spacesData: Space[] = [
         'Game zone usage is on a first-come, first-served basis.',
       ],
       gallery: [
-        { id: 'olive-gallery-layout', title: 'Layout View', imageUrl: PlaceHolderImages.find(p => p.id === 'olive-gallery-layout')?.imageUrl || '' },
-        { id: 'olive-gallery-workstation', title: 'Workstations', imageUrl: PlaceHolderImages.find(p => p.id === 'olive-gallery-workstation')?.imageUrl || '' },
-        { id: 'olive-gallery-meeting', title: 'Meeting Room', imageUrl: PlaceHolderImages.find(p => p.id === 'olive-gallery-meeting')?.imageUrl || '' },
-        { id: 'olive-gallery-breakout', title: 'Breakout Area', imageUrl: PlaceHolderImages.find(p => p.id === 'olive-gallery-breakout')?.imageUrl || '' },
+        { id: 'olive-gallery-layout', title: 'Layout View', imageUrls: [PlaceHolderImages.find(p => p.id === 'olive-gallery-layout')?.imageUrl || ''] },
+        { id: 'olive-gallery-workstation', title: 'Workstations', imageUrls: [PlaceHolderImages.find(p => p.id === 'olive-gallery-workstation')?.imageUrl || ''] },
+        { id: 'olive-gallery-meeting', title: 'Meeting Room', imageUrls: [PlaceHolderImages.find(p => p.id === 'olive-gallery-meeting')?.imageUrl || ''] },
+        { id: 'olive-gallery-breakout', title: 'Breakout Area', imageUrls: [PlaceHolderImages.find(p => p.id === 'olive-gallery-breakout')?.imageUrl || ''] },
       ]
     }
   }

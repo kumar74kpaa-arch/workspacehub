@@ -72,5 +72,10 @@ export type Space = {
       items: { name: string; description: string }[];
     }[];
     rules: string[];
+    gallery: {
+        id: string;
+        title: string;
+        imageUrls: string[];
+    }[];
   };
 };
