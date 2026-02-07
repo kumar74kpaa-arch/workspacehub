@@ -39,6 +39,7 @@ export default function SpaceDetailPage({ params }: { params: { slug: string } }
   const ctaButtonClass = space.slug === 'banyan' ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'bg-lime-600 hover:bg-lime-700 text-white';
 
   const gridCols: { [key: number]: string } = {
+    1: 'grid-cols-1',
     2: 'grid-cols-2',
     3: 'grid-cols-3',
     4: 'grid-cols-4',

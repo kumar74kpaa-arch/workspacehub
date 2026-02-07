@@ -101,17 +101,17 @@ export const spacesData: Space[] = [
         'Game zone usage is on a first-come, first-served basis.',
       ],
       gallery: [
-        { id: 'olive-gallery-workstation', title: 'Workstations', imageUrls: [
+        {
+          id: 'olive-gallery-all',
+          title: 'Our Space',
+          imageUrls: [
             'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-1.jpg',
+            'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-6.jpg',
             'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-10.jpg',
-            'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-8.jpg'
-        ] },
-        { id: 'olive-gallery-meeting', title: 'Meeting Room', imageUrls: [
-            'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-5.jpg'
-        ] },
-        { id: 'olive-gallery-breakout', title: 'Breakout Area', imageUrls: [
-            'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-6.jpg'
-        ] },
+            'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-5.jpg',
+            'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-8.jpg',
+          ]
+        }
       ]
     }
   }
