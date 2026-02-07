@@ -5,8 +5,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import LocationMap from '@/components/LocationMap';
-import MiglanisLocationMap from '@/components/MiglanisLocationMap';
 import { Mail, Phone } from 'lucide-react';
 
 export default function ContactPage() {
@@ -67,23 +65,6 @@ export default function ContactPage() {
                                 <Phone className="h-5 w-5" />
                                 <span>+91 987 654 3210</span>
                             </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Our Locations</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                           <div className="space-y-4">
-                             <div>
-                               <h3 className="font-semibold mb-2">The Banyan</h3>
-                               <LocationMap />
-                             </div>
-                             <div>
-                               <h3 className="font-semibold mb-2">The Olive</h3>
-                               <MiglanisLocationMap />
-                             </div>
-                           </div>
                         </CardContent>
                     </Card>
                 </div>
