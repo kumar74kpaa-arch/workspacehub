@@ -6,7 +6,6 @@ import {
   Wifi,
   Printer,
   Users,
-  CheckCircle,
   Clock,
   BarChart,
   ChevronRight,
@@ -97,28 +96,6 @@ const whyChooseUs = [
     }
 ]
 
-const membershipPlans = [
-  {
-    name: 'Day Pass',
-    price: '₹599',
-    period: 'per day',
-    features: ['Flexible access', 'High-speed WiFi', 'Tea & Coffee'],
-  },
-  {
-    name: 'Quarterly',
-    price: '₹14,999',
-    period: 'per quarter',
-    features: ['Dedicated desk option', '12 hours meeting room credit'],
-    popular: true,
-  },
-  {
-    name: 'Annual',
-    price: '₹65,999',
-    period: 'per year',
-    features: ['All quarterly benefits', '1 month free', 'Company mailbox service'],
-  },
-];
-
 export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-image');
   const banyanSpace = spacesData.find(s => s.slug === 'banyan');
@@ -140,9 +117,6 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button asChild size="lg" className="font-semibold">
                   <Link href="/login">Reserve Workspace</Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="font-semibold">
-                  <Link href="#memberships">View Memberships</Link>
                 </Button>
               </div>
             </div>
@@ -262,48 +236,6 @@ export default function Home() {
                     </div>
                     <CardTitle className="text-xl mb-2">{item.title}</CardTitle>
                     <CardDescription>{item.description}</CardDescription>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="memberships" className="w-full py-24 lg:py-32 bg-background">
-          <div className="container px-4 md:px-6">
-            <div className="text-center space-y-4 mb-16">
-              <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                Flexible Memberships for Everyone
-              </h2>
-              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                Choose the membership that fits your work style. No hidden fees, no long-term commitments.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              {membershipPlans.map((plan) => (
-                <Card key={plan.name} className={`flex flex-col ${plan.popular ? 'border-accent' : ''}`}>
-                  {plan.popular && <Badge className="absolute -top-3 right-4 bg-accent text-accent-foreground">Popular</Badge>}
-                  <CardHeader>
-                    <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                    <CardDescription className="flex items-baseline gap-2">
-                      <span className="text-4xl font-extrabold text-primary">{plan.price}</span>
-                      <span className="text-muted-foreground">{plan.period}</span>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <ul className="space-y-3">
-                      {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-center gap-3">
-                          <CheckCircle className="h-5 w-5 text-accent" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                  <CardFooter>
-                    <Button asChild className="w-full font-semibold" variant={plan.popular ? 'default' : 'outline'}>
-                      <Link href="/login">Reserve Workspace</Link>
-                    </Button>
-                  </CardFooter>
                 </Card>
               ))}
             </div>
