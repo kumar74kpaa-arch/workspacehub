@@ -10,7 +10,7 @@ export function Footer() {
           <Logo />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4" />
-              <span>Ground, 17/109, Lower, Vikram Vihar, Lajpat Nagar 4, New Delhi, Delhi 110024</span>
+              <span>Lower Ground Floor, 86, National Park, Lajpat Nagar, New Delhi, Delhi 110024</span>
           </div>
         </div>
         <div className="flex flex-col items-center md:items-end gap-4">
