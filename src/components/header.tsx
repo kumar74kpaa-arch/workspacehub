@@ -23,6 +23,15 @@ export function Header() {
             <Link href="/#tour" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Tour
             </Link>
+            <Link href="/spaces" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              Explore Spaces
+            </Link>
+            <Link href="/prices" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              Prices
+            </Link>
+            <Link href="/contact" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              Contact Us
+            </Link>
           </nav>
         </div>
         {/* Mobile header can be added here */}
