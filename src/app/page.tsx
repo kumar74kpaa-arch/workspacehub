@@ -121,6 +121,8 @@ const membershipPlans = [
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-image');
+  const banyanSpace = spacesData.find(s => s.slug === 'banyan');
+  const oliveSpace = spacesData.find(s => s.slug === 'olive');
 
   return (
     <>
@@ -159,18 +161,47 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="compare-spaces" className="w-full py-24 lg:py-32 bg-secondary/50">
+        <section id="tour" className="w-full py-24 lg:py-32 bg-secondary/50">
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
-              <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">Choose Your Workspace</h2>
+              <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl md:text-5xl">Tour Our Spaces</h2>
               <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                We offer two unique environments, each tailored to different work styles.
+                We offer two unique environments, each tailored to different work styles. Click to learn more.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              {spacesData.map((space) => (
-                <SpaceCard key={space.slug} space={space} />
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto items-start">
+              {banyanSpace && (
+                <Link href={`/spaces/${banyanSpace.slug}`} className="group space-y-4">
+                  <div className="overflow-hidden rounded-lg shadow-architect-hover">
+                    <Image 
+                      src={banyanSpace.imageUrl} 
+                      alt={banyanSpace.name}
+                      width={800} 
+                      height={600} 
+                      className="rounded-lg object-cover aspect-[4/3] transition-transform duration-300 group-hover:scale-105"
+                      data-ai-hint={banyanSpace.imageHint}
+                    />
+                  </div>
+                  <h3 className="text-2xl pt-2 font-bold font-headline group-hover:text-accent transition-colors">{banyanSpace.name}</h3>
+                  <p className="text-muted-foreground">{banyanSpace.description}</p>
+                </Link>
+              )}
+              {oliveSpace && (
+                <Link href={`/spaces/${oliveSpace.slug}`} className="group space-y-4">
+                  <div className="overflow-hidden rounded-lg shadow-architect-hover">
+                    <Image 
+                      src={oliveSpace.imageUrl}
+                      alt={oliveSpace.name}
+                      width={800} 
+                      height={600} 
+                      className="rounded-lg object-cover aspect-[4/3] transition-transform duration-300 group-hover:scale-105"
+                      data-ai-hint={oliveSpace.imageHint}
+                    />
+                  </div>
+                  <h3 className="text-2xl pt-2 font-bold font-headline group-hover:text-accent transition-colors">{oliveSpace.name}</h3>
+                  <p className="text-muted-foreground">{oliveSpace.description}</p>
+                </Link>
+              )}
             </div>
           </div>
         </section>

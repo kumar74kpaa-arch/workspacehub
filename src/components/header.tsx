@@ -14,14 +14,17 @@ export function Header() {
             <Link href="/" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Home
             </Link>
+            <Link href="/#location" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              Locations
+            </Link>
+            <Link href="/#amenities" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              Amenities
+            </Link>
+            <Link href="/#tour" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              Tour
+            </Link>
             <Link href="/#memberships" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Memberships
-            </Link>
-            <Link href="/spaces" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Our Spaces
-            </Link>
-             <Link href="/#location" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Location
+              Prices
             </Link>
           </nav>
         </div>
