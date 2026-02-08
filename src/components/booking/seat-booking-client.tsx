@@ -348,88 +348,101 @@ export default function SeatBookingClient({ officeId }: { officeId?: string }) {
             </div>
         </div>
         
-        <>
-            <Legend />
-            <div className="relative w-full max-w-6xl mx-auto">
-                {isLoading && <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-20"><Loader2 className="h-8 w-8 animate-spin" /></div>}
-                
-                <>
+        {selectedOffice.id === 'banyan' ? (
+            <div className="relative w-full max-w-6xl mx-auto pt-6">
+                <p className="text-center text-muted-foreground pb-4">Visual booking for The Banyan is coming soon. Below is a static layout plan.</p>
                 <Image
-                    src={selectedOfficeLayout.imageUrl}
-                    alt={selectedOfficeLayout.name}
+                    src="/layouts/the-banyan-layout.jpeg"
+                    alt="The Banyan Layout"
                     width={2000}
-                    height={1414}
-                    className="w-full rounded-lg"
-                    priority
+                    height={1200}
+                    className="w-full h-auto object-contain rounded-lg border"
                 />
-
-                <TooltipProvider>
-                    {selectedOfficeLayout.hotspots.map((spot) => {
-                    const booking = getBookingForSpot(spot.id);
-                    const isBooked = !!booking;
-                    const isMyBooking = isBooked && booking?.userId === user?.uid;
-                    const isThisOneBooking = bookingInProgress === spot.id;
-
-                    let stateClass = 'border-blue-500 bg-blue-500/20 hover:bg-blue-500/40 cursor-pointer'; // Available
-                    if (spot.disabled) {
-                        stateClass = 'border-gray-300 bg-gray-300/30 cursor-not-allowed'; // Utility
-                    } else if (spot.type === 'breakout') {
-                        stateClass = 'border-purple-500 bg-purple-500/20 cursor-help';
-                    }
-                    else if (isMyBooking) {
-                        stateClass = 'border-green-500 bg-green-500/20 cursor-default'; // My Booking
-                    }
-                    else if (isBooked) {
-                        stateClass = 'border-gray-400 bg-gray-400/30 cursor-not-allowed'; // Booked by others
-                    }
-
-                    return (
-                        <Tooltip key={spot.id}>
-                        <TooltipTrigger asChild>
-                            <button
-                                onClick={() => handleSpotClick(spot)}
-                                disabled={spot.disabled || isBooked || !!bookingInProgress || isLoading}
-                                className={cn("absolute border-2 text-xs font-semibold transition-colors flex items-center justify-center", stateClass)}
-                                style={{
-                                    top: spot.top,
-                                    left: spot.left,
-                                    width: spot.width,
-                                    height: spot.height,
-                                    transform: spot.type === 'workstation' ? 'translate(-50%, -50%)' : 'none',
-                                    borderRadius: spot.type === 'workstation' ? '0.375rem' : '0.125rem'
-                                }}
-                                title={spot.id}
-                            >
-                                {isThisOneBooking ? <Loader2 className="w-4 h-4 animate-spin" /> : 
-                                    <span className={cn("font-bold text-[10px] sm:text-xs", spot.type === 'workstation' ? 'text-black/80' : 'text-foreground')}>
-                                        {spot.label || spot.id.split('-').pop()}
-                                    </span>
-                                }
-                            </button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p className="font-semibold">{spot.label || spot.id}</p>
-                            {spot.disabled ? <p>Utility</p> :
-                            spot.type === 'breakout' ? <p>First-come, first-served</p> :
-                            isMyBooking ? <p>Booked by you</p> : 
-                            isBooked ? <p>Booked by {booking?.userName}</p> : <p>Available</p>}
-                        </TooltipContent>
-                        </Tooltip>
-                    );
-                    })}
-                </TooltipProvider>
-                </>
             </div>
-            {selectedRoom && date && selectedOffice && (
-            <MeetingRoomDialog
-                officeId={selectedOffice.id}
-                room={selectedRoom}
-                date={date}
-                onOpenChange={(open) => !open && setSelectedRoom(null)}
-                onBooked={fetchBookings}
-            />
-            )}
-        </>
+        ) : (
+            <>
+                <Legend />
+                <div className="relative w-full max-w-6xl mx-auto">
+                    {isLoading && <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-20"><Loader2 className="h-8 w-8 animate-spin" /></div>}
+                    
+                    <>
+                    <Image
+                        src={selectedOfficeLayout.imageUrl}
+                        alt={selectedOfficeLayout.name}
+                        width={2000}
+                        height={1414}
+                        className="w-full rounded-lg"
+                        priority
+                    />
+
+                    <TooltipProvider>
+                        {selectedOfficeLayout.hotspots.map((spot) => {
+                        const booking = getBookingForSpot(spot.id);
+                        const isBooked = !!booking;
+                        const isMyBooking = isBooked && booking?.userId === user?.uid;
+                        const isThisOneBooking = bookingInProgress === spot.id;
+
+                        let stateClass = 'border-blue-500 bg-blue-500/20 hover:bg-blue-500/40 cursor-pointer'; // Available
+                        if (spot.disabled) {
+                            stateClass = 'border-gray-300 bg-gray-300/30 cursor-not-allowed'; // Utility
+                        } else if (spot.type === 'breakout') {
+                            stateClass = 'border-purple-500 bg-purple-500/20 cursor-help';
+                        }
+                        else if (isMyBooking) {
+                            stateClass = 'border-green-500 bg-green-500/20 cursor-default'; // My Booking
+                        }
+                        else if (isBooked) {
+                            stateClass = 'border-gray-400 bg-gray-400/30 cursor-not-allowed'; // Booked by others
+                        }
+
+                        return (
+                            <Tooltip key={spot.id}>
+                            <TooltipTrigger asChild>
+                                <button
+                                    onClick={() => handleSpotClick(spot)}
+                                    disabled={spot.disabled || isBooked || !!bookingInProgress || isLoading}
+                                    className={cn("absolute border-2 text-xs font-semibold transition-colors flex items-center justify-center", stateClass)}
+                                    style={{
+                                        top: spot.top,
+                                        left: spot.left,
+                                        width: spot.width,
+                                        height: spot.height,
+                                        transform: spot.type === 'workstation' ? 'translate(-50%, -50%)' : 'none',
+                                        borderRadius: spot.type === 'workstation' ? '0.375rem' : '0.125rem'
+                                    }}
+                                    title={spot.id}
+                                >
+                                    {isThisOneBooking ? <Loader2 className="w-4 h-4 animate-spin" /> : 
+                                        <span className={cn("font-bold text-[10px] sm:text-xs", spot.type === 'workstation' ? 'text-black/80' : 'text-foreground')}>
+                                            {spot.label || spot.id.split('-').pop()}
+                                        </span>
+                                    }
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p className="font-semibold">{spot.label || spot.id}</p>
+                                {spot.disabled ? <p>Utility</p> :
+                                spot.type === 'breakout' ? <p>First-come, first-served</p> :
+                                isMyBooking ? <p>Booked by you</p> : 
+                                isBooked ? <p>Booked by {booking?.userName}</p> : <p>Available</p>}
+                            </TooltipContent>
+                            </Tooltip>
+                        );
+                        })}
+                    </TooltipProvider>
+                    </>
+                </div>
+                {selectedRoom && date && selectedOffice && (
+                <MeetingRoomDialog
+                    officeId={selectedOffice.id}
+                    room={selectedRoom}
+                    date={date}
+                    onOpenChange={(open) => !open && setSelectedRoom(null)}
+                    onBooked={fetchBookings}
+                />
+                )}
+            </>
+        )}
       </CardContent>
     </Card>
   );
