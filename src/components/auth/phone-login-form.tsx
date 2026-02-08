@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -36,6 +36,14 @@ export function PhoneLoginForm() {
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [isLoading, setIsLoading] = useState(false);
   const [countryCode, setCountryCode] = useState('+91');
+  const [selectedCountryName, setSelectedCountryName] = useState('India');
+
+  useEffect(() => {
+    const selectedCountry = countryCodes.find(c => c.name === selectedCountryName);
+    if (selectedCountry) {
+        setCountryCode(selectedCountry.code);
+    }
+  }, [selectedCountryName]);
 
   const setupRecaptcha = () => {
     if (!auth) return;
@@ -109,14 +117,14 @@ export function PhoneLoginForm() {
                 <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
                     <div className="flex items-center gap-2">
-                        <Select value={countryCode} onValueChange={setCountryCode}>
+                        <Select value={selectedCountryName} onValueChange={setSelectedCountryName}>
                             <SelectTrigger className="w-[130px]">
                                 <SelectValue placeholder="Country" />
                             </SelectTrigger>
                             <SelectContent>
                                 <ScrollArea className="h-72">
                                 {countryCodes.map((country) => (
-                                    <SelectItem key={country.name} value={country.code}>
+                                    <SelectItem key={country.name} value={country.name}>
                                         <span className="flex items-center gap-2">
                                             <span>{country.flag}</span>
                                             <span className="truncate">{country.name} ({country.code})</span>
