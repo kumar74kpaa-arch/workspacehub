@@ -16,8 +16,8 @@ export const spacesData: Space[] = [
         {
           category: 'Work & Meeting',
           items: [
-            { name: 'Conference Room', description: '9-seater room with TV, Video Conferencing, and Whiteboard. (Expandable to 12 seats, extra charges apply).' },
-            { name: '12 Individual Workstations', description: 'Ergonomic chairs and spacious desks for focused work.' },
+            { name: 'Conference Room', description: '12-seater room with TV, Video Conferencing, and Whiteboard.' },
+            { name: '16 Individual Workstations', description: 'Ergonomic chairs and spacious desks for focused work.' },
             { name: 'High-speed Internet', description: 'Reliable fiber optic connectivity.' },
             { name: 'Printing', description: 'On-demand printing services available (chargeable).' },
             { name: 'Onsite Staff', description: 'Support team available from 8AM to 6PM.' },
