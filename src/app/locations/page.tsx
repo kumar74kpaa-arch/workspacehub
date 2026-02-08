@@ -50,11 +50,11 @@ export default function LocationsPage() {
                            <div className="space-y-3 text-sm text-muted-foreground">
                              <div className="flex items-center gap-3">
                                <Train className="h-4 w-4" />
-                               <span>Nearest Metro Station: Moolchand (3 min walk)</span>
+                               <span>Nearest Metro Station: Moolchand, 5 minute walking distance</span>
                              </div>
                              <div className="flex items-center gap-3">
                                <Store className="h-4 w-4" />
-                               <span>Marketplace: 2 min walking distance</span>
+                               <span>Marketplace : 3 minute walking distance</span>
                              </div>
                            </div>
                          </div>
@@ -85,7 +85,7 @@ export default function LocationsPage() {
                            <div className="space-y-3 text-sm text-muted-foreground">
                              <div className="flex items-center gap-3">
                                <Train className="h-4 w-4" />
-                               <span>Nearest Metro Station: Moolchand (2 min walk)</span>
+                               <span>Nearest Metro Station: Moolchand, 5 minute walking distance</span>
                              </div>
                              <div className="flex items-center gap-3">
                                <Store className="h-4 w-4" />

@@ -6,7 +6,7 @@ export const spacesData: Space[] = [
     slug: 'banyan',
     name: 'The Banyan',
     description: 'A premium workspace designed for focused professionals seeking an elevated, distraction-free environment.',
-    keyAmenities: ['12-Seater Conference Room', 'Dedicated Workstations', 'Premium Breakout Space'],
+    keyAmenities: ['Premium Conference Room', 'Dedicated Workstations', 'Breakout Space', 'Common washroom'],
     imageUrl: '/layouts/5.jpg',
     imageHint: 'premium workspace',
     status: 'available',
@@ -59,7 +59,7 @@ export const spacesData: Space[] = [
     slug: 'olive',
     name: 'The Olive',
     description: 'A vibrant, collaborative workspace for modern professionals who thrive in a dynamic community setting.',
-    keyAmenities: ['Meeting Room', 'Flexible Seating'],
+    keyAmenities: ['Conference Rooms', 'Common Washroom', '16 workstations', 'Breakout Area'],
     imageUrl: 'https://maplindia.com/wp-content/uploads/2021/10/Development-Solutions-Office-Interiors-4.jpg',
     imageHint: 'collaborative office',
     status: 'available',
@@ -69,8 +69,8 @@ export const spacesData: Space[] = [
         {
           category: 'Work & Meeting',
           items: [
-            { name: '6-Seater Meeting Room', description: 'Ideal for team meetings and presentations. (Expandable to 8 seats, extra charges apply).' },
-            { name: '12 Workstations', description: 'Flexible seating in a collaborative open-plan area.' },
+            { name: '9-Seater Meeting Room', description: 'Ideal for team meetings and presentations. (Expandable to 12 seats, extra charges apply).' },
+            { name: '16 Workstations', description: 'Flexible seating in a collaborative open-plan area.' },
             { name: 'High-speed Internet', description: 'Fast and reliable WiFi for all your needs.' },
             { name: 'Printing', description: 'Printing services available at a nominal cost.' },
             { name: 'Onsite Staff', description: 'Our team is here to assist you during office hours.' },
