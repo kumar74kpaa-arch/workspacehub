@@ -36,6 +36,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap"
           rel="stylesheet"
         />
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
       </head>
       <body className={cn('min-h-screen bg-background font-body antialiased', fontSans.variable, fontHeadline.variable)}>
         <div className="absolute inset-0 -z-10 overflow-hidden">

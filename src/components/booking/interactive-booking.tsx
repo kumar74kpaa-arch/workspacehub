@@ -158,6 +158,7 @@ function WorkstationSelector({
     }
 
     setBookingInProgress(workstationId);
+
     try {
       const dayStart = new Date(date);
       dayStart.setHours(9, 30, 0, 0);
@@ -183,28 +184,73 @@ function WorkstationSelector({
         return;
       }
 
-      await addDoc(collection(firestore, "bookings"), {
-        officeId,
-        userId: user.uid,
-        userName: user.displayName || user.email,
-        workspaceId: workstationId,
-        workspaceName: `Workstation ${workstationId.split("-").pop()}`,
-        workspaceType: "desk",
-        date: format(date, "yyyy-MM-dd"),
-        startTime: Timestamp.fromDate(dayStart),
-        endTime: Timestamp.fromDate(dayEnd),
-        status: "confirmed",
-        isExtendedHours: false,
-        pricingType: "standard",
+      const finalAmount = 1000; // Day Pass Price
+
+      const res = await fetch("/api/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: finalAmount }),
       });
-      toast({
-        title: "Workstation Booked!",
-        description: `You have booked ${workstationId} for ${format(
-          date,
-          "PPP"
-        )}.`,
+
+      if (!res.ok) {
+        throw new Error('Failed to create Razorpay order');
+      }
+
+      const order = await res.json();
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: "INR",
+        name: "9to5 Workspace - Day Pass",
+        description: `Booking for ${workstationId}`,
+        order_id: order.id,
+        handler: async function (response: any) {
+          await addDoc(collection(firestore, "bookings"), {
+            officeId,
+            userId: user.uid,
+            userName: user.displayName || user.email,
+            workspaceId: workstationId,
+            workspaceName: `Workstation ${workstationId.split("-").pop()}`,
+            workspaceType: "desk",
+            date: format(date, "yyyy-MM-dd"),
+            startTime: Timestamp.fromDate(dayStart),
+            endTime: Timestamp.fromDate(dayEnd),
+            status: "confirmed",
+            isExtendedHours: false,
+            pricingType: "standard",
+            paymentId: response.razorpay_payment_id,
+          });
+          toast({
+            title: "Workstation Booked!",
+            description: `You have booked ${workstationId} for ${format(
+              date,
+              "PPP"
+            )}.`,
+          });
+          onBooking();
+        },
+        prefill: {
+            name: user.displayName || '',
+            email: user.email || '',
+        },
+        theme: {
+          color: "#C8A24D",
+        },
+        modal: {
+            ondismiss: function() {
+                setBookingInProgress(null);
+            }
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+      rzp.on('payment.failed', function (response: any) {
+        toast({ variant: 'destructive', title: 'Payment Failed', description: response.error.description });
+        setBookingInProgress(null);
       });
-      onBooking();
+
     } catch (error) {
       console.error("Error booking workstation: ", error);
       toast({
@@ -212,7 +258,6 @@ function WorkstationSelector({
         title: "Booking Error",
         description: "Could not book the workstation.",
       });
-    } finally {
       setBookingInProgress(null);
     }
   };
@@ -271,7 +316,6 @@ function RoomBookingDialog({
   const [startTime, setStartTime] = useState("09:30");
   const [endTime, setEndTime] = useState("10:30");
   const [isReserving, setIsReserving] = useState(false);
-  const [dialogAgreedToTerms, setDialogAgreedToTerms] = useState(false);
 
   const firestore = useFirestore();
   const router = useRouter();
@@ -308,28 +352,70 @@ function RoomBookingDialog({
         return;
       }
       
-      await addDoc(collection(firestore, 'bookings'), {
-        officeId,
-        userId: user.uid,
-        userName: user.displayName || user.email,
-        workspaceId: room.id,
-        workspaceName: `${room.name} (+${extraChairs} seats)`,
-        workspaceType: 'room',
-        date: format(date, 'yyyy-MM-dd'),
-        startTime: Timestamp.fromDate(startDateTime),
-        endTime: Timestamp.fromDate(endDateTime),
-        isExtendedHours: validationResult.extended,
-        pricingType: validationResult.extended ? 'extended' : 'standard',
-        status: 'confirmed',
+      const res = await fetch("/api/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: totalCost }),
       });
 
-      toast({ title: 'Room Reserved!', description: `You've booked ${room.name} on ${format(date, 'PPP')} from ${startTime} to ${endTime}.` });
-      onBooked();
-      onOpenChange(false);
+      if (!res.ok) {
+        throw new Error("Failed to create Razorpay order.");
+      }
+      
+      const order = await res.json();
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: "INR",
+        name: "9to5 Workspace",
+        description: "Booking Payment",
+        order_id: order.id,
+        handler: async function (response: any) {
+          await addDoc(collection(firestore, 'bookings'), {
+            officeId,
+            userId: user.uid,
+            userName: user.displayName || user.email,
+            workspaceId: room.id,
+            workspaceName: `${room.name} (+${extraChairs} seats)`,
+            workspaceType: 'room',
+            date: format(date, 'yyyy-MM-dd'),
+            startTime: Timestamp.fromDate(startDateTime),
+            endTime: Timestamp.fromDate(endDateTime),
+            isExtendedHours: validationResult.extended,
+            pricingType: validationResult.extended ? 'extended' : 'standard',
+            status: 'confirmed',
+            paymentId: response.razorpay_payment_id,
+          });
+    
+          toast({ title: 'Room Reserved!', description: `You've booked ${room.name} on ${format(date, 'PPP')} from ${startTime} to ${endTime}.` });
+          onBooked();
+          onOpenChange(false);
+        },
+        prefill: {
+            name: user.displayName || '',
+            email: user.email || '',
+        },
+        theme: {
+          color: "#C8A24D",
+        },
+        modal: {
+            ondismiss: function() {
+                setIsReserving(false);
+            }
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+      rzp.on('payment.failed', function (response: any) {
+        toast({ variant: 'destructive', title: 'Payment Failed', description: response.error.description });
+        setIsReserving(false);
+      });
+
     } catch (error) {
         console.error("Error reserving room: ", error);
         toast({ variant: 'destructive', title: 'Error', description: 'Could not reserve the room. Please try again.' });
-    } finally {
         setIsReserving(false);
     }
   };
@@ -394,7 +480,7 @@ function RoomBookingDialog({
         </div>
         <DialogFooter>
           <Button onClick={handleReserveClick} disabled={isReserving || !validationResult.valid}>
-            {isReserving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Confirm Reservation"}
+            {isReserving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Confirm & Pay"}
           </Button>
         </DialogFooter>
       </DialogContent>
