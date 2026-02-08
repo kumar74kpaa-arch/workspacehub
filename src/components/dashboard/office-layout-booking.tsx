@@ -253,14 +253,24 @@ export function OfficeLayoutBooking() {
 
     setBookingInProgress(workstationId);
     try {
-        if (getBookingForSpot(workstationId)) {
-            toast({ variant: "destructive", title: "Already Booked", description: "This workstation is booked." });
+        const dayStart = new Date(date); dayStart.setHours(9,0,0,0);
+        const dayEnd = new Date(date); dayEnd.setHours(17,0,0,0);
+        
+        const conflict = await hasBookingConflict({
+            firestore,
+            officeId: selectedOfficeId,
+            workspaceId: workstationId,
+            startTime: dayStart,
+            endTime: dayEnd
+        });
+
+        if (conflict) {
+            toast({ variant: "destructive", title: "Already Booked", description: "This workstation is no longer available." });
+            fetchBookings(); // Re-fetch to update UI with latest data
+            setBookingInProgress(null);
             return;
         }
         
-        const dayStart = new Date(date); dayStart.setHours(9,0,0,0);
-        const dayEnd = new Date(date); dayEnd.setHours(17,0,0,0);
-
         await addDoc(collection(firestore, "bookings"), {
             officeId: selectedOfficeId,
             userId: user.uid, userName: user.displayName || user.email,

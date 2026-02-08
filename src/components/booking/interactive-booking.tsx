@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Loader2, Armchair } from "lucide-react";
 import { allResources } from "@/lib/resources";
+import { hasBookingConflict } from "@/lib/checkBookingConflict";
 
 type InteractiveBookingProps = {
   officeId: string;
@@ -137,6 +138,25 @@ function WorkstationSelector({
       dayStart.setHours(9, 30, 0, 0);
       const dayEnd = new Date(date);
       dayEnd.setHours(17, 30, 0, 0);
+
+      const conflict = await hasBookingConflict({
+        firestore,
+        officeId,
+        workspaceId: workstationId,
+        startTime: dayStart,
+        endTime: dayEnd,
+      });
+
+      if (conflict) {
+        toast({
+          variant: 'destructive',
+          title: 'Booking Conflict',
+          description: 'This workstation is no longer available. Please refresh.',
+        });
+        onBooking();
+        setBookingInProgress(null);
+        return;
+      }
 
       await addDoc(collection(firestore, "bookings"), {
         officeId,
