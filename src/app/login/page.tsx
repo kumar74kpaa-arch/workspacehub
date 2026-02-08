@@ -10,7 +10,7 @@ export default function LoginPage() {
         <CardHeader className="text-center">
           <div className="mb-4 flex justify-center">
             <Link href="/">
-              <Logo />
+              <Logo className="text-3xl" />
             </Link>
           </div>
           <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
