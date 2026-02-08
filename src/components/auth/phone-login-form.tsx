@@ -14,6 +14,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Phone, KeyRound } from 'lucide-react';
 import { redirectUserBasedOnRole } from '@/firebase/auth/actions';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { countryCodes } from '@/lib/country-codes';
+import { ScrollArea } from '../ui/scroll-area';
 
 declare global {
   interface Window {
@@ -32,6 +35,7 @@ export function PhoneLoginForm() {
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [isLoading, setIsLoading] = useState(false);
+  const [countryCode, setCountryCode] = useState('+91');
 
   const setupRecaptcha = () => {
     if (!auth) return;
@@ -51,7 +55,7 @@ export function PhoneLoginForm() {
     setIsLoading(true);
     setupRecaptcha();
     const appVerifier = window.recaptchaVerifier!;
-    const formattedPhone = `+91${phone}`;
+    const formattedPhone = `${countryCode}${phone}`;
 
     try {
       const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
@@ -67,6 +71,7 @@ export function PhoneLoginForm() {
             "Phone login will be activated once SMS billing is enabled.",
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
       
@@ -103,22 +108,39 @@ export function PhoneLoginForm() {
             <form onSubmit={onSendOtp} className="space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <span className="absolute left-10 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">+91</span>
-                        <Input
-                            id="phone"
-                            type="tel"
-                            placeholder="98765 43210"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                            className="pl-20"
-                            required
-                            pattern="\d{10}"
-                        />
+                    <div className="flex items-center gap-2">
+                        <Select value={countryCode} onValueChange={setCountryCode}>
+                            <SelectTrigger className="w-[130px]">
+                                <SelectValue placeholder="Country" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <ScrollArea className="h-72">
+                                {countryCodes.map((country) => (
+                                    <SelectItem key={country.name} value={country.code}>
+                                        <span className="flex items-center gap-2">
+                                            <span>{country.flag}</span>
+                                            <span className="truncate">{country.name} ({country.code})</span>
+                                        </span>
+                                    </SelectItem>
+                                ))}
+                                </ScrollArea>
+                            </SelectContent>
+                        </Select>
+                        <div className="relative flex-1">
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                id="phone"
+                                type="tel"
+                                placeholder="Phone number"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                                className="pl-10"
+                                required
+                            />
+                        </div>
                     </div>
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading || phone.length !== 10}>
+                <Button type="submit" className="w-full" disabled={isLoading || phone.length < 5}>
                     {isLoading ? <Loader2 className="animate-spin" /> : 'Send OTP'}
                 </Button>
                  <p className="text-xs text-muted-foreground text-center pt-2">
