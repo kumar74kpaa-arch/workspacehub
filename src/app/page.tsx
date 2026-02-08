@@ -101,7 +101,6 @@ const whyChooseUs = [
 ]
 
 export default function Home() {
-  const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-image');
   const banyanSpace = spacesData.find(s => s.slug === 'banyan');
   const oliveSpace = spacesData.find(s => s.slug === 'olive');
 
@@ -109,32 +108,32 @@ export default function Home() {
     <>
       <Header />
       <main className="flex-1">
-        <section className="relative w-full py-24 md:py-32 lg:py-40 bg-background">
-          <div className="container px-4 md:px-6 grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <h1 className="text-4xl font-headline font-bold tracking-tight sm:text-5xl md:text-6xl text-primary">
-                A Calm Space to Work and Think
-              </h1>
-              <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                Thoughtfully designed coworking for focused professionals.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild size="lg" className="font-semibold">
-                  <Link href="/login">Reserve Workspace</Link>
-                </Button>
+        <section className="relative w-full h-[75vh] min-h-[500px] md:h-[80vh] flex items-center text-white">
+          <Image
+            src="/layouts/5.jpg"
+            alt="Ultra-realistic cinematic architectural shot of a premium workspace"
+            fill
+            className="object-cover z-0"
+            priority
+            quality={90}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent z-10" />
+          <div className="relative z-20 container px-4 md:px-6">
+            <div className="flex items-center max-w-4xl">
+              <div className="w-1.5 md:w-2 h-32 md:h-40 bg-accent mr-6 md:mr-10" />
+              <div className="space-y-6">
+                <h1 className="text-4xl font-headline font-bold tracking-tight sm:text-5xl md:text-6xl text-white">
+                  A Calm Space to Work and Think
+                </h1>
+                <p className="max-w-[600px] text-lg md:text-xl text-neutral-200">
+                  Thoughtfully designed coworking for focused professionals.
+                </p>
+                <div className="flex">
+                  <Button asChild size="lg" className="font-semibold bg-accent hover:bg-accent/90 text-accent-foreground rounded-full px-8 py-6 text-base">
+                    <Link href="/login">Reserve Workspace</Link>
+                  </Button>
+                </div>
               </div>
-            </div>
-            <div className="relative h-64 md:h-auto">
-             {heroImage && (
-                <Image
-                  src={heroImage.imageUrl}
-                  alt={heroImage.description}
-                  width={600}
-                  height={400}
-                  className="rounded-lg object-cover aspect-[3/2] hover:shadow-lg transition-shadow"
-                  data-ai-hint={heroImage.imageHint}
-                />
-             )}
             </div>
           </div>
         </section>
