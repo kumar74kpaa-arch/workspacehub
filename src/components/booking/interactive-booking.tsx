@@ -28,6 +28,23 @@ import Link from 'next/link';
 import { validateBookingTime } from "@/lib/validateBookingTime";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
+const calculateRoomBookingAmount = ({
+  roomName,
+  durationInHours,
+  extraChairs,
+}: {
+  roomName: string;
+  durationInHours: number;
+  extraChairs: number;
+}) => {
+  const isConference = roomName.toLowerCase().includes('conference');
+  const roomBasePrice = isConference ? 1000 : 750;
+  const roomCost = roomBasePrice * durationInHours;
+  const extraChairCost = extraChairs > 0 ? extraChairs * 100 * durationInHours : 0;
+  const totalCost = roomCost + extraChairCost;
+  return { roomCost, extraChairCost, totalCost };
+};
+
 type InteractiveBookingProps = {
   officeId: string;
   date: Date;
@@ -266,9 +283,11 @@ function RoomBookingDialog({
 
   const durationHours = Math.max(0, (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60));
 
-  const roomBasePrice = room.name.toLowerCase().includes('conference') ? 1000 : 750;
-  const extraChairCost = extraChairs * 100 * durationHours;
-  const totalCost = roomBasePrice * durationHours + extraChairCost;
+  const { roomCost, extraChairCost, totalCost } = calculateRoomBookingAmount({
+    roomName: room.name,
+    durationInHours,
+    extraChairs,
+  });
   
   const handleReserveClick = async () => {
     if (!user) {
@@ -350,7 +369,7 @@ function RoomBookingDialog({
                 <h4 className="font-semibold mb-2">Booking Summary</h4>
                 <div className="text-sm space-y-1">
                   <div className="flex justify-between"><span>Duration:</span> <span>{durationHours.toFixed(1)} hours</span></div>
-                  <div className="flex justify-between"><span>Room Cost:</span> <span>₹{roomBasePrice * durationHours}</span></div>
+                  <div className="flex justify-between"><span>Room Cost:</span> <span>₹{roomCost}</span></div>
                   {extraChairs > 0 && <div className="flex justify-between"><span>Extra Seats Cost:</span> <span>₹{extraChairCost}</span></div>}
                   <div className="flex justify-between font-bold border-t pt-2 mt-2"><span>Total Estimate:</span> <span>₹{totalCost.toFixed(2)}</span></div>
                 </div>
