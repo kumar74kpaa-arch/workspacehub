@@ -17,7 +17,6 @@ import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.
 
 export const signupUserWithPassword = async (
   auth: Auth,
-  firestore: Firestore,
   values: { displayName: string; email: string; password: string }
 ) => {
   const userCredential = await createUserWithEmailAndPassword(
@@ -31,14 +30,7 @@ export const signupUserWithPassword = async (
     displayName: values.displayName,
   });
 
-  const userDocRef = doc(firestore, 'users', user.uid);
-  await setDoc(userDocRef, {
-    displayName: values.displayName,
-    email: user.email,
-    role: 'user',
-    provider: 'password',
-    createdAt: serverTimestamp(),
-  });
+  // The user document is now created by the `useUser` hook's onAuthStateChanged listener.
   return user;
 };
 
@@ -66,20 +58,9 @@ export const redirectUserBasedOnRole = async (
 
   if (snap.exists()) {
     userRole = snap.data().role;
-  } else {
-    // The user document doesn't exist, so we create it.
-    // This handles cases for first-time social/phone logins gracefully.
-    await setDoc(userRef, {
-      displayName: user.displayName || `User ${user.uid.substring(0,5)}`,
-      email: user.email,
-      photoURL: user.photoURL,
-      role: 'user', // Default role for new users
-      provider: user.providerData?.[0]?.providerId?.replace('.com', '') || 'password',
-      createdAt: serverTimestamp(),
-    });
-    // The role is 'user' for the subsequent redirection logic.
-    userRole = 'user';
   }
+  // The user document creation logic is now centralized in the `useUser` hook.
+  // If the document doesn't exist, the role will default to 'user', which is correct for new sign-ups.
 
   if (userRole === 'admin') {
     router.push('/admin');

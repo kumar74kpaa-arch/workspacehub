@@ -72,7 +72,7 @@ export function LoginForm() {
     };
 
     try {
-      const user = await signupUserWithPassword(auth, firestore, signupData);
+      const user = await signupUserWithPassword(auth, signupData);
       await redirectUserBasedOnRole(firestore, user, router);
       toast({ title: 'Account Created', description: 'You have successfully created an account.' });
     } catch (error: any) {

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { useAuth } from '../provider';
+import { useAuth, useFirestore } from '../provider';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 interface UserState {
   user: User | null;
@@ -11,13 +12,33 @@ interface UserState {
 
 export function useUser(): UserState {
   const auth = useAuth();
+  const firestore = useFirestore();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (auth) {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        setUser(user);
+    if (auth && firestore) {
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          const userRef = doc(firestore, 'users', user.uid);
+          const userSnap = await getDoc(userRef);
+
+          if (!userSnap.exists()) {
+            await setDoc(userRef, {
+              displayName: user.displayName || "",
+              email: user.email || "",
+              phone: user.phoneNumber || "",
+              role: 'user',
+              credits: 0,
+              createdAt: serverTimestamp(),
+              photoURL: user.photoURL,
+              provider: user.providerData?.[0]?.providerId?.replace('.com', '') || 'password',
+            });
+          }
+          setUser(user);
+        } else {
+          setUser(null);
+        }
         setLoading(false);
       });
 
@@ -25,7 +46,7 @@ export function useUser(): UserState {
     } else {
       setLoading(false);
     }
-  }, [auth]);
+  }, [auth, firestore]);
 
   return { user, loading };
 }

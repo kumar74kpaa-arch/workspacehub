@@ -60,6 +60,10 @@
           "format": "email",
           "description": "The user's email address."
         },
+        "phone": {
+          "type": "string",
+          "description": "The user's phone number."
+        },
         "role": {
           "type": "string",
           "description": "The user's role, either 'user' or 'admin'.",
@@ -71,7 +75,11 @@
         "provider": {
           "type": "string",
           "description": "The authentication provider for the user.",
-          "enum": ["google", "password"]
+          "enum": ["google", "password", "phone"]
+        },
+        "credits": {
+          "type": "number",
+          "description": "User credits for services."
         },
         "createdAt": {
           "type": "string",
