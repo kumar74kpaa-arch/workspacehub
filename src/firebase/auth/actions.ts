@@ -26,11 +26,12 @@ export const signupUserWithPassword = async (
   );
   const user = userCredential.user;
 
+  // The user document is now created by the `useUser` hook's onAuthStateChanged listener.
+  // We still update the profile displayName here as it's part of the Auth user object.
   await updateProfile(user, {
     displayName: values.displayName,
   });
-
-  // The user document is now created by the `useUser` hook's onAuthStateChanged listener.
+  
   return user;
 };
 
@@ -52,6 +53,7 @@ export const redirectUserBasedOnRole = async (
   router: AppRouterInstance
 ) => {
   const userRef = doc(firestore, 'users', user.uid);
+  // The useUser hook guarantees the document will be created, so we just need to read it.
   const snap = await getDoc(userRef);
 
   let userRole = 'user';
@@ -59,12 +61,10 @@ export const redirectUserBasedOnRole = async (
   if (snap.exists()) {
     userRole = snap.data().role;
   }
-  // The user document creation logic is now centralized in the `useUser` hook.
-  // If the document doesn't exist, the role will default to 'user', which is correct for new sign-ups.
-
+  
   if (userRole === 'admin') {
-    router.push('/admin');
+    router.replace('/admin');
   } else {
-    router.push('/dashboard');
+    router.replace('/dashboard');
   }
 };

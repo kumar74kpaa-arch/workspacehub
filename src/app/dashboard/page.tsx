@@ -1,10 +1,11 @@
 'use client';
 
-import { OverviewCards } from '@/components/dashboard/overview-cards';
 import { UpcomingBookings } from '@/components/dashboard/upcoming-bookings';
 import { useUser } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { OfficeLayoutBooking } from '@/components/dashboard/office-layout-booking';
+import { DashboardBooking } from '@/components/dashboard/dashboard-booking';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function DashboardPage() {
   const { user, loading } = useUser();
@@ -15,11 +16,6 @@ export default function DashboardPage() {
             <div className="grid gap-4">
                 <Skeleton className="h-10 w-1/2" />
                 <Skeleton className="h-6 w-3/4" />
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-                <Skeleton className="h-28" />
-                <Skeleton className="h-28" />
-                <Skeleton className="h-28" />
             </div>
             <Skeleton className="h-64" />
             <div className="space-y-8">
@@ -42,7 +38,19 @@ export default function DashboardPage() {
                     Here&apos;s your personalized workspace overview.
                     </p>
                 </div>
-                <OverviewCards />
+                 <Card>
+                  <CardHeader>
+                    <CardTitle>Quick Actions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex gap-4">
+                    <Button asChild>
+                      <Link href="/seat-booking?office=banyan">Book at The Banyan</Link>
+                    </Button>
+                     <Button asChild>
+                      <Link href="/seat-booking?office=olive">Book at The Olive</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
                 <UpcomingBookings />
             </>
         ) : (
@@ -55,10 +63,6 @@ export default function DashboardPage() {
                 </p>
             </div>
         )}
-
-        <div className="grid auto-rows-max items-start gap-4 md:gap-8">
-            <OfficeLayoutBooking />
-        </div>
     </div>
   );
 }

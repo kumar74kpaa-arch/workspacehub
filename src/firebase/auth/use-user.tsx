@@ -24,26 +24,30 @@ export function useUser(): UserState {
           const userSnap = await getDoc(userRef);
 
           if (!userSnap.exists()) {
+            // New user, create the document.
             await setDoc(userRef, {
-              displayName: user.displayName || "",
+              displayName: user.displayName || user.email?.split('@')[0] || "User",
               email: user.email || "",
               phone: user.phoneNumber || "",
-              role: 'user',
+              role: 'user', // Default role
               credits: 0,
               createdAt: serverTimestamp(),
-              photoURL: user.photoURL,
+              photoURL: user.photoURL || null,
               provider: user.providerData?.[0]?.providerId?.replace('.com', '') || 'password',
             });
           }
+          // For both new and existing users, set the user state
           setUser(user);
         } else {
+          // User logged out
           setUser(null);
         }
         setLoading(false);
       });
 
       return () => unsubscribe();
-    } else {
+    } else if (!auth || !firestore) {
+      // If Firebase services are not available, stop loading.
       setLoading(false);
     }
   }, [auth, firestore]);
