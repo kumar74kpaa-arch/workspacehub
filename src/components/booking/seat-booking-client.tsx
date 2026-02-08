@@ -350,7 +350,7 @@ export default function SeatBookingClient({ officeId }: { officeId?: string }) {
         
         {selectedOffice.id === 'banyan' ? (
             <div className="relative w-full max-w-6xl mx-auto pt-6">
-                <p className="text-center text-muted-foreground pb-4">Visual booking for The Banyan is coming soon. Below is a static layout plan.</p>
+                <p className="text-center text-muted-foreground pb-4">Below is a static layout plan.</p>
                 <Image
                     src="/layouts/the-banyan-layout.jpeg"
                     alt="The Banyan Layout"
