@@ -1,13 +1,14 @@
+
 "use client";
 import { useState, useMemo } from "react";
 import type { User } from "firebase/auth";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { useRouter } from "next/navigation";
 
-import type { Booking } from "@/lib/definitions";
+import type { Booking, Workspace } from "@/lib/definitions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,9 +17,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Loader2, Armchair } from "lucide-react";
+import { Loader2, Armchair, Clock, AlertTriangle } from "lucide-react";
 import { allResources } from "@/lib/resources";
 import { hasBookingConflict } from "@/lib/checkBookingConflict";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import Link from 'next/link';
+import { validateBookingTime } from "@/lib/validateBookingTime";
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 type InteractiveBookingProps = {
   officeId: string;
@@ -226,24 +234,172 @@ function WorkstationSelector({
   );
 }
 
+function RoomBookingDialog({
+  officeId,
+  room,
+  date,
+  extraChairs,
+  onOpenChange,
+  onBooked,
+  user,
+}: {
+  officeId: string;
+  room: Workspace;
+  date: Date;
+  extraChairs: number;
+  onOpenChange: (open: boolean) => void;
+  onBooked: () => void;
+  user: User | null;
+}) {
+  const [startTime, setStartTime] = useState("09:30");
+  const [endTime, setEndTime] = useState("10:30");
+  const [isReserving, setIsReserving] = useState(false);
+  const [dialogAgreedToTerms, setDialogAgreedToTerms] = useState(false);
+
+  const firestore = useFirestore();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const startDateTime = parse(startTime, "HH:mm", date);
+  const endDateTime = parse(endTime, "HH:mm", date);
+  const validationResult = validateBookingTime(startDateTime, endDateTime);
+
+  const durationHours = Math.max(0, (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60));
+
+  const roomBasePrice = room.name.toLowerCase().includes('conference') ? 1000 : 750;
+  const extraChairCost = extraChairs * 100 * durationHours;
+  const totalCost = roomBasePrice * durationHours + extraChairCost;
+  
+  const handleReserveClick = async () => {
+    if (!user) {
+      router.push(`/login?redirect_uri=/seat-booking?office=${officeId}`);
+      return;
+    }
+    if (!firestore) return;
+
+    setIsReserving(true);
+
+    try {
+      const conflict = await hasBookingConflict({ firestore, officeId, workspaceId: room.id, startTime: startDateTime, endTime: endDateTime });
+
+      if (conflict) {
+        toast({ variant: 'destructive', title: 'Booking Conflict', description: 'This time slot is unavailable. Please choose another time or refresh.' });
+        onBooked();
+        setIsReserving(false);
+        return;
+      }
+      
+      await addDoc(collection(firestore, 'bookings'), {
+        officeId,
+        userId: user.uid,
+        userName: user.displayName || user.email,
+        workspaceId: room.id,
+        workspaceName: `${room.name} (+${extraChairs} seats)`,
+        workspaceType: 'room',
+        date: format(date, 'yyyy-MM-dd'),
+        startTime: Timestamp.fromDate(startDateTime),
+        endTime: Timestamp.fromDate(endDateTime),
+        isExtendedHours: validationResult.extended,
+        pricingType: validationResult.extended ? 'extended' : 'standard',
+        status: 'confirmed',
+      });
+
+      toast({ title: 'Room Reserved!', description: `You've booked ${room.name} on ${format(date, 'PPP')} from ${startTime} to ${endTime}.` });
+      onBooked();
+      onOpenChange(false);
+    } catch (error) {
+        console.error("Error reserving room: ", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not reserve the room. Please try again.' });
+    } finally {
+        setIsReserving(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Reserve {room.name}</DialogTitle>
+          <DialogDescription>
+            For {format(date, "PPP")}. Base capacity: {room.name.toLowerCase().includes('conference') ? 9 : 4} people.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="start-time">Start Time</Label>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input id="start-time" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="pl-10" step="1800" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="end-time">End Time</Label>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input id="end-time" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="pl-10" step="1800" />
+              </div>
+            </div>
+          </div>
+          
+          {extraChairs > 0 && <p className="text-sm text-muted-foreground">{extraChairs} extra seat(s) selected.</p>}
+
+          {durationHours > 0 && (
+             <Card className="bg-muted/50 p-4">
+              <CardContent className="p-0">
+                <h4 className="font-semibold mb-2">Booking Summary</h4>
+                <div className="text-sm space-y-1">
+                  <div className="flex justify-between"><span>Duration:</span> <span>{durationHours.toFixed(1)} hours</span></div>
+                  <div className="flex justify-between"><span>Room Cost:</span> <span>₹{roomBasePrice * durationHours}</span></div>
+                  {extraChairs > 0 && <div className="flex justify-between"><span>Extra Seats Cost:</span> <span>₹{extraChairCost}</span></div>}
+                  <div className="flex justify-between font-bold border-t pt-2 mt-2"><span>Total Estimate:</span> <span>₹{totalCost.toFixed(2)}</span></div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {validationResult.extended && (
+            <Alert className="bg-yellow-50 border-yellow-300 text-yellow-900 [&>svg]:text-yellow-600">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle className="font-semibold">Extended Hours Selected</AlertTitle>
+              <AlertDescription>{validationResult.message}</AlertDescription>
+            </Alert>
+          )}
+          {!validationResult.valid && validationResult.reason && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Invalid Time</AlertTitle>
+              <AlertDescription>{validationResult.reason}</AlertDescription>
+            </Alert>
+          )}
+        </div>
+        <DialogFooter>
+          <Button onClick={handleReserveClick} disabled={isReserving || !validationResult.valid}>
+            {isReserving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Confirm Reservation"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
 function RoomSelector({
   roomId,
   baseCapacity,
   totalCapacity,
   extraCost,
+  onBookRoom,
   ...props
 }: InteractiveBookingProps & {
   roomId: string;
   baseCapacity: number;
   totalCapacity: number;
   extraCost: number;
+  onBookRoom: (room: Workspace, extraChairs: number) => void;
 }) {
   const { officeId, date, bookings, user, agreedToTerms, onBooking } = props;
   const [extraChairs, setExtraChairs] = useState(0);
-  const [isBooking, setIsBooking] = useState(false);
-  const firestore = useFirestore();
-  const { toast } = useToast();
-  const router = useRouter();
 
   const room = allResources.find((r) => r.id === roomId);
   const isRoomBooked = useMemo(
@@ -263,15 +419,6 @@ function RoomSelector({
       </p>
     );
   }
-
-  const handleBookRoom = () => {
-    // This is a placeholder. For a real app, we'd open a dialog for time selection.
-    // As per prompt, this part is simplified.
-    toast({
-      title: "Booking not implemented",
-      description: "Time selection is required to book a room.",
-    });
-  };
 
   return (
     <div className="pt-4">
@@ -321,13 +468,9 @@ function RoomSelector({
                 You've selected {extraChairs} extra seat(s).
               </p>
             )}
-            <Button onClick={handleBookRoom} disabled>
+            <Button onClick={() => onBookRoom(room, extraChairs)}>
               Book {room.name}
             </Button>
-            <p className="text-xs text-muted-foreground">
-              Note: Room booking requires time selection. This feature is
-              demonstrative.
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -338,7 +481,27 @@ function RoomSelector({
 export default function InteractiveBooking(props: InteractiveBookingProps) {
   const [selectedCategory, setSelectedCategory] =
     useState<ResourceCategory | null>(null);
+  const [roomDetails, setRoomDetails] = useState<{ room: Workspace, extraChairs: number} | null>(null);
+  const router = useRouter();
+  const { toast } = useToast();
+
   const config = officeConfig[props.officeId];
+
+  const handleRoomSelection = (room: Workspace, extraChairs: number) => {
+    if (!props.user) {
+        router.push(`/login?redirect_uri=/seat-booking?office=${props.officeId}`);
+        return;
+    }
+    if (!props.agreedToTerms) {
+        toast({
+            variant: "destructive",
+            title: "Terms Required",
+            description: "Please agree to the terms and conditions on this page before booking.",
+        });
+        return;
+    }
+    setRoomDetails({ room, extraChairs });
+  }
 
   if (!config) return null;
 
@@ -364,6 +527,7 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
           baseCapacity={categoryConfig.baseCapacity}
           totalCapacity={categoryConfig.totalCapacity}
           extraCost={categoryConfig.extraCost}
+          onBookRoom={handleRoomSelection}
           {...props}
         />
       );
@@ -386,6 +550,20 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
         ))}
       </div>
       <div className="mt-4">{renderContent()}</div>
+       {roomDetails && props.date && (
+        <RoomBookingDialog
+            officeId={props.officeId}
+            room={roomDetails.room}
+            date={props.date}
+            extraChairs={roomDetails.extraChairs}
+            onOpenChange={(open) => !open && setRoomDetails(null)}
+            onBooked={() => {
+                setRoomDetails(null);
+                props.onBooking();
+            }}
+            user={props.user}
+        />
+    )}
     </div>
   );
 }
