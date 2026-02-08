@@ -346,12 +346,12 @@ export function OfficeLayoutBooking() {
         </div>
         
         {selectedOfficeId && (
-          selectedOfficeId === 'banyan' ? (
+          selectedOfficeId === 'banyan' || selectedOfficeId === 'olive' ? (
               <div className="relative w-full max-w-6xl mx-auto pt-6">
                   <p className="text-center text-muted-foreground pb-4">Below is a static layout plan.</p>
                   <Image
-                      src="/layouts/the-banyan-layout.jpeg"
-                      alt="The Banyan Layout"
+                      src={selectedOfficeId === 'banyan' ? "/layouts/the-banyan-layout.jpeg" : "/layouts/the-olive-layout.jpeg"}
+                      alt={selectedOfficeId === 'banyan' ? "The Banyan Layout" : "The Olive Layout"}
                       width={2000}
                       height={1200}
                       className="w-full h-auto object-contain rounded-lg border"
