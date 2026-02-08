@@ -26,7 +26,7 @@ const banyanRooms: Workspace[] = [
     {
         id: 'BANYAN-MR-12',
         officeId: 'banyan',
-        name: 'The Banyan Boardroom',
+        name: 'The Banyan Conference Room',
         type: 'room' as const,
         capacity: 12,
         imageUrl: conferenceHallImage.imageUrl,
@@ -34,10 +34,21 @@ const banyanRooms: Workspace[] = [
         isActive: true,
         isBookable: true,
     },
+    {
+        id: 'BANYAN-MR-06',
+        officeId: 'banyan',
+        name: 'The Banyan Meeting Room',
+        type: 'room' as const,
+        capacity: 6,
+        imageUrl: meetingRoomImage.imageUrl,
+        imageHint: meetingRoomImage.imageHint,
+        isActive: true,
+        isBookable: true,
+    },
 ];
 
 // Resources for The Olive (Standard)
-const oliveWorkstations: Workspace[] = Array.from({ length: 12 }, (_, i) => ({
+const oliveWorkstations: Workspace[] = Array.from({ length: 16 }, (_, i) => ({
     id: `OLIVE-WS-${String(i + 1).padStart(2, '0')}`,
     officeId: 'olive',
     name: `Workstation ${String(i + 1).padStart(2, '0')}`,
@@ -55,9 +66,20 @@ const oliveRooms: Workspace[] = [
         officeId: 'olive',
         name: 'The Olive Meeting Room',
         type: 'room' as const,
-        capacity: 6, // +2 chargeable
+        capacity: 6,
         imageUrl: meetingRoomImage.imageUrl,
         imageHint: meetingRoomImage.imageHint,
+        isActive: true,
+        isBookable: true,
+    },
+    {
+        id: 'OLIVE-MR-12',
+        officeId: 'olive',
+        name: 'The Olive Conference Room',
+        type: 'room' as const,
+        capacity: 12,
+        imageUrl: conferenceHallImage.imageUrl,
+        imageHint: conferenceHallImage.imageHint,
         isActive: true,
         isBookable: true,
     },
