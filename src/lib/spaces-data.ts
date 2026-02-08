@@ -6,59 +6,52 @@ export const spacesData: Space[] = [
     slug: 'banyan',
     name: 'The Banyan',
     description: 'A premium workspace designed for focused professionals seeking an elevated, distraction-free environment.',
-    keyAmenities: ['Premium Conference Room', 'Dedicated Workstations', 'Breakout Space'],
-    imageUrl: PlaceHolderImages.find(p => p.id === 'banyan-hero')?.imageUrl || '',
-    imageHint: 'stylish office',
+    keyAmenities: ['12-Seater Conference Room', 'Dedicated Workstations', 'Premium Breakout Space'],
+    imageUrl: '/layouts/5.jpg',
+    imageHint: 'premium workspace',
     status: 'available',
     details: {
-      overview: "The Banyan is our flagship premium workspace, meticulously designed for focused professionals. It offers a sophisticated, serene environment with top-tier amenities. From the fully-equipped conference room to the comfortable breakout areas, every detail is crafted to enhance productivity and comfort. It's an ideal choice for teams and individuals who value a professional atmosphere.",
+      overview: "The Banyan is our flagship premium workspace, meticulously designed for focused professionals. It offers a sophisticated, serene environment with top-tier amenities, from the fully-equipped conference room to comfortable breakout areas. Every detail is crafted to enhance productivity and comfort, making it an ideal choice for teams and individuals who value a truly professional atmosphere.",
       amenities: [
         {
           category: 'Work & Meeting',
           items: [
-            { name: 'Conference Room', description: '12-seater room with TV, Video Conferencing, and Whiteboard.' },
-            { name: '16 Individual Workstations', description: 'Ergonomic chairs and spacious desks for focused work.' },
-            { name: 'High-speed Internet', description: 'Reliable fiber optic connectivity.' },
-            { name: 'Printing', description: 'On-demand printing services available (chargeable).' },
-            { name: 'Onsite Staff', description: 'Support team available from 8AM to 6PM.' },
+            { name: 'Conference Room', description: '12-seater room with TV, Video Conferencing, and Whiteboard. Base price includes 9 seats, with 3 extra seats available at an additional charge.' },
+            { name: 'Meeting Room', description: 'A smaller 6-seater room perfect for private discussions or team huddles.' },
+            { name: '12+ Individual Workstations', description: 'Ergonomic chairs and spacious desks for focused work.' },
+            { name: 'High-speed Internet', description: 'Reliable fiber optic connectivity for seamless work.' },
+            { name: 'Printing & Scanning', description: 'On-demand services available at a nominal charge.' },
+            { name: 'Onsite Staff', description: 'Our professional team is available from 8AM to 6PM to assist you.' },
           ],
         },
         {
             category: 'Lifestyle & Comfort',
             items: [
-                { name: 'Pantry', description: 'Access to tea & coffee. Branded water available (chargeable).' },
-                { name: 'Breakout Space', description: 'A quiet zone to relax or have informal discussions.' },
-                { name: 'Air Conditioned', description: 'Fully climate-controlled for your comfort.' },
-                { name: 'Cleaning Services', description: 'Professionally maintained and sanitized daily.' },
-                { name: 'Washrooms', description: 'Clean and modern facilities.'},
-                { name: 'Parking', description: 'On-site parking available at owner\'s risk.'},
+                { name: 'Pantry', description: 'Includes complimentary tea, coffee, and RO water. Branded water is also available for purchase.' },
+                { name: 'Breakout Space', description: 'A quiet, well-designed zone to relax or have informal discussions.' },
+                { name: 'Air Conditioning', description: 'Fully climate-controlled environment for your comfort.' },
+                { name: 'Professional Cleaning', description: 'Our spaces are professionally maintained and sanitized daily.' },
+                { name: 'Modern Washrooms', description: 'Clean and hygienic facilities.'},
+                { name: 'On-site Parking', description: 'Convenient parking available at owner\'s risk.'},
             ]
         }
       ],
       rules: [
-        'Access from 8:00 AM to 6:00 PM. Extended hours available at extra charge.',
-        'This space is strictly for professional use to maintain a focused environment.',
-        'Additional seats in meeting rooms are chargeable.',
+        'Standard access from 8:00 AM to 6:00 PM. Extended hours are available with extra charges.',
+        'This facility is exclusively for professional use to maintain a focused, productive atmosphere.',
+        'Additional seating in conference rooms and other services like printing are chargeable.',
       ],
       gallery: [
         {
-          id: 'banyan-gallery-meeting',
-          title: 'Conference and Meeting Rooms',
+          id: 'banyan-gallery-space',
+          title: 'Our Space',
           imageUrls: [
-            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-3.jpg',
-            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-4.jpg',
-            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-5.jpg',
-            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-6.jpg',
+            '/layouts/1.jpg',
+            '/layouts/2.jpg',
+            '/layouts/3.jpg',
+            '/layouts/5.jpg',
           ]
-        },
-        {
-          id: 'banyan-gallery-workstation',
-          title: 'Workstations',
-          imageUrls: [
-            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-12.jpg',
-            'https://maplindia.com/wp-content/uploads/2021/11/Miglanis-Associates-Office-New-Delhi-13.jpg',
-          ]
-        },
+        }
       ]
     }
   },
