@@ -346,6 +346,18 @@ export function OfficeLayoutBooking() {
         </div>
         
         {selectedOfficeId && (
+          selectedOfficeId === 'banyan' ? (
+              <div className="relative w-full max-w-6xl mx-auto pt-6">
+                  <p className="text-center text-muted-foreground pb-4">Visual booking for The Banyan is coming soon. Below is a static layout plan.</p>
+                  <Image
+                      src="/layouts/the-banyan-layout.jpeg"
+                      alt="The Banyan Layout"
+                      width={2000}
+                      height={1200}
+                      className="w-full h-auto object-contain rounded-lg border"
+                  />
+              </div>
+          ) : (
             <>
                 <Legend />
                 <div className="relative w-full max-w-6xl mx-auto">
@@ -430,6 +442,7 @@ export function OfficeLayoutBooking() {
                 />
                 )}
             </>
+          )
         )}
       </CardContent>
     </Card>
