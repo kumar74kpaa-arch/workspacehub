@@ -36,10 +36,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-import LocationMap from '@/components/LocationMap';
 import { spacesData } from '@/lib/spaces-data';
 import { SpaceCard } from '@/components/spaces/space-card';
+import { HeroSlideshow } from '@/components/hero-slideshow';
 
 const amenitiesByCategory = [
   {
@@ -109,14 +108,7 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         <section className="relative w-full h-[75vh] min-h-[500px] md:h-[80vh] flex items-center text-white">
-          <Image
-            src="/layouts/5.jpg"
-            alt="Ultra-realistic cinematic architectural shot of a premium workspace"
-            fill
-            className="object-cover z-0"
-            priority
-            quality={90}
-          />
+          <HeroSlideshow />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent z-10" />
           <div className="relative z-20 container px-4 md:px-6">
             <div className="flex items-center max-w-4xl">
