@@ -361,7 +361,7 @@ function RoomBookingDialog({
   const endDateTime = parse(endTime, "HH:mm", date);
   const validationResult = validateBookingTime(startDateTime, endDateTime);
 
-  const durationHours = Math.max(0, (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60));
+  const durationInHours = Math.max(0, (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60));
 
   const { roomCost, extraChairCost, totalCost } = calculateRoomBookingAmount({
     roomName: room.name,
@@ -533,12 +533,12 @@ function RoomBookingDialog({
           
           {extraChairs > 0 && <p className="text-sm text-muted-foreground">{extraChairs} extra seat(s) selected.</p>}
 
-          {durationHours > 0 && (
+          {durationInHours > 0 && (
              <Card className="bg-muted/50 p-4">
               <CardContent className="p-0">
                 <h4 className="font-semibold mb-2">Booking Summary</h4>
                 <div className="text-sm space-y-1">
-                  <div className="flex justify-between"><span>Duration:</span> <span>{durationHours.toFixed(1)} hours</span></div>
+                  <div className="flex justify-between"><span>Duration:</span> <span>{durationInHours.toFixed(1)} hours</span></div>
                   <div className="flex justify-between"><span>Room Cost:</span> <span>₹{roomCost}</span></div>
                   {extraChairs > 0 && <div className="flex justify-between"><span>Extra Seats Cost:</span> <span>₹{extraChairCost}</span></div>}
                   <div className="flex justify-between font-bold border-t pt-2 mt-2"><span>Total Estimate:</span> <span>₹{totalCost.toFixed(2)}</span></div>

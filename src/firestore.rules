@@ -24,7 +24,7 @@ service cloud.firestore {
     // Rules for the users collection
     match /users/{userId} {
       // A user can get their own document. An admin's `get` call for their own role check is also allowed here.
-      allow get: if isUser(userId);
+      allow get: if isUser(userId) || isAdmin();
       
       // An admin can list all user documents.
       allow list: if isAdmin();
@@ -33,8 +33,6 @@ service cloud.firestore {
       allow create: if isUser(userId) && request.resource.data.role == 'user';
       
       // An admin can update any user. A user can update their own document, but cannot change their role.
-      // An admin getting another user document for a client-side read is not explicitly allowed,
-      // but is not required by the current app functionality.
       allow update: if isAdmin() || (isUser(userId) && request.resource.data.role == resource.data.role);
 
       // Only admins can delete users
@@ -43,18 +41,16 @@ service cloud.firestore {
 
     // Rules for the bookings collection
     match /bookings/{bookingId} {
-      // A user can create a booking for themselves.
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      
-      // A user can only read their own bookings. 
-      // This works for queries as long as they include `where('userId', '==', request.auth.uid)`.
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      
-      // A user can update their own booking (e.g., to cancel). The backend Admin SDK bypasses this rule to confirm payment.
-      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
+      // Admins can read any booking. Users can only read their own bookings.
+      // This is enforced on list queries, requiring a `where('userId', '==', request.auth.uid)` for non-admins.
+      allow read: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
 
-      // Deleting bookings is not allowed from the client.
-      allow delete: if false;
+      // A user can create a booking for themselves.
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      
+      // A user can update/delete their own booking. Admins can manage any booking.
+      // The Admin SDK (used for payment verification) bypasses these rules.
+      allow update, delete: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
     }
   }
 }
