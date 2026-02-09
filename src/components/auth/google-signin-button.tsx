@@ -25,9 +25,18 @@ export function GoogleSignInButton({ buttonText = 'Sign in with Google' }: { but
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignIn = async () => {
-    if (!auth || !firestore) return;
+    if (!auth || !firestore) {
+        toast({
+            variant: 'destructive',
+            title: 'Firebase not initialized',
+            description: 'The authentication service is not available. Please try again later.',
+        });
+        return;
+    }
+
     setIsLoading(true);
     const provider = new GoogleAuthProvider();
+    
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
@@ -42,7 +51,7 @@ export function GoogleSignInButton({ buttonText = 'Sign in with Google' }: { but
       toast({
         variant: 'destructive',
         title: 'Authentication Error',
-        description: error.message,
+        description: error.message || 'An unknown error occurred during sign-in.',
       });
     } finally {
       setIsLoading(false);
