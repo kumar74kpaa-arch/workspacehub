@@ -1,6 +1,8 @@
+'use client';
+
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
+import { UserNav } from './dashboard/user-nav';
 
 export function Header() {
   return (
@@ -40,9 +42,7 @@ export function Header() {
             {/* Search can go here */}
           </div>
           <nav className="flex items-center gap-2">
-            <Button asChild>
-              <Link href="/login">Login / Sign Up</Link>
-            </Button>
+            <UserNav />
           </nav>
         </div>
       </div>
