@@ -8,6 +8,10 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
     function isUser(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
@@ -39,14 +43,18 @@ service cloud.firestore {
 
     // Rules for the bookings collection
     match /bookings/{bookingId} {
-      // Authenticated users can view bookings to check for availability.
-      allow get, list: if request.auth != null;
-
       // A user can create a booking for themselves.
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       
-      // A user can update/delete their own booking. Admins can manage any booking.
-      allow update, delete: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin();
+      // A user can only read their own bookings. 
+      // This works for queries as long as they include `where('userId', '==', request.auth.uid)`.
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      // A user can update their own booking (e.g., to cancel). The backend Admin SDK bypasses this rule to confirm payment.
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
+
+      // Deleting bookings is not allowed from the client.
+      allow delete: if false;
     }
   }
 }
