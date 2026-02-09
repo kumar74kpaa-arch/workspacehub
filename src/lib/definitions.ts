@@ -36,6 +36,7 @@ export type Booking = {
   startTime: Date;
   endTime: Date;
   status: 'confirmed' | 'pending' | 'cancelled';
+  paymentStatus: 'pending' | 'paid' | 'failed';
   isExtendedHours?: boolean;
   pricingType?: 'standard' | 'extended';
   paymentId?: string;
