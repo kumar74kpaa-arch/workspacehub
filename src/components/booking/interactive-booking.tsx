@@ -167,7 +167,9 @@ function WorkstationSelector({
       const newBookingRef = doc(collection(firestore, "bookings"));
       newBookingId = newBookingRef.id;
       
-      const correctWorkspaceId = workstationId;
+      const idParts = workstationId.split('-');
+      const resourcePart = idParts.slice(1).join('-');
+      const correctWorkspaceId = `${officeId}_${resourcePart}`;
 
       await runTransaction(firestore, async (transaction) => {
         const bookingsRef = collection(firestore, "bookings");
@@ -395,7 +397,10 @@ function RoomBookingDialog({
     try {
         const newBookingRef = doc(collection(firestore, "bookings"));
         newBookingId = newBookingRef.id;
-        const correctWorkspaceId = room.id;
+
+        const idParts = room.id.split('-');
+        const resourcePart = idParts.slice(1).join('-');
+        const correctWorkspaceId = `${officeId}_${resourcePart}`;
 
         await runTransaction(firestore, async (transaction) => {
             const bookingsRef = collection(firestore, "bookings");
