@@ -23,8 +23,6 @@ import { hasBookingConflict } from "@/lib/checkBookingConflict";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import Link from 'next/link';
 import { validateBookingTime } from "@/lib/validateBookingTime";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -141,6 +139,7 @@ function WorkstationSelector({
 
   const handleBookWorkstation = async (workstationId: string) => {
     if (!user || !firestore) {
+      toast({ title: "Login Required", description: "Please log in to book a space." });
       router.push(`/login?redirect_uri=/seat-booking?office=${officeId}`);
       return;
     }
@@ -179,7 +178,7 @@ function WorkstationSelector({
           title: 'Booking Conflict',
           description: 'This workstation is no longer available. Please refresh.',
         });
-        onBooking();
+        onBooking(); // Refresh bookings
         setBookingInProgress(null);
         return;
       }
@@ -256,7 +255,7 @@ function WorkstationSelector({
       toast({
         variant: "destructive",
         title: "Booking Error",
-        description: "Could not book the workstation.",
+        description: "Could not book the workstation. Please try again.",
       });
       setBookingInProgress(null);
     }
@@ -335,6 +334,7 @@ function RoomBookingDialog({
   
   const handleReserveClick = async () => {
     if (!user) {
+      toast({ title: "Login Required", description: "Please log in to book a space." });
       router.push(`/login?redirect_uri=/seat-booking?office=${officeId}`);
       return;
     }
@@ -368,8 +368,8 @@ function RoomBookingDialog({
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: "INR",
-        name: "9to5 Workspace",
-        description: "Booking Payment",
+        name: `9to5 Workspace - ${room.name}`,
+        description: `Booking for ${format(date, "PPP")} from ${startTime} to ${endTime}`,
         order_id: order.id,
         handler: async function (response: any) {
           await addDoc(collection(firestore, 'bookings'), {
@@ -507,23 +507,8 @@ function RoomSelector({
   const [extraChairs, setExtraChairs] = useState(0);
 
   const room = allResources.find((r) => r.id === roomId);
-  const isRoomBooked = useMemo(
-    () =>
-      bookings.some(
-        (b) => b.workspaceId === roomId && b.workspaceType === "room"
-      ),
-    [bookings, roomId]
-  );
-
+  
   if (!room) return <p className="text-red-500">Room configuration error.</p>;
-
-  if (isRoomBooked) {
-    return (
-      <p className="text-center text-muted-foreground p-8">
-        This room is already booked for the selected date.
-      </p>
-    );
-  }
 
   return (
     <div className="pt-4">
@@ -532,6 +517,7 @@ function RoomSelector({
           <CardTitle>{room.name}</CardTitle>
         </CardHeader>
         <CardContent>
+          <p className="text-muted-foreground text-sm mb-4">This room is booked as a whole. Select the number of extra chairs you need.</p>
           <div className="flex flex-wrap gap-4 items-center">
             {Array.from({ length: totalCapacity }).map((_, i) => {
               const isExtra = i >= baseCapacity;
@@ -551,8 +537,10 @@ function RoomSelector({
                     "h-12 w-12",
                     isSelected && "bg-blue-200 border-blue-400",
                     isExtra && "cursor-pointer hover:bg-gray-100",
-                    !isExtra && "opacity-50"
+                    !isExtra && "opacity-50 cursor-default"
                   )}
+                  disabled={!isExtra}
+                  title={isExtra ? `Select ${i + 1} seats` : `Seat ${i + 1} (included)`}
                 >
                   <Armchair
                     className={cn(
@@ -574,7 +562,7 @@ function RoomSelector({
               </p>
             )}
             <Button onClick={() => onBookRoom(room, extraChairs)}>
-              Book {room.name}
+              Select Time for {room.name}
             </Button>
           </div>
         </CardContent>
@@ -594,6 +582,7 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
 
   const handleRoomSelection = (room: Workspace, extraChairs: number) => {
     if (!props.user) {
+        toast({ title: "Login Required", description: "Please log in to book a space." });
         router.push(`/login?redirect_uri=/seat-booking?office=${props.officeId}`);
         return;
     }

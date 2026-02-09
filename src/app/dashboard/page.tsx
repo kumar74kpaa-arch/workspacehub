@@ -3,9 +3,9 @@
 import { UpcomingBookings } from '@/components/dashboard/upcoming-bookings';
 import { useUser } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { DashboardBooking } from '@/components/dashboard/dashboard-booking';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export default function DashboardPage() {
   const { user, loading } = useUser();
@@ -17,11 +17,11 @@ export default function DashboardPage() {
                 <Skeleton className="h-10 w-1/2" />
                 <Skeleton className="h-6 w-3/4" />
             </div>
-            <Skeleton className="h-64" />
-            <div className="space-y-8">
-                <Skeleton className="h-8 w-1/3" />
-                <Skeleton className="h-96" />
+            <div className="grid gap-4 md:grid-cols-2">
+                <Skeleton className="h-32" />
+                <Skeleton className="h-32" />
             </div>
+            <Skeleton className="h-64" />
         </div>
     );
   }

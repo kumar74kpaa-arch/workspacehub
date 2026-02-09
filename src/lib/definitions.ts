@@ -38,6 +38,7 @@ export type Booking = {
   status: 'confirmed' | 'pending' | 'cancelled';
   isExtendedHours?: boolean;
   pricingType?: 'standard' | 'extended';
+  paymentId?: string;
 };
 
 export type MembershipPlan = {
