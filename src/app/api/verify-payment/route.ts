@@ -18,8 +18,8 @@ export async function POST(req: Request) {
     });
   }
 
-  const db = getFirestore();
   try {
+    const db = getFirestore();
     const secret = process.env.RAZORPAY_KEY_SECRET!;
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId } = await req.json();
 
