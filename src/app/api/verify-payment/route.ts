@@ -1,67 +1,51 @@
+
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-import { adminDb } from '@/firebase/admin';
+import { initializeApp, cert, getApps } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 
 const secret = process.env.RAZORPAY_KEY_SECRET!;
 
+// Initialize Firebase Admin (only once)
+if (!getApps().length) {
+  initializeApp({
+    credential: cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    }),
+  });
+}
+
+const db = getFirestore();
+
 export async function POST(req: Request) {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId } = await req.json();
-
-  if (!bookingId) {
-    return new NextResponse(JSON.stringify({ error: "Booking ID is required." }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
 
   const body = razorpay_order_id + "|" + razorpay_payment_id;
 
   try {
     const expectedSignature = crypto
       .createHmac("sha256", secret)
-      .update(body.toString())
+      .update(body)
       .digest("hex");
 
-    const bookingDocRef = adminDb.collection('bookings').doc(bookingId);
-
-    if (expectedSignature === razorpay_signature) {
-      // Signature is valid. Update the booking in Firestore.
-      await bookingDocRef.update({
-        status: "confirmed",
-        paymentStatus: "paid",
-        paymentId: razorpay_payment_id,
-        orderId: razorpay_order_id,
-      });
-      
-      return NextResponse.json({ status: "ok", message: "Payment verified and booking confirmed." });
-
-    } else {
-      // Invalid signature. Mark booking as failed.
-      await bookingDocRef.update({
-        paymentStatus: "failed",
-        status: "cancelled",
-      });
-
-      return new NextResponse(JSON.stringify({ error: "Invalid signature." }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-      });
-    }
-  } catch (error) {
-    console.error("Error verifying payment or updating booking:", error);
-    // Try to mark booking as failed if an error occurs.
-    if (bookingId) {
-        try {
-            const bookingDocRef = adminDb.collection('bookings').doc(bookingId);
-            await bookingDocRef.update({ paymentStatus: "failed" });
-        } catch (updateError) {
-            console.error("Failed to update booking status to failed:", updateError);
-        }
+    if (expectedSignature !== razorpay_signature) {
+      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
-    return new NextResponse(JSON.stringify({ error: "Internal server error." }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
+    // 🔥 UPDATE BOOKING HERE (SERVER SIDE)
+    await db.collection("bookings").doc(bookingId).update({
+      paymentStatus: "paid",
+      paymentId: razorpay_payment_id,
+      orderId: razorpay_order_id,
+      status: "confirmed",
     });
+
+    return NextResponse.json({ status: "ok" });
+
+  } catch (error) {
+    console.error("Payment verification failed:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
