@@ -2,7 +2,7 @@
 "use client";
 import { useState, useMemo } from "react";
 import type { User } from "firebase/auth";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { collection, Timestamp, runTransaction, query, where, doc } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format, parse } from "date-fns";
@@ -205,29 +205,63 @@ function WorkstationSelector({
         description: `Booking for ${workstationId}`,
         order_id: order.id,
         handler: async function (response: any) {
-          await addDoc(collection(firestore, "bookings"), {
-            officeId,
-            userId: user.uid,
-            userName: user.displayName || user.email,
-            workspaceId: workstationId,
-            workspaceName: `Workstation ${workstationId.split("-").pop()}`,
-            workspaceType: "desk",
-            date: format(date, "yyyy-MM-dd"),
-            startTime: Timestamp.fromDate(dayStart),
-            endTime: Timestamp.fromDate(dayEnd),
-            status: "confirmed",
-            isExtendedHours: false,
-            pricingType: "standard",
-            paymentId: response.razorpay_payment_id,
-          });
-          toast({
-            title: "Workstation Booked!",
-            description: `You have booked ${workstationId} for ${format(
-              date,
-              "PPP"
-            )}.`,
-          });
-          onBooking();
+          try {
+            await runTransaction(firestore, async (transaction) => {
+              const bookingsRef = collection(firestore, "bookings");
+              const dateStr = format(dayStart, 'yyyy-MM-dd');
+              
+              const q = query(
+                bookingsRef,
+                where("officeId", "==", officeId),
+                where("workspaceId", "==", workstationId),
+                where("status", "==", "confirmed"),
+                where("date", "==", dateStr)
+              );
+
+              const snapshot = await transaction.get(q);
+
+              const hasConflictInTx = snapshot.docs.some(doc => {
+                  const booking = doc.data();
+                  const existingStart = (booking.startTime as Timestamp).toDate();
+                  const existingEnd = (booking.endTime as Timestamp).toDate();
+                  return dayStart < existingEnd && dayEnd > existingStart;
+              });
+
+              if (hasConflictInTx) {
+                  throw new Error("Conflict found during transaction.");
+              }
+
+              const newBookingRef = doc(bookingsRef);
+              transaction.set(newBookingRef, {
+                officeId,
+                userId: user.uid,
+                userName: user.displayName || user.email,
+                workspaceId: workstationId,
+                workspaceName: `Workstation ${workstationId.split("-").pop()}`,
+                workspaceType: "desk",
+                date: format(date, "yyyy-MM-dd"),
+                startTime: Timestamp.fromDate(dayStart),
+                endTime: Timestamp.fromDate(dayEnd),
+                status: "confirmed",
+                isExtendedHours: false,
+                pricingType: "standard",
+                paymentId: response.razorpay_payment_id,
+              });
+            });
+
+            toast({
+              title: "Workstation Booked!",
+              description: `You have booked ${workstationId} for ${format(date, "PPP")}.`,
+            });
+            onBooking();
+
+          } catch (e) {
+            console.error("Transaction failed: ", e);
+            toast({ variant: 'destructive', title: 'Booking Failed', description: 'This slot was just booked. Please try another one. If your payment went through, it will be refunded.' });
+            onBooking();
+          } finally {
+            setBookingInProgress(null);
+          }
         },
         prefill: {
             name: user.displayName || '',
@@ -372,25 +406,60 @@ function RoomBookingDialog({
         description: `Booking for ${format(date, "PPP")} from ${startTime} to ${endTime}`,
         order_id: order.id,
         handler: async function (response: any) {
-          await addDoc(collection(firestore, 'bookings'), {
-            officeId,
-            userId: user.uid,
-            userName: user.displayName || user.email,
-            workspaceId: room.id,
-            workspaceName: `${room.name} (+${extraChairs} seats)`,
-            workspaceType: 'room',
-            date: format(date, 'yyyy-MM-dd'),
-            startTime: Timestamp.fromDate(startDateTime),
-            endTime: Timestamp.fromDate(endDateTime),
-            isExtendedHours: validationResult.extended,
-            pricingType: validationResult.extended ? 'extended' : 'standard',
-            status: 'confirmed',
-            paymentId: response.razorpay_payment_id,
-          });
-    
-          toast({ title: 'Room Reserved!', description: `You've booked ${room.name} on ${format(date, 'PPP')} from ${startTime} to ${endTime}.` });
-          onBooked();
-          onOpenChange(false);
+            try {
+              await runTransaction(firestore, async (transaction) => {
+                const bookingsRef = collection(firestore, "bookings");
+                const dateStr = format(startDateTime, 'yyyy-MM-dd');
+                const q = query(
+                  bookingsRef,
+                  where("officeId", "==", officeId),
+                  where("workspaceId", "==", room.id),
+                  where("status", "==", "confirmed"),
+                  where("date", "==", dateStr)
+                );
+                
+                const snapshot = await transaction.get(q);
+
+                const hasConflictInTx = snapshot.docs.some(doc => {
+                    const booking = doc.data();
+                    const existingStart = (booking.startTime as Timestamp).toDate();
+                    const existingEnd = (booking.endTime as Timestamp).toDate();
+                    return startDateTime < existingEnd && endDateTime > existingStart;
+                });
+
+                if (hasConflictInTx) {
+                    throw new Error("Conflict found during transaction.");
+                }
+                
+                const newBookingRef = doc(bookingsRef);
+                transaction.set(newBookingRef, {
+                  officeId,
+                  userId: user.uid,
+                  userName: user.displayName || user.email,
+                  workspaceId: room.id,
+                  workspaceName: `${room.name} (+${extraChairs} seats)`,
+                  workspaceType: 'room',
+                  date: format(date, 'yyyy-MM-dd'),
+                  startTime: Timestamp.fromDate(startDateTime),
+                  endTime: Timestamp.fromDate(endDateTime),
+                  isExtendedHours: validationResult.extended,
+                  pricingType: validationResult.extended ? 'extended' : 'standard',
+                  status: 'confirmed',
+                  paymentId: response.razorpay_payment_id,
+                });
+              });
+
+              toast({ title: 'Room Reserved!', description: `You've booked ${room.name} on ${format(date, 'PPP')} from ${startTime} to ${endTime}.` });
+              onBooked();
+              onOpenChange(false);
+
+            } catch (e) {
+                console.error("Transaction failed: ", e);
+                toast({ variant: 'destructive', title: 'Booking Failed', description: 'This slot was just booked. Please try another one. If your payment went through, it will be refunded.' });
+                onBooked();
+            } finally {
+                setIsReserving(false);
+            }
         },
         prefill: {
             name: user.displayName || '',
