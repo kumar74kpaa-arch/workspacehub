@@ -234,19 +234,35 @@ function WorkstationSelector({
         description: `Booking for ${workstationId}`,
         order_id: order.id,
         handler: async function (response: any) {
-          // Step 3a: Payment successful - confirm booking
-          const bookingDocRef = doc(firestore, "bookings", newBookingId!);
-          await updateDoc(bookingDocRef, {
-            status: "confirmed",
-            paymentStatus: "paid",
-            paymentId: response.razorpay_payment_id,
+          const verificationRes = await fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
           });
 
-          toast({
-            title: "Workstation Booked!",
-            description: `You have booked ${workstationId} for ${format(date, "PPP")}.`,
-          });
-          onBooking();
+          if (verificationRes.ok) {
+            const bookingDocRef = doc(firestore, "bookings", newBookingId!);
+            await updateDoc(bookingDocRef, {
+              status: "confirmed",
+              paymentStatus: "paid",
+              paymentId: response.razorpay_payment_id,
+            });
+
+            toast({
+              title: "Workstation Booked!",
+              description: `You have booked ${workstationId} for ${format(date, "PPP")}.`,
+            });
+            onBooking();
+          } else {
+            toast({ variant: 'destructive', title: 'Payment Failed', description: 'Payment verification failed. Please contact support.' });
+            if (newBookingId) {
+              await deleteDoc(doc(firestore, "bookings", newBookingId));
+            }
+          }
           setBookingInProgress(null);
         },
         prefill: {
@@ -258,7 +274,6 @@ function WorkstationSelector({
         },
         modal: {
             ondismiss: async function() {
-                // Step 3b: Payment dismissed - delete pending booking
                 if (newBookingId) {
                   await deleteDoc(doc(firestore, "bookings", newBookingId));
                 }
@@ -270,7 +285,6 @@ function WorkstationSelector({
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
       rzp.on('payment.failed', async function (response: any) {
-        // Step 3c: Payment failed - delete pending booking
         if (newBookingId) {
           await deleteDoc(doc(firestore, "bookings", newBookingId));
         }
@@ -280,7 +294,6 @@ function WorkstationSelector({
 
     } catch (error: any) {
       console.error("Error booking workstation: ", error);
-      // This will catch errors from the transaction (conflict) or Razorpay order creation
       toast({
         variant: "destructive",
         title: "Booking Error",
@@ -372,7 +385,6 @@ function RoomBookingDialog({
     let newBookingId: string | null = null;
 
     try {
-        // Step 1: Reserve slot with a "pending" booking in a transaction
         const newBookingRef = doc(collection(firestore, "bookings"));
         newBookingId = newBookingRef.id;
 
@@ -419,7 +431,6 @@ function RoomBookingDialog({
             });
         });
 
-      // Step 2: Proceed to payment
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -440,7 +451,17 @@ function RoomBookingDialog({
         description: `Booking for ${format(date, "PPP")} from ${startTime} to ${endTime}`,
         order_id: order.id,
         handler: async function (response: any) {
-            // Step 3a: Payment successful - confirm booking
+          const verificationRes = await fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          });
+          
+          if (verificationRes.ok) {
             const bookingDocRef = doc(firestore, "bookings", newBookingId!);
             await updateDoc(bookingDocRef, {
                 status: 'confirmed',
@@ -451,7 +472,13 @@ function RoomBookingDialog({
             toast({ title: 'Room Reserved!', description: `You've booked ${room.name} on ${format(date, 'PPP')} from ${startTime} to ${endTime}.` });
             onBooked();
             onOpenChange(false);
-            setIsReserving(false);
+          } else {
+             toast({ variant: 'destructive', title: 'Payment Failed', description: 'Payment verification failed. Please contact support.' });
+              if (newBookingId) {
+                await deleteDoc(doc(firestore, "bookings", newBookingId));
+              }
+          }
+          setIsReserving(false);
         },
         prefill: {
             name: user.displayName || '',
@@ -462,7 +489,6 @@ function RoomBookingDialog({
         },
         modal: {
             ondismiss: async function() {
-                // Step 3b: Payment dismissed - delete pending booking
                 if (newBookingId) {
                   await deleteDoc(doc(firestore, "bookings", newBookingId));
                 }
@@ -474,7 +500,6 @@ function RoomBookingDialog({
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
       rzp.on('payment.failed', async function (response: any) {
-        // Step 3c: Payment failed - delete pending booking
         if (newBookingId) {
             await deleteDoc(doc(firestore, "bookings", newBookingId));
         }
