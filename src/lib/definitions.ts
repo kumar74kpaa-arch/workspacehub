@@ -40,6 +40,7 @@ export type Booking = {
   isExtendedHours?: boolean;
   pricingType?: 'standard' | 'extended';
   paymentId?: string;
+  orderId?: string;
 };
 
 export type MembershipPlan = {

@@ -241,17 +241,11 @@ function WorkstationSelector({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
+              bookingId: newBookingId!,
             }),
           });
 
           if (verificationRes.ok) {
-            const bookingDocRef = doc(firestore, "bookings", newBookingId!);
-            await updateDoc(bookingDocRef, {
-              status: "confirmed",
-              paymentStatus: "paid",
-              paymentId: response.razorpay_payment_id,
-            });
-
             toast({
               title: "Workstation Booked!",
               description: `You have booked ${workstationId} for ${format(date, "PPP")}.`,
@@ -259,9 +253,7 @@ function WorkstationSelector({
             onBooking();
           } else {
             toast({ variant: 'destructive', title: 'Payment Failed', description: 'Payment verification failed. Please contact support.' });
-            if (newBookingId) {
-              await deleteDoc(doc(firestore, "bookings", newBookingId));
-            }
+            onBooking();
           }
           setBookingInProgress(null);
         },
@@ -294,6 +286,9 @@ function WorkstationSelector({
 
     } catch (error: any) {
       console.error("Error booking workstation: ", error);
+      if (newBookingId) {
+          await deleteDoc(doc(firestore, "bookings", newBookingId));
+      }
       toast({
         variant: "destructive",
         title: "Booking Error",
@@ -458,25 +453,17 @@ function RoomBookingDialog({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
+              bookingId: newBookingId!,
             }),
           });
           
           if (verificationRes.ok) {
-            const bookingDocRef = doc(firestore, "bookings", newBookingId!);
-            await updateDoc(bookingDocRef, {
-                status: 'confirmed',
-                paymentStatus: 'paid',
-                paymentId: response.razorpay_payment_id,
-            });
-
             toast({ title: 'Room Reserved!', description: `You've booked ${room.name} on ${format(date, 'PPP')} from ${startTime} to ${endTime}.` });
             onBooked();
             onOpenChange(false);
           } else {
              toast({ variant: 'destructive', title: 'Payment Failed', description: 'Payment verification failed. Please contact support.' });
-              if (newBookingId) {
-                await deleteDoc(doc(firestore, "bookings", newBookingId));
-              }
+             onBooked();
           }
           setIsReserving(false);
         },
@@ -509,6 +496,9 @@ function RoomBookingDialog({
 
     } catch (error: any) {
         console.error("Error reserving room: ", error);
+        if (newBookingId) {
+            await deleteDoc(doc(firestore, "bookings", newBookingId));
+        }
         toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not reserve the room. Please try again.' });
         setIsReserving(false);
     }
