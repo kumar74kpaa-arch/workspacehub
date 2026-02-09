@@ -167,9 +167,7 @@ function WorkstationSelector({
       const newBookingRef = doc(collection(firestore, "bookings"));
       newBookingId = newBookingRef.id;
       
-      const idParts = workstationId.split('-');
-      const resourcePart = idParts.slice(1).join('-');
-      const correctWorkspaceId = `${officeId}_${resourcePart}`;
+      const correctWorkspaceId = `${officeId}_${workstationId}`;
 
       await runTransaction(firestore, async (transaction) => {
         const bookingsRef = collection(firestore, "bookings");
@@ -374,13 +372,6 @@ function RoomBookingDialog({
         toast({ title: "Error", description: "Missing required booking information. Please refresh and try again." });
         return;
     }
-    
-    if (!user) {
-        toast({ title: "Login Required", description: "Please log in to book a space." });
-        router.push(`/login?redirect_uri=/seat-booking?office=${officeId}`);
-        return;
-    }
-
 
     const currentStartDateTime = parse(startTime, "HH:mm", date);
     const currentEndDateTime = parse(endTime, "HH:mm", date);
@@ -398,9 +389,7 @@ function RoomBookingDialog({
         const newBookingRef = doc(collection(firestore, "bookings"));
         newBookingId = newBookingRef.id;
 
-        const idParts = room.id.split('-');
-        const resourcePart = idParts.slice(1).join('-');
-        const correctWorkspaceId = `${officeId}_${resourcePart}`;
+        const correctWorkspaceId = `${officeId}_${room.id}`;
 
         await runTransaction(firestore, async (transaction) => {
             const bookingsRef = collection(firestore, "bookings");
