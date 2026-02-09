@@ -102,7 +102,7 @@ export function LoginForm() {
                     <FormField control={signupForm.control} name="name" render={({ field }) => (
                         <FormItem>
                           <FormLabel>Name</FormLabel>
-                          <FormControl><div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="John Doe" {...field} value={field.value || ''} className="pl-10" /></div></FormControl>
+                          <FormControl><div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="John Doe" {...field} className="pl-10" /></div></FormControl>
                           <FormMessage />
                         </FormItem>
                     )} />
