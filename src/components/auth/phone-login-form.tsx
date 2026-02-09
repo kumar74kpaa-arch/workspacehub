@@ -7,12 +7,13 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
   ConfirmationResult,
+  updateProfile,
 } from 'firebase/auth';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Phone, KeyRound } from 'lucide-react';
+import { Loader2, Phone, KeyRound, User } from 'lucide-react';
 import { redirectUserBasedOnRole } from '@/firebase/auth/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { countryCodes } from '@/lib/country-codes';
@@ -31,6 +32,7 @@ export function PhoneLoginForm() {
   const router = useRouter();
   const { toast } = useToast();
 
+  const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
@@ -99,6 +101,10 @@ export function PhoneLoginForm() {
       const result = await window.confirmationResult.confirm(otp);
       const user = result.user;
 
+      if (name) {
+        await updateProfile(user, { displayName: name });
+      }
+
       await redirectUserBasedOnRole(firestore, user, router);
       toast({ title: 'Success', description: 'You have successfully signed in.' });
     } catch (error: any) {
@@ -114,6 +120,21 @@ export function PhoneLoginForm() {
         <div id="recaptcha-container"></div>
         {step === 'phone' ? (
             <form onSubmit={onSendOtp} className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            id="name"
+                            type="text"
+                            placeholder="John Doe"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="pl-10"
+                            required
+                        />
+                    </div>
+                </div>
                 <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
                     <div className="flex items-center gap-2">
@@ -148,7 +169,7 @@ export function PhoneLoginForm() {
                         </div>
                     </div>
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading || phone.length < 5}>
+                <Button type="submit" className="w-full" disabled={isLoading || phone.length < 5 || name.length < 2}>
                     {isLoading ? <Loader2 className="animate-spin" /> : 'Send OTP'}
                 </Button>
                  <p className="text-xs text-muted-foreground text-center pt-2">
