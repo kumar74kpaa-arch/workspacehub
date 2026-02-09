@@ -175,7 +175,6 @@ function WorkstationSelector({
           bookingsRef,
           where("officeId", "==", officeId),
           where("workspaceId", "==", workstationId),
-          where("status", "in", ["confirmed", "pending"]),
           where("date", "==", dateStr)
         );
 
@@ -183,6 +182,9 @@ function WorkstationSelector({
 
         const hasConflictInTx = snapshot.docs.some(doc => {
             const booking = doc.data();
+            if (booking.status === 'cancelled') {
+                return false;
+            }
             const existingStart = (booking.startTime as Timestamp).toDate();
             const existingEnd = (booking.endTime as Timestamp).toDate();
             return dayStart < existingEnd && dayEnd > existingStart;
@@ -373,6 +375,14 @@ function RoomBookingDialog({
       return;
     }
 
+    const currentStartDateTime = parse(startTime, "HH:mm", date);
+    const currentEndDateTime = parse(endTime, "HH:mm", date);
+    const currentDurationInHours = Math.max(0, (currentEndDateTime.getTime() - currentStartDateTime.getTime()) / (1000 * 60 * 60));
+    if (isNaN(currentDurationInHours)) {
+      toast({ variant: 'destructive', title: 'Invalid time selected.' });
+      return;
+    }
+
     setIsReserving(true);
     let newBookingId: string | null = null;
 
@@ -382,13 +392,12 @@ function RoomBookingDialog({
 
         await runTransaction(firestore, async (transaction) => {
             const bookingsRef = collection(firestore, "bookings");
-            const dateStr = format(startDateTime, 'yyyy-MM-dd');
+            const dateStr = format(currentStartDateTime, 'yyyy-MM-dd');
             
             const q = query(
                 bookingsRef,
                 where("officeId", "==", officeId),
                 where("workspaceId", "==", room.id),
-                where("status", "in", ["confirmed", "pending"]),
                 where("date", "==", dateStr)
             );
 
@@ -396,9 +405,12 @@ function RoomBookingDialog({
 
             const hasConflictInTx = snapshot.docs.some(doc => {
                 const booking = doc.data();
+                if (booking.status === 'cancelled') {
+                    return false;
+                }
                 const existingStart = (booking.startTime as Timestamp).toDate();
                 const existingEnd = (booking.endTime as Timestamp).toDate();
-                return startDateTime < existingEnd && endDateTime > existingStart;
+                return currentStartDateTime < existingEnd && currentEndDateTime > existingStart;
             });
 
             if (hasConflictInTx) {
@@ -412,9 +424,9 @@ function RoomBookingDialog({
                 workspaceId: room.id,
                 workspaceName: `${room.name} (+${extraChairs} seats)`,
                 workspaceType: 'room',
-                date: format(date, 'yyyy-dd-MM'),
-                startTime: Timestamp.fromDate(startDateTime),
-                endTime: Timestamp.fromDate(endDateTime),
+                date: format(date, "yyyy-dd-MM"),
+                startTime: Timestamp.fromDate(currentStartDateTime),
+                endTime: Timestamp.fromDate(currentEndDateTime),
                 isExtendedHours: validationResult.extended,
                 pricingType: validationResult.extended ? 'extended' : 'standard',
                 status: 'pending',
@@ -423,10 +435,16 @@ function RoomBookingDialog({
             });
         });
 
+      const { totalCost: finalTotalCost } = calculateRoomBookingAmount({
+        roomName: room.name,
+        durationInHours: currentDurationInHours,
+        extraChairs,
+      });
+
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: totalCost }),
+        body: JSON.stringify({ amount: finalTotalCost }),
       });
 
       if (!res.ok) {
