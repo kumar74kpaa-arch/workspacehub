@@ -102,21 +102,21 @@ export function LoginForm() {
                     <FormField control={signupForm.control} name="name" render={({ field }) => (
                         <FormItem>
                           <FormLabel>Name</FormLabel>
-                          <FormControl><div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="John Doe" {...field} className="pl-10" /></div></FormControl>
+                          <FormControl><div className="relative"><User className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="John Doe" {...field} className="pl-10" /></div></FormControl>
                           <FormMessage />
                         </FormItem>
                     )} />
                     <FormField control={signupForm.control} name="email" render={({ field }) => (
                         <FormItem>
                           <FormLabel>Email</FormLabel>
-                          <FormControl><div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="name@example.com" {...field} className="pl-10" /></div></FormControl>
+                          <FormControl><div className="relative"><Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="name@example.com" {...field} className="pl-10" /></div></FormControl>
                           <FormMessage />
                         </FormItem>
                     )} />
                     <FormField control={signupForm.control} name="password" render={({ field }) => (
                         <FormItem>
                           <FormLabel>Password</FormLabel>
-                          <FormControl><div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input type="password" placeholder="••••••••" {...field} className="pl-10" /></div></FormControl>
+                          <FormControl><div className="relative"><Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input type="password" placeholder="••••••••" {...field} className="pl-10" /></div></FormControl>
                           <FormMessage />
                         </FormItem>
                     )} />
@@ -133,14 +133,14 @@ export function LoginForm() {
                   <FormField control={loginForm.control} name="email" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Email</FormLabel>
-                        <FormControl><div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="name@example.com" {...field} className="pl-10" /></div></FormControl>
+                        <FormControl><div className="relative"><Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="name@example.com" {...field} className="pl-10" /></div></FormControl>
                         <FormMessage />
                       </FormItem>
                   )} />
                   <FormField control={loginForm.control} name="password" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Password</FormLabel>
-                        <FormControl><div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input type="password" placeholder="••••••••" {...field} className="pl-10" /></div></FormControl>
+                        <FormControl><div className="relative"><Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input type="password" placeholder="••••••••" {...field} className="pl-10" /></div></FormControl>
                         <FormMessage />
                       </FormItem>
                   )} />
