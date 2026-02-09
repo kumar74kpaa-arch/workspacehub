@@ -166,6 +166,8 @@ function WorkstationSelector({
       // Step 1: Reserve the slot with a "pending" booking in a transaction
       const newBookingRef = doc(collection(firestore, "bookings"));
       newBookingId = newBookingRef.id;
+      
+      const correctWorkspaceId = workstationId;
 
       await runTransaction(firestore, async (transaction) => {
         const bookingsRef = collection(firestore, "bookings");
@@ -174,17 +176,14 @@ function WorkstationSelector({
         const q = query(
           bookingsRef,
           where("officeId", "==", officeId),
-          where("workspaceId", "==", workstationId),
+          where("workspaceId", "==", correctWorkspaceId),
           where("date", "==", dateStr)
         );
         
-        const snapshot = await getDocs(q); // Read outside transaction
-        const existingBookings = snapshot.docs.map(d => d.data());
+        const snapshot = await getDocs(q);
+        const existingBookings = snapshot.docs.map(d => d.data()).filter(b => b.status !== 'cancelled');
 
         const hasConflictInTx = existingBookings.some(booking => {
-            if (booking.status === 'cancelled') {
-                return false;
-            }
             const existingStart = (booking.startTime as Timestamp).toDate();
             const existingEnd = (booking.endTime as Timestamp).toDate();
             return dayStart < existingEnd && dayEnd > existingStart;
@@ -198,7 +197,7 @@ function WorkstationSelector({
           officeId,
           userId: user.uid,
           userName: user.displayName || user.email,
-          workspaceId: workstationId,
+          workspaceId: correctWorkspaceId,
           workspaceName: `Workstation ${workstationId.split("-").pop()}`,
           workspaceType: "desk",
           date: format(date, "yyyy-MM-dd"),
@@ -396,6 +395,7 @@ function RoomBookingDialog({
     try {
         const newBookingRef = doc(collection(firestore, "bookings"));
         newBookingId = newBookingRef.id;
+        const correctWorkspaceId = room.id;
 
         await runTransaction(firestore, async (transaction) => {
             const bookingsRef = collection(firestore, "bookings");
@@ -404,17 +404,14 @@ function RoomBookingDialog({
             const q = query(
                 bookingsRef,
                 where("officeId", "==", officeId),
-                where("workspaceId", "==", room.id),
+                where("workspaceId", "==", correctWorkspaceId),
                 where("date", "==", dateStr)
             );
 
-            const snapshot = await getDocs(q); // Read outside transaction
-            const existingBookings = snapshot.docs.map(d => d.data());
+            const snapshot = await getDocs(q);
+            const existingBookings = snapshot.docs.map(d => d.data()).filter(b => b.status !== 'cancelled');
 
             const hasConflictInTx = existingBookings.some(booking => {
-                if (booking.status === 'cancelled') {
-                    return false;
-                }
                 const existingStart = (booking.startTime as Timestamp).toDate();
                 const existingEnd = (booking.endTime as Timestamp).toDate();
                 return currentStartDateTime < existingEnd && currentEndDateTime > existingStart;
@@ -428,7 +425,7 @@ function RoomBookingDialog({
                 officeId,
                 userId: user.uid,
                 userName: user.displayName || user.email,
-                workspaceId: room.id,
+                workspaceId: correctWorkspaceId,
                 workspaceName: `${room.name} (+${extraChairs} seats)`,
                 workspaceType: 'room',
                 date: format(date, "yyyy-MM-dd"),
