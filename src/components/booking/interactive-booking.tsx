@@ -128,8 +128,9 @@ function WorkstationSelector({
   const router = useRouter();
 
   const getBookingStatus = (wsId: string) => {
+    const correctWorkspaceId = `${officeId}_${wsId}`;
     const booking = bookings.find(
-      (b) => b.workspaceId === wsId && b.workspaceType === "desk" && b.status === "confirmed"
+      (b) => b.workspaceId === correctWorkspaceId && b.workspaceType === "desk" && b.status === "confirmed"
     );
     if (!booking) return "available";
     if (booking.userId === user?.uid) return "my-booking";
@@ -137,7 +138,15 @@ function WorkstationSelector({
   };
 
   const handleBookWorkstation = async (workstationId: string) => {
-    if (!firestore || !user) return;
+    if (!firestore || !user) {
+        toast({
+            variant: "destructive",
+            title: "Login Required",
+            description: "Please sign in to book a workstation.",
+        });
+        router.push(`/login?redirect_uri=/seat-booking?office=${officeId}`);
+        return;
+    }
 
     if (!date) {
       toast({ variant: "destructive", title: "Please select a date." });
@@ -369,7 +378,7 @@ function RoomBookingDialog({
   
   const handleReserveClick = async () => {
     if (!user || !firestore || !officeId || !room.id) {
-        toast({ title: "Error", description: "Missing required booking information. Please refresh and try again." });
+        toast({ variant: "destructive", title: "Error", description: "Missing required booking information. Please refresh and try again." });
         return;
     }
 
