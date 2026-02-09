@@ -6,18 +6,18 @@ import { getFirestore } from "firebase-admin/firestore";
 
 export const dynamic = 'force-dynamic';
 
-// Initialize Firebase Admin (only once)
-if (!getApps().length && process.env.FIREBASE_PROJECT_ID) {
-  initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    }),
-  });
-}
-
 export async function POST(req: Request) {
+  // Initialize Firebase Admin (only once per warm instance)
+  if (!getApps().length && process.env.FIREBASE_PROJECT_ID) {
+    initializeApp({
+      credential: cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      }),
+    });
+  }
+
   const db = getFirestore();
   try {
     const secret = process.env.RAZORPAY_KEY_SECRET!;
