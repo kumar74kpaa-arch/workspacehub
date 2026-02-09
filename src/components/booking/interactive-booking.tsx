@@ -137,11 +137,8 @@ function WorkstationSelector({
   };
 
   const handleBookWorkstation = async (workstationId: string) => {
-    if (!user || !firestore) {
-      toast({ title: "Login Required", description: "Please log in to book a space." });
-      router.push(`/login?redirect_uri=/seat-booking?office=${officeId}`);
-      return;
-    }
+    if (!firestore || !user) return;
+
     if (!date) {
       toast({ variant: "destructive", title: "Please select a date." });
       return;
@@ -415,7 +412,7 @@ function RoomBookingDialog({
                 workspaceId: room.id,
                 workspaceName: `${room.name} (+${extraChairs} seats)`,
                 workspaceType: 'room',
-                date: format(date, 'yyyy-MM-dd'),
+                date: format(date, 'yyyy-dd-MM'),
                 startTime: Timestamp.fromDate(startDateTime),
                 endTime: Timestamp.fromDate(endDateTime),
                 isExtendedHours: validationResult.extended,
