@@ -4,8 +4,6 @@ import crypto from "crypto";
 import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
-const secret = process.env.RAZORPAY_KEY_SECRET!;
-
 // Initialize Firebase Admin (only once)
 if (!getApps().length) {
   initializeApp({
@@ -20,11 +18,12 @@ if (!getApps().length) {
 const db = getFirestore();
 
 export async function POST(req: Request) {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId } = await req.json();
-
-  const body = razorpay_order_id + "|" + razorpay_payment_id;
-
   try {
+    const secret = process.env.RAZORPAY_KEY_SECRET!;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId } = await req.json();
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+
     const expectedSignature = crypto
       .createHmac("sha256", secret)
       .update(body)
