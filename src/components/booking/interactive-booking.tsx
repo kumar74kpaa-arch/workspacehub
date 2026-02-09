@@ -424,7 +424,7 @@ function RoomBookingDialog({
                 workspaceId: room.id,
                 workspaceName: `${room.name} (+${extraChairs} seats)`,
                 workspaceType: 'room',
-                date: format(date, "yyyy-dd-MM"),
+                date: format(date, "yyyy-MM-dd"),
                 startTime: Timestamp.fromDate(currentStartDateTime),
                 endTime: Timestamp.fromDate(currentEndDateTime),
                 isExtendedHours: validationResult.extended,

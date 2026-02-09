@@ -41,16 +41,20 @@ service cloud.firestore {
 
     // Rules for the bookings collection
     match /bookings/{bookingId} {
-      // Admins can read any booking. Users can only read their own bookings.
-      // This is enforced on list queries, requiring a `where('userId', '==', request.auth.uid)` for non-admins.
-      allow read: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+      // Admins can list all bookings.
+      // Users can list their own bookings (enforced by `where('userId', '==', uid)` in the client query).
+      // Any signed-in user can perform a list for conflict checking in a transaction.
+      allow list: if isAdmin() || isSignedIn();
+
+      // An admin can get any single booking. A user can only get their own booking.
+      allow get: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
 
       // A user can create a booking for themselves.
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       
       // A user can update/delete their own booking. Admins can manage any booking.
       // The Admin SDK (used for payment verification) bypasses these rules.
-      allow update, delete: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
     }
   }
 }
