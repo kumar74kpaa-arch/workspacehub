@@ -4,8 +4,10 @@ import crypto from "crypto";
 import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
+export const dynamic = 'force-dynamic';
+
 // Initialize Firebase Admin (only once)
-if (!getApps().length) {
+if (!getApps().length && process.env.FIREBASE_PROJECT_ID) {
   initializeApp({
     credential: cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
@@ -15,9 +17,8 @@ if (!getApps().length) {
   });
 }
 
-const db = getFirestore();
-
 export async function POST(req: Request) {
+  const db = getFirestore();
   try {
     const secret = process.env.RAZORPAY_KEY_SECRET!;
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId } = await req.json();
