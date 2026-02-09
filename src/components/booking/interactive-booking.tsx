@@ -2,7 +2,7 @@
 "use client";
 import { useState } from "react";
 import type { User } from "firebase/auth";
-import { collection, Timestamp, runTransaction, query, where, doc, serverTimestamp, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, Timestamp, runTransaction, query, where, doc, serverTimestamp, updateDoc, deleteDoc, getDocs } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format, parse } from "date-fns";
@@ -177,11 +177,11 @@ function WorkstationSelector({
           where("workspaceId", "==", workstationId),
           where("date", "==", dateStr)
         );
+        
+        const snapshot = await getDocs(q); // Read outside transaction
+        const existingBookings = snapshot.docs.map(d => d.data());
 
-        const snapshot = await transaction.get(q);
-
-        const hasConflictInTx = snapshot.docs.some(doc => {
-            const booking = doc.data();
+        const hasConflictInTx = existingBookings.some(booking => {
             if (booking.status === 'cancelled') {
                 return false;
             }
@@ -216,7 +216,7 @@ function WorkstationSelector({
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: finalAmount }),
+        body: JSON.stringify({ totalAmount: finalAmount }),
       });
 
       if (!res.ok) {
@@ -369,16 +369,23 @@ function RoomBookingDialog({
   });
   
   const handleReserveClick = async () => {
-    if (!user || !firestore) {
-      toast({ title: "Login Required", description: "Please log in to book a space." });
-      router.push(`/login?redirect_uri=/seat-booking?office=${officeId}`);
-      return;
+    if (!user || !firestore || !officeId || !room.id) {
+        toast({ title: "Error", description: "Missing required booking information. Please refresh and try again." });
+        return;
     }
+    
+    if (!user) {
+        toast({ title: "Login Required", description: "Please log in to book a space." });
+        router.push(`/login?redirect_uri=/seat-booking?office=${officeId}`);
+        return;
+    }
+
 
     const currentStartDateTime = parse(startTime, "HH:mm", date);
     const currentEndDateTime = parse(endTime, "HH:mm", date);
     const currentDurationInHours = Math.max(0, (currentEndDateTime.getTime() - currentStartDateTime.getTime()) / (1000 * 60 * 60));
-    if (isNaN(currentDurationInHours)) {
+    
+    if (isNaN(currentDurationInHours) || currentDurationInHours <= 0) {
       toast({ variant: 'destructive', title: 'Invalid time selected.' });
       return;
     }
@@ -401,10 +408,10 @@ function RoomBookingDialog({
                 where("date", "==", dateStr)
             );
 
-            const snapshot = await transaction.get(q);
+            const snapshot = await getDocs(q); // Read outside transaction
+            const existingBookings = snapshot.docs.map(d => d.data());
 
-            const hasConflictInTx = snapshot.docs.some(doc => {
-                const booking = doc.data();
+            const hasConflictInTx = existingBookings.some(booking => {
                 if (booking.status === 'cancelled') {
                     return false;
                 }
@@ -444,7 +451,7 @@ function RoomBookingDialog({
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: finalTotalCost }),
+        body: JSON.stringify({ totalAmount: finalTotalCost }),
       });
 
       if (!res.ok) {

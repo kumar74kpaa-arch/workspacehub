@@ -8,10 +8,10 @@ export async function POST(req: Request) {
       key_secret: process.env.RAZORPAY_KEY_SECRET!,
     });
 
-    const { amount } = await req.json();
+    const { totalAmount } = await req.json();
 
     const order = await razorpay.orders.create({
-      amount: Math.round(amount * 100), // convert to paise and round to integer
+      amount: Math.round(totalAmount * 100), // convert to paise and round to integer
       currency: "INR",
     });
 
