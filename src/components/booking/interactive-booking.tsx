@@ -189,7 +189,7 @@ function WorkstationSelector({
           where("date", "==", dateStr)
         );
         
-        const snapshot = await getDocs(q);
+        const snapshot = await transaction.get(q);
         const existingBookings = snapshot.docs.map(d => d.data()).filter(b => b.status !== 'cancelled');
 
         const hasConflictInTx = existingBookings.some(booking => {
@@ -411,7 +411,7 @@ function RoomBookingDialog({
                 where("date", "==", dateStr)
             );
 
-            const snapshot = await getDocs(q);
+            const snapshot = await transaction.get(q);
             const existingBookings = snapshot.docs.map(d => d.data()).filter(b => b.status !== 'cancelled');
 
             const hasConflictInTx = existingBookings.some(booking => {
@@ -527,7 +527,7 @@ function RoomBookingDialog({
   };
 
   return (
-    <Dialog open onOpenChange={onOpenChange}>
+    <Dialog open onOpenChange={onOpenChange} modal={true}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Reserve {room.name}</DialogTitle>
