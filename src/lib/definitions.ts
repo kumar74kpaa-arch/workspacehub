@@ -1,3 +1,5 @@
+import type { Timestamp } from "firebase/firestore";
+
 export type Office = {
   id: string;
   name: string;
@@ -41,6 +43,7 @@ export type Booking = {
   pricingType?: 'standard' | 'extended';
   paymentId?: string;
   orderId?: string;
+  createdAt: Date;
 };
 
 export type MembershipPlan = {

@@ -7,7 +7,6 @@ import {
   Calendar,
   Users,
   Building2,
-  CreditCard,
   FileText,
   PanelLeft,
   Search,
@@ -44,7 +43,6 @@ const navItems = [
   { href: '/admin/bookings', icon: Calendar, label: 'Bookings' },
   { href: '/admin/users', icon: Users, label: 'Users' },
   { href: '/admin/resources', icon: Building2, label: 'Resources' },
-  { href: '/admin/memberships', icon: CreditCard, label: 'Memberships' },
   { href: '/admin/payments', icon: FileText, label: 'Payments' },
 ];
 
