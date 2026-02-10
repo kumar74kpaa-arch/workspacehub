@@ -299,6 +299,7 @@ function WorkstationSelector({
         description: error.message || "Could not book the workstation. Please try again.",
       });
       setBookingInProgress(null);
+      return;
     }
   };
 
@@ -517,6 +518,7 @@ function RoomBookingDialog({
         console.error("Error reserving room: ", error);
         toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not reserve the room. Please try again.' });
         setIsReserving(false);
+        return;
     }
   };
 
