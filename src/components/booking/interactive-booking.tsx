@@ -27,14 +27,71 @@ import { validateBookingTime } from "@/lib/validateBookingTime";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const calculateWorkstationBookingAmount = ({
-  durationInHours,
+  startTime,
+  endTime,
 }: {
-  durationInHours: number;
+  startTime: Date;
+  endTime: Date;
 }) => {
-  // Rate is based on the Day Pass price of ₹1000 for 8 hours (₹125/hr)
-  const hourlyRate = 125;
-  const totalCost = Math.max(0, hourlyRate * durationInHours);
-  return { totalCost };
+  const durationInHours = Math.max(0, (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60));
+
+  if (durationInHours <= 0) {
+    return { totalCost: 0, pricingTier: 'Invalid', details: '' };
+  }
+
+  const HOURLY_RATE = 350;
+  const DAY_PASS_RATE = 1000;
+  const EXTENDED_RATE = 200;
+
+  // --- Calculate cost as hourly booking ---
+  const hourlyCost = durationInHours * HOURLY_RATE;
+
+  // --- Calculate cost as Day Pass booking ---
+  const standardDayStart = new Date(startTime);
+  standardDayStart.setHours(9, 30, 0, 0);
+  const standardDayEnd = new Date(startTime);
+  standardDayEnd.setHours(17, 30, 0, 0);
+
+  // Calculate hours within the standard 9:30-5:30 block
+  const standardHoursStart = Math.max(startTime.getTime(), standardDayStart.getTime());
+  const standardHoursEnd = Math.min(endTime.getTime(), standardDayEnd.getTime());
+  const standardDurationMs = Math.max(0, standardHoursEnd - standardHoursStart);
+  const standardDurationHours = standardDurationMs / (1000 * 60 * 60);
+
+  let dayPassCost = 0;
+  let dayPassDetails = '';
+  if (standardDurationHours > 0) {
+      dayPassCost = DAY_PASS_RATE; // Flat rate if booking touches the standard day pass hours
+      dayPassDetails = `Day Pass (₹${DAY_PASS_RATE})`;
+  }
+  
+  // Calculate extended hours after 5:30 PM
+  const extendedHoursStart = Math.max(startTime.getTime(), standardDayEnd.getTime());
+  const extendedHoursEnd = endTime.getTime();
+  const extendedDurationMs = Math.max(0, extendedHoursEnd - extendedHoursStart);
+  if (extendedDurationMs > 0) {
+      const extendedDurationHours = extendedDurationMs / (1000 * 60 * 60);
+      const extendedCost = Math.ceil(extendedDurationHours) * EXTENDED_RATE;
+      dayPassCost += extendedCost;
+      if (dayPassDetails) dayPassDetails += ' + ';
+      dayPassDetails += `${extendedDurationHours.toFixed(1)} Extended Hr(s) (₹${extendedCost})`;
+  }
+  
+  // --- Compare and decide ---
+  // Only offer day pass if it's cheaper and the booking is for a substantial duration (e.g., > 2.8 hours, where day pass becomes cheaper)
+  if (dayPassCost > 0 && dayPassCost < hourlyCost) {
+    return {
+      totalCost: dayPassCost,
+      pricingTier: 'Day Pass',
+      details: dayPassDetails,
+    }
+  }
+
+  return {
+    totalCost: hourlyCost,
+    pricingTier: 'Hourly',
+    details: `${durationInHours.toFixed(1)} hours @ ₹${HOURLY_RATE}/hr`,
+  };
 };
 
 
@@ -150,9 +207,10 @@ function WorkstationBookingDialog({
   const endDateTime = parse(endTime, "HH:mm", date);
   const validationResult = validateBookingTime(startDateTime, endDateTime);
 
-  const durationInHours = Math.max(0, (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60));
-
-  const { totalCost } = calculateWorkstationBookingAmount({ durationInHours });
+  const { totalCost, pricingTier, details } = calculateWorkstationBookingAmount({
+    startTime: startDateTime,
+    endTime: endDateTime,
+  });
 
   const handleReserveClick = async () => {
     if (!user || !firestore || !officeId || !workstationId) {
@@ -160,7 +218,7 @@ function WorkstationBookingDialog({
         return;
     }
 
-    if (isNaN(durationInHours) || durationInHours <= 0) {
+    if (totalCost <= 0) {
       toast({ variant: 'destructive', title: 'Invalid time selected.' });
       return;
     }
@@ -291,6 +349,9 @@ function WorkstationBookingDialog({
         console.error("Error reserving workstation: ", error);
         toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not reserve the workstation. Please try again.' });
         setIsReserving(false);
+        if (newBookingId) {
+          await deleteDoc(doc(firestore, "bookings", newBookingId));
+        }
         return;
     }
   };
@@ -322,12 +383,13 @@ function WorkstationBookingDialog({
             </div>
           </div>
           
-          {durationInHours > 0 && (
+          {totalCost > 0 && (
              <Card className="bg-muted/50 p-4">
               <CardContent className="p-0">
                 <h4 className="font-semibold mb-2">Booking Summary</h4>
                 <div className="text-sm space-y-1">
-                  <div className="flex justify-between"><span>Duration:</span> <span>{durationInHours.toFixed(1)} hours</span></div>
+                  <div className="flex justify-between"><span>Pricing Tier:</span> <span className="font-medium">{pricingTier}</span></div>
+                  <div className="flex justify-between"><span>Details:</span> <span>{details}</span></div>
                   <div className="flex justify-between font-bold border-t pt-2 mt-2"><span>Total Estimate:</span> <span>₹{totalCost.toFixed(2)}</span></div>
                 </div>
               </CardContent>
@@ -585,6 +647,9 @@ function RoomBookingDialog({
         console.error("Error reserving room: ", error);
         toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not reserve the room. Please try again.' });
         setIsReserving(false);
+        if (newBookingId) {
+          await deleteDoc(doc(firestore, "bookings", newBookingId));
+        }
         return;
     }
   };
@@ -865,4 +930,5 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
     </div>
   );
 }
+
 

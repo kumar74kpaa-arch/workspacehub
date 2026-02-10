@@ -1,21 +1,24 @@
 
 import {
   OFFICE_OPEN_HOUR,
-  OFFICE_CLOSE_HOUR,
   EXTENDED_CLOSE_HOUR,
 } from "./timeRules";
 
 export function validateBookingTime(start: Date, end: Date) {
-  const startHour = start.getHours();
-  const endHour = end.getHours() + (end.getMinutes() > 0 ? 1 : 0);
+  const startHour = start.getHours() + start.getMinutes() / 60;
+  const endHour = end.getHours() + end.getMinutes() / 60;
+  
+  const officeOpen = OFFICE_OPEN_HOUR; // 8 AM
+  const officeExtendedClose = EXTENDED_CLOSE_HOUR; // 8 PM
+  const officeStandardClose = 17.5; // 5:30 PM
 
   // ❌ Before opening
-  if (startHour < OFFICE_OPEN_HOUR) {
+  if (startHour < officeOpen) {
     return { valid: false, extended: false, reason: "Office opens at 8:00 AM." };
   }
 
   // ❌ After extended hours
-  if (startHour >= EXTENDED_CLOSE_HOUR || endHour > EXTENDED_CLOSE_HOUR) {
+  if (startHour >= officeExtendedClose || endHour > officeExtendedClose) {
     return { valid: false, extended: false, reason: "Bookings are only allowed until 8:00 PM." };
   }
   
@@ -26,14 +29,14 @@ export function validateBookingTime(start: Date, end: Date) {
 
 
   // ⚠️ Extended hours
-  if (endHour > OFFICE_CLOSE_HOUR) {
+  if (endHour > officeStandardClose) {
     return {
       valid: true,
       extended: true,
-      message: "Extended hours (6:00 PM – 8:00 PM) will incur extra charges.",
+      message: "Your booking includes extended hours (after 5:30 PM), which may have different pricing.",
     };
   }
 
   // ✅ Normal hours
-  return { valid: true, extended: false, message: "Booking within standard working hours (8:00 AM – 6:00 PM)." };
+  return { valid: true, extended: false, message: "Booking within standard working hours." };
 }
