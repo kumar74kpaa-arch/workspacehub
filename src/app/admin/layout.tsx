@@ -11,6 +11,7 @@ import {
   PanelLeft,
   Search,
   Loader2,
+  ExternalLink,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -20,6 +21,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -135,6 +137,27 @@ export default function AdminLayout({
               ))}
             </SidebarMenu>
           </SidebarContent>
+          <SidebarFooter>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton asChild>
+                        <Link href="/">
+                          <ExternalLink />
+                          <span>View Public Site</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" sideOffset={10}>
+                      View Public Site
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarFooter>
         </Sidebar>
         <div className="flex flex-1 flex-col sm:gap-4 sm:py-4">
           <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
