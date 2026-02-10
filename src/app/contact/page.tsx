@@ -1,7 +1,6 @@
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Mail, Phone, Clock } from 'lucide-react';
 
 export default function ContactPage() {
   return (
@@ -11,10 +10,10 @@ export default function ContactPage() {
         <div className="container py-12 md:py-24 max-w-6xl mx-auto">
             <div className="text-center mb-12">
                 <h1 className="text-4xl font-headline font-bold tracking-tight sm:text-5xl">
-                Contact Us
+                Have a question? We’re happy to help!
                 </h1>
-                <p className="mt-4 text-lg text-muted-foreground">
-                We'd love to hear from you. Get in touch with us for any inquiries.
+                <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+                Feel free to reach out to us anytime between 9:00 AM and 5:00 PM, Monday to Saturday.
                 </p>
             </div>
             <div className="max-w-md mx-auto">
@@ -23,22 +22,18 @@ export default function ContactPage() {
                         <CardTitle>Contact Information</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 text-muted-foreground">
-                        <div className="flex items-center gap-4">
-                            <Mail className="h-5 w-5" />
-                            <span>info@9to5workspace.com</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <Phone className="h-5 w-5" />
+                        <p className="flex items-center gap-3">
+                            <span role="img" aria-label="email">📧</span>
+                            <span>Email: info@9to5workspace.com</span>
+                        </p>
+                        <p className="flex items-center gap-3">
+                            <span role="img" aria-label="phone">📞</span>
                             <span>Ms. Jyoti: +91-8800337608</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <Phone className="h-5 w-5" />
-                            <span>Ms. Sunayana: +91-9810021209</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <Clock className="h-5 w-5" />
-                            <span>9AM to 5PM Monday to Saturday</span>
-                        </div>
+                        </p>
+                        <p className="flex items-center gap-3">
+                           <span role="img" aria-label="phone">📞</span>
+                           <span>Ms. Sunayana: +91-9810021209</span>
+                        </p>
                     </CardContent>
                 </Card>
             </div>
