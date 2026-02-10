@@ -1,4 +1,5 @@
 
+
 "use client";
 import { useState } from "react";
 import type { User } from "firebase/auth";
@@ -128,9 +129,8 @@ function WorkstationSelector({
   const router = useRouter();
 
   const getBookingStatus = (wsId: string) => {
-    const correctWorkspaceId = `${officeId}_${wsId}`;
     const booking = bookings.find(
-      (b) => b.workspaceId === correctWorkspaceId && b.workspaceType === "desk" && b.status === "confirmed"
+      (b) => b.workspaceId === wsId && b.workspaceType === "desk" && b.status === "confirmed"
     );
     if (!booking) return "available";
     if (booking.userId === user?.uid) return "my-booking";
@@ -176,8 +176,6 @@ function WorkstationSelector({
       const finalAmount = 1000; // Day Pass Price
 
       // Step 1: Reserve the slot with a "pending" booking in a transaction
-      const correctWorkspaceId = `${officeId}_${workstationId}`;
-
       await runTransaction(firestore, async (transaction) => {
         const bookingsRef = collection(firestore, "bookings");
         const dateStr = format(dayStart, 'yyyy-MM-dd');
@@ -185,7 +183,7 @@ function WorkstationSelector({
         const q = query(
           bookingsRef,
           where("officeId", "==", officeId),
-          where("workspaceId", "==", correctWorkspaceId),
+          where("workspaceId", "==", workstationId),
           where("date", "==", dateStr)
         );
         
@@ -206,7 +204,7 @@ function WorkstationSelector({
           officeId,
           userId: user.uid,
           userName: user.displayName || user.email,
-          workspaceId: correctWorkspaceId,
+          workspaceId: workstationId,
           workspaceName: `Workstation ${workstationId.split("-").pop()}`,
           workspaceType: "desk",
           date: format(date, "yyyy-MM-dd"),
@@ -396,8 +394,6 @@ function RoomBookingDialog({
         const newBookingRef = doc(collection(firestore, "bookings"));
         newBookingId = newBookingRef.id;
 
-        const correctWorkspaceId = `${officeId}_${room.id}`;
-
         await runTransaction(firestore, async (transaction) => {
             const bookingsRef = collection(firestore, "bookings");
             const dateStr = format(currentStartDateTime, 'yyyy-MM-dd');
@@ -405,7 +401,7 @@ function RoomBookingDialog({
             const q = query(
                 bookingsRef,
                 where("officeId", "==", officeId),
-                where("workspaceId", "==", correctWorkspaceId),
+                where("workspaceId", "==", room.id),
                 where("date", "==", dateStr)
             );
 
@@ -426,7 +422,7 @@ function RoomBookingDialog({
                 officeId,
                 userId: user.uid,
                 userName: user.displayName || user.email,
-                workspaceId: correctWorkspaceId,
+                workspaceId: room.id,
                 workspaceName: `${room.name} (+${extraChairs} seats)`,
                 workspaceType: 'room',
                 date: format(date, "yyyy-MM-dd"),
