@@ -187,7 +187,7 @@ function WorkstationSelector({
           where("date", "==", dateStr)
         );
         
-        const snapshot = await transaction.get(q);
+        const snapshot = await getDocs(q);
         const existingBookings = snapshot.docs.map(d => d.data()).filter(b => b.status !== 'cancelled');
 
         const hasConflictInTx = existingBookings.some(booking => {
@@ -217,6 +217,11 @@ function WorkstationSelector({
           createdAt: serverTimestamp(),
         });
       });
+      
+      if (!newBookingId) {
+        setBookingInProgress(null);
+        return;
+      }
 
       // Step 2: Proceed to payment
       const res = await fetch("/api/create-order", {
@@ -405,7 +410,7 @@ function RoomBookingDialog({
                 where("date", "==", dateStr)
             );
 
-            const snapshot = await transaction.get(q);
+            const snapshot = await getDocs(q);
             const existingBookings = snapshot.docs.map(d => d.data()).filter(b => b.status !== 'cancelled');
 
             const hasConflictInTx = existingBookings.some(booking => {
@@ -435,6 +440,11 @@ function RoomBookingDialog({
                 createdAt: serverTimestamp(),
             });
         });
+
+      if (!newBookingId) {
+          setIsReserving(false);
+          return;
+      }
 
       const { totalCost: finalTotalCost } = calculateRoomBookingAmount({
         roomName: room.name,
