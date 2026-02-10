@@ -25,7 +25,7 @@ export default function ContactPage() {
                     <CardContent className="space-y-4 text-muted-foreground">
                         <div className="flex items-center gap-4">
                             <Mail className="h-5 w-5" />
-                            <span>studio@miglanis.com</span>
+                            <span>info@9to5workspace.com</span>
                         </div>
                         <div className="flex items-center gap-4">
                             <Phone className="h-5 w-5" />
