@@ -165,6 +165,9 @@ function WorkstationSelector({
     let newBookingId: string | null = null;
 
     try {
+      const newBookingRef = doc(collection(firestore, "bookings"));
+      newBookingId = newBookingRef.id;
+
       const dayStart = new Date(date);
       dayStart.setHours(9, 30, 0, 0);
       const dayEnd = new Date(date);
@@ -173,9 +176,6 @@ function WorkstationSelector({
       const finalAmount = 1000; // Day Pass Price
 
       // Step 1: Reserve the slot with a "pending" booking in a transaction
-      const newBookingRef = doc(collection(firestore, "bookings"));
-      newBookingId = newBookingRef.id;
-      
       const correctWorkspaceId = `${officeId}_${workstationId}`;
 
       await runTransaction(firestore, async (transaction) => {
@@ -293,9 +293,6 @@ function WorkstationSelector({
 
     } catch (error: any) {
       console.error("Error booking workstation: ", error);
-      if (newBookingId) {
-          await deleteDoc(doc(firestore, "bookings", newBookingId));
-      }
       toast({
         variant: "destructive",
         title: "Booking Error",
@@ -518,9 +515,6 @@ function RoomBookingDialog({
 
     } catch (error: any) {
         console.error("Error reserving room: ", error);
-        if (newBookingId) {
-            await deleteDoc(doc(firestore, "bookings", newBookingId));
-        }
         toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not reserve the room. Please try again.' });
         setIsReserving(false);
     }
