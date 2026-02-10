@@ -29,7 +29,11 @@ export default function ContactPage() {
                         </div>
                         <div className="flex items-center gap-4">
                             <Phone className="h-5 w-5" />
-                            <span>+91-8800337608</span>
+                            <span>Ms. Jyoti: +91-8800337608</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <Phone className="h-5 w-5" />
+                            <span>Ms. Sunayana: +91-9810021209</span>
                         </div>
                         <div className="flex items-center gap-4">
                             <Clock className="h-5 w-5" />
