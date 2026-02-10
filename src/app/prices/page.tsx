@@ -90,6 +90,7 @@ export default function PricesPage() {
                         <ul className="space-y-2 text-sm">
                             <li className="flex justify-between"><span>Coffee</span> <strong>₹30</strong></li>
                             <li className="flex justify-between"><span>Tea</span> <strong>₹25</strong></li>
+                            <li className="flex justify-between"><span>Lemonade</span> <strong>₹50</strong></li>
                         </ul>
                     </InfoCard>
                     <InfoCard title="Printing & Scanning" icon={Printer}>
