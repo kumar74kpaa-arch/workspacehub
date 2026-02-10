@@ -3,7 +3,7 @@
 "use client";
 import { useState } from "react";
 import type { User } from "firebase/auth";
-import { collection, Timestamp, runTransaction, query, where, doc, serverTimestamp, updateDoc, deleteDoc, getDocs } from "firebase/firestore";
+import { collection, Timestamp, runTransaction, query, where, doc, serverTimestamp, deleteDoc, getDocs } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format, parse } from "date-fns";
@@ -25,6 +25,18 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { validateBookingTime } from "@/lib/validateBookingTime";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+const calculateWorkstationBookingAmount = ({
+  durationInHours,
+}: {
+  durationInHours: number;
+}) => {
+  // Rate is based on the Day Pass price of ₹1000 for 8 hours (₹125/hr)
+  const hourlyRate = 125;
+  const totalCost = Math.max(0, hourlyRate * durationInHours);
+  return { totalCost };
+};
+
 
 const calculateRoomBookingAmount = ({
   roomName,
@@ -112,136 +124,119 @@ const officeConfig: Record<
   ],
 };
 
-function WorkstationSelector({
-  wsIds,
+function WorkstationBookingDialog({
   officeId,
+  workstationId,
   date,
-  bookings,
+  onOpenChange,
+  onBooked,
   user,
-  agreedToTerms,
-  onBooking,
-}: InteractiveBookingProps & { wsIds: string[] }) {
-  const [bookingInProgress, setBookingInProgress] = useState<string | null>(
-    null
-  );
+}: {
+  officeId: string;
+  workstationId: string;
+  date: Date;
+  onOpenChange: (open: boolean) => void;
+  onBooked: () => void;
+  user: User | null;
+}) {
+  const [startTime, setStartTime] = useState("09:30");
+  const [endTime, setEndTime] = useState("17:30");
+  const [isReserving, setIsReserving] = useState(false);
+
   const firestore = useFirestore();
   const { toast } = useToast();
-  const router = useRouter();
 
-  const getBookingStatus = (wsId: string) => {
-    const booking = bookings.find(
-      (b) => b.workspaceId === wsId && b.workspaceType === "desk" && b.status === "confirmed"
-    );
-    if (!booking) return "available";
-    if (booking.userId === user?.uid) return "my-booking";
-    return "booked";
-  };
+  const startDateTime = parse(startTime, "HH:mm", date);
+  const endDateTime = parse(endTime, "HH:mm", date);
+  const validationResult = validateBookingTime(startDateTime, endDateTime);
 
-  const handleBookWorkstation = async (workstationId: string) => {
-    if (!firestore || !user) {
-        toast({
-            variant: "destructive",
-            title: "Login Required",
-            description: "Please sign in to book a workstation.",
-        });
-        router.push(`/login?redirect_uri=/seat-booking?office=${officeId}`);
+  const durationInHours = Math.max(0, (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60));
+
+  const { totalCost } = calculateWorkstationBookingAmount({ durationInHours });
+
+  const handleReserveClick = async () => {
+    if (!user || !firestore || !officeId || !workstationId) {
+        toast({ variant: "destructive", title: "Error", description: "Missing required booking information. Please refresh and try again." });
         return;
     }
 
-    if (!date) {
-      toast({ variant: "destructive", title: "Please select a date." });
+    if (isNaN(durationInHours) || durationInHours <= 0) {
+      toast({ variant: 'destructive', title: 'Invalid time selected.' });
       return;
     }
-    if (!agreedToTerms) {
-      toast({
-        variant: "destructive",
-        title: "Terms Required",
-        description: "Please agree to the terms and conditions.",
-      });
-      return;
-    }
-
-    setBookingInProgress(workstationId);
+    
+    setIsReserving(true);
     let newBookingId: string | null = null;
-
+    
     try {
-      const newBookingRef = doc(collection(firestore, "bookings"));
-      newBookingId = newBookingRef.id;
+        const newBookingRef = doc(collection(firestore, "bookings"));
+        newBookingId = newBookingRef.id;
 
-      const dayStart = new Date(date);
-      dayStart.setHours(9, 30, 0, 0);
-      const dayEnd = new Date(date);
-      dayEnd.setHours(17, 30, 0, 0);
+        await runTransaction(firestore, async (transaction) => {
+            const bookingsRef = collection(firestore, "bookings");
+            const dateStr = format(startDateTime, 'yyyy-MM-dd');
+            
+            const q = query(
+                bookingsRef,
+                where("officeId", "==", officeId),
+                where("workspaceId", "==", workstationId),
+                where("date", "==", dateStr)
+            );
 
-      const finalAmount = 1000; // Day Pass Price
+            const snapshot = await getDocs(q);
+            const existingBookings = snapshot.docs.map(d => d.data()).filter(b => b.status !== 'cancelled');
 
-      // Step 1: Reserve the slot with a "pending" booking in a transaction
-      await runTransaction(firestore, async (transaction) => {
-        const bookingsRef = collection(firestore, "bookings");
-        const dateStr = format(dayStart, 'yyyy-MM-dd');
-        
-        const q = query(
-          bookingsRef,
-          where("officeId", "==", officeId),
-          where("workspaceId", "==", workstationId),
-          where("date", "==", dateStr)
-        );
-        
-        const snapshot = await getDocs(q);
-        const existingBookings = snapshot.docs.map(d => d.data()).filter(b => b.status !== 'cancelled');
+            const hasConflictInTx = existingBookings.some(booking => {
+                const existingStart = (booking.startTime as Timestamp).toDate();
+                const existingEnd = (booking.endTime as Timestamp).toDate();
+                return startDateTime < existingEnd && endDateTime > existingStart;
+            });
 
-        const hasConflictInTx = existingBookings.some(booking => {
-            const existingStart = (booking.startTime as Timestamp).toDate();
-            const existingEnd = (booking.endTime as Timestamp).toDate();
-            return dayStart < existingEnd && dayEnd > existingStart;
+            if (hasConflictInTx) {
+                throw new Error("This time slot was just booked. Please try another one.");
+            }
+
+            transaction.set(newBookingRef, {
+                officeId,
+                userId: user.uid,
+                userName: user.displayName || user.email,
+                workspaceId: workstationId,
+                workspaceName: `Workstation ${workstationId.split("-").pop()}`,
+                workspaceType: 'desk',
+                date: format(date, "yyyy-MM-dd"),
+                startTime: Timestamp.fromDate(startDateTime),
+                endTime: Timestamp.fromDate(endDateTime),
+                isExtendedHours: validationResult.extended,
+                pricingType: validationResult.extended ? 'extended' : 'standard',
+                status: 'pending',
+                paymentStatus: 'pending',
+                createdAt: serverTimestamp(),
+            });
         });
 
-        if (hasConflictInTx) {
-            throw new Error("This workstation was just booked. Please try another one.");
-        }
-
-        transaction.set(newBookingRef, {
-          officeId,
-          userId: user.uid,
-          userName: user.displayName || user.email,
-          workspaceId: workstationId,
-          workspaceName: `Workstation ${workstationId.split("-").pop()}`,
-          workspaceType: "desk",
-          date: format(date, "yyyy-MM-dd"),
-          startTime: Timestamp.fromDate(dayStart),
-          endTime: Timestamp.fromDate(dayEnd),
-          status: "pending",
-          paymentStatus: "pending",
-          isExtendedHours: false,
-          pricingType: "standard",
-          createdAt: serverTimestamp(),
-        });
-      });
-      
       if (!newBookingId) {
-        setBookingInProgress(null);
+        setIsReserving(false);
         return;
       }
 
-      // Step 2: Proceed to payment
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ totalAmount: finalAmount }),
+        body: JSON.stringify({ totalAmount: totalCost }),
       });
 
       if (!res.ok) {
-        throw new Error('Failed to create Razorpay order');
+        throw new Error("Failed to create Razorpay order.");
       }
-
+      
       const order = await res.json();
 
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: "INR",
-        name: "9to5 Workspace - Day Pass",
-        description: `Booking for ${workstationId}`,
+        name: `9to5 Workspace - Workstation`,
+        description: `Booking for ${format(date, "PPP")} from ${startTime} to ${endTime}`,
         order_id: order.id,
         handler: async function (response: any) {
           const verificationRes = await fetch('/api/verify-payment', {
@@ -254,18 +249,16 @@ function WorkstationSelector({
               bookingId: newBookingId!,
             }),
           });
-
+          
           if (verificationRes.ok) {
-            toast({
-              title: "Workstation Booked!",
-              description: `You have booked ${workstationId} for ${format(date, "PPP")}.`,
-            });
-            onBooking();
+            toast({ title: 'Workstation Booked!', description: `You've booked Workstation ${workstationId.split('-').pop()} on ${format(date, 'PPP')} from ${startTime} to ${endTime}.` });
+            onBooked();
+            onOpenChange(false);
           } else {
-            toast({ variant: 'destructive', title: 'Payment Failed', description: 'Payment verification failed. Please contact support.' });
-            onBooking();
+             toast({ variant: 'destructive', title: 'Payment Failed', description: 'Payment verification failed. Please contact support.' });
+             onBooked();
           }
-          setBookingInProgress(null);
+          setIsReserving(false);
         },
         prefill: {
             name: user.displayName || '',
@@ -279,7 +272,7 @@ function WorkstationSelector({
                 if (newBookingId) {
                   await deleteDoc(doc(firestore, "bookings", newBookingId));
                 }
-                setBookingInProgress(null);
+                setIsReserving(false);
             }
         }
       };
@@ -288,36 +281,118 @@ function WorkstationSelector({
       rzp.open();
       rzp.on('payment.failed', async function (response: any) {
         if (newBookingId) {
-          await deleteDoc(doc(firestore, "bookings", newBookingId));
+            await deleteDoc(doc(firestore, "bookings", newBookingId));
         }
         toast({ variant: 'destructive', title: 'Payment Failed', description: response.error.description });
-        setBookingInProgress(null);
+        setIsReserving(false);
       });
 
     } catch (error: any) {
-      console.error("Error booking workstation: ", error);
-      toast({
-        variant: "destructive",
-        title: "Booking Error",
-        description: error.message || "Could not book the workstation. Please try again.",
-      });
-      setBookingInProgress(null);
-      return;
+        console.error("Error reserving workstation: ", error);
+        toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not reserve the workstation. Please try again.' });
+        setIsReserving(false);
+        return;
     }
+  };
+
+  return (
+    <Dialog open onOpenChange={onOpenChange} modal={true}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Reserve Workstation {workstationId.split('-').pop()}</DialogTitle>
+          <DialogDescription>
+            For {format(date, "PPP")}.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="start-time">Start Time</Label>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input id="start-time" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="pl-10" step="1800" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="end-time">End Time</Label>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input id="end-time" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="pl-10" step="1800" />
+              </div>
+            </div>
+          </div>
+          
+          {durationInHours > 0 && (
+             <Card className="bg-muted/50 p-4">
+              <CardContent className="p-0">
+                <h4 className="font-semibold mb-2">Booking Summary</h4>
+                <div className="text-sm space-y-1">
+                  <div className="flex justify-between"><span>Duration:</span> <span>{durationInHours.toFixed(1)} hours</span></div>
+                  <div className="flex justify-between font-bold border-t pt-2 mt-2"><span>Total Estimate:</span> <span>₹{totalCost.toFixed(2)}</span></div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {validationResult.extended && (
+            <Alert className="bg-yellow-50 border-yellow-300 text-yellow-900 [&>svg]:text-yellow-600">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle className="font-semibold">Extended Hours Selected</AlertTitle>
+              <AlertDescription>{validationResult.message}</AlertDescription>
+            </Alert>
+          )}
+          {!validationResult.valid && validationResult.reason && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Invalid Time</AlertTitle>
+              <AlertDescription>{validationResult.reason}</AlertDescription>
+            </Alert>
+          )}
+        </div>
+        <DialogFooter>
+          <Button onClick={handleReserveClick} disabled={isReserving || !validationResult.valid}>
+            {isReserving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Confirm & Pay"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
+function WorkstationSelector({
+  wsIds,
+  bookings,
+  user,
+  onBookWorkstation
+}: {
+  wsIds: string[];
+  bookings: Booking[];
+  user: User | null;
+  onBookWorkstation: (workstationId: string) => void;
+}) {
+  
+  const getBookingStatus = (wsId: string) => {
+    const userBookings = bookings.filter(b => b.userId === user?.uid && b.workspaceId === wsId && b.workspaceType === "desk" && b.status === "confirmed");
+    if(userBookings.length > 0) return 'my-booking';
+    
+    const otherBookings = bookings.filter(b => b.workspaceId === wsId && b.workspaceType === "desk" && b.status === "confirmed");
+    if(otherBookings.length > 0) return 'booked';
+
+    return "available";
   };
 
   return (
     <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-3 pt-4">
       {wsIds.map((wsId) => {
         const status = getBookingStatus(wsId);
-        const isBookingThis = bookingInProgress === wsId;
         const isDisabled =
-          status === "booked" || status === "my-booking" || !!bookingInProgress;
+          status === "booked" || status === "my-booking";
 
         return (
           <Button
             key={wsId}
-            onClick={() => handleBookWorkstation(wsId)}
+            onClick={() => onBookWorkstation(wsId)}
             disabled={isDisabled}
             className={cn(
               "font-semibold transition-all",
@@ -327,12 +402,9 @@ function WorkstationSelector({
               status === "my-booking" &&
                 "bg-blue-100 text-blue-800 cursor-not-allowed"
             )}
+            title={wsId}
           >
-            {isBookingThis ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              wsId.split("-").pop()
-            )}
+            {wsId.split("-").pop()}
           </Button>
         );
       })}
@@ -362,7 +434,6 @@ function RoomBookingDialog({
   const [isReserving, setIsReserving] = useState(false);
 
   const firestore = useFirestore();
-  const router = useRouter();
   const { toast } = useToast();
 
   const startDateTime = parse(startTime, "HH:mm", date);
@@ -383,11 +454,7 @@ function RoomBookingDialog({
         return;
     }
 
-    const currentStartDateTime = parse(startTime, "HH:mm", date);
-    const currentEndDateTime = parse(endTime, "HH:mm", date);
-    const currentDurationInHours = Math.max(0, (currentEndDateTime.getTime() - currentStartDateTime.getTime()) / (1000 * 60 * 60));
-    
-    if (isNaN(currentDurationInHours) || currentDurationInHours <= 0) {
+    if (isNaN(durationInHours) || durationInHours <= 0) {
       toast({ variant: 'destructive', title: 'Invalid time selected.' });
       return;
     }
@@ -401,7 +468,7 @@ function RoomBookingDialog({
 
         await runTransaction(firestore, async (transaction) => {
             const bookingsRef = collection(firestore, "bookings");
-            const dateStr = format(currentStartDateTime, 'yyyy-MM-dd');
+            const dateStr = format(startDateTime, 'yyyy-MM-dd');
             
             const q = query(
                 bookingsRef,
@@ -416,7 +483,7 @@ function RoomBookingDialog({
             const hasConflictInTx = existingBookings.some(booking => {
                 const existingStart = (booking.startTime as Timestamp).toDate();
                 const existingEnd = (booking.endTime as Timestamp).toDate();
-                return currentStartDateTime < existingEnd && currentEndDateTime > existingStart;
+                return startDateTime < existingEnd && endDateTime > existingStart;
             });
 
             if (hasConflictInTx) {
@@ -431,8 +498,8 @@ function RoomBookingDialog({
                 workspaceName: `${room.name} (+${extraChairs} seats)`,
                 workspaceType: 'room',
                 date: format(date, "yyyy-MM-dd"),
-                startTime: Timestamp.fromDate(currentStartDateTime),
-                endTime: Timestamp.fromDate(currentEndDateTime),
+                startTime: Timestamp.fromDate(startDateTime),
+                endTime: Timestamp.fromDate(endDateTime),
                 isExtendedHours: validationResult.extended,
                 pricingType: validationResult.extended ? 'extended' : 'standard',
                 status: 'pending',
@@ -446,16 +513,10 @@ function RoomBookingDialog({
           return;
       }
 
-      const { totalCost: finalTotalCost } = calculateRoomBookingAmount({
-        roomName: room.name,
-        durationInHours: currentDurationInHours,
-        extraChairs,
-      });
-
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ totalAmount: finalTotalCost }),
+        body: JSON.stringify({ totalAmount: totalCost }),
       });
 
       if (!res.ok) {
@@ -603,15 +664,13 @@ function RoomSelector({
   totalCapacity,
   extraCost,
   onBookRoom,
-  ...props
-}: InteractiveBookingProps & {
+}: {
   roomId: string;
   baseCapacity: number;
   totalCapacity: number;
   extraCost: number;
   onBookRoom: (room: Workspace, extraChairs: number) => void;
 }) {
-  const { officeId, date, bookings, user, agreedToTerms, onBooking } = props;
   const [extraChairs, setExtraChairs] = useState(0);
 
   const room = allResources.find((r) => r.id === roomId);
@@ -683,6 +742,7 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
   const [selectedCategory, setSelectedCategory] =
     useState<ResourceCategory | null>(null);
   const [roomDetails, setRoomDetails] = useState<{ room: Workspace, extraChairs: number} | null>(null);
+  const [workstationDetails, setWorkstationDetails] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -705,6 +765,23 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
     setRoomDetails({ room, extraChairs });
   }
 
+  const handleWorkstationSelection = (workstationId: string) => {
+    if (!props.user) {
+        toast({ title: "Login Required", description: "Please log in to book a space." });
+        router.push(`/login?redirect_uri=/seat-booking?office=${props.officeId}`);
+        return;
+    }
+    if (!props.agreedToTerms) {
+        toast({
+            variant: "destructive",
+            title: "Terms Required",
+            description: "Please agree to the terms and conditions on this page before booking.",
+        });
+        return;
+    }
+    setWorkstationDetails(workstationId);
+  }
+
   if (!config) return null;
 
   const renderContent = () => {
@@ -714,7 +791,12 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
     if (!categoryConfig) return null;
 
     if (categoryConfig.resourceIds) {
-      return <WorkstationSelector wsIds={categoryConfig.resourceIds} {...props} />;
+      return <WorkstationSelector 
+        onBookWorkstation={handleWorkstationSelection}
+        wsIds={categoryConfig.resourceIds} 
+        bookings={props.bookings}
+        user={props.user}
+      />;
     }
 
     if (
@@ -730,7 +812,6 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
           totalCapacity={categoryConfig.totalCapacity}
           extraCost={categoryConfig.extraCost}
           onBookRoom={handleRoomSelection}
-          {...props}
         />
       );
     }
@@ -752,6 +833,21 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
         ))}
       </div>
       <div className="mt-4">{renderContent()}</div>
+
+       {workstationDetails && props.date && (
+        <WorkstationBookingDialog
+          officeId={props.officeId}
+          workstationId={workstationDetails}
+          date={props.date}
+          user={props.user}
+          onOpenChange={(open) => !open && setWorkstationDetails(null)}
+          onBooked={() => {
+              setWorkstationDetails(null);
+              props.onBooking();
+          }}
+        />
+       )}
+       
        {roomDetails && props.date && (
         <RoomBookingDialog
             officeId={props.officeId}
@@ -769,3 +865,4 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
     </div>
   );
 }
+
