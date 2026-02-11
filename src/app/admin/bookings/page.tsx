@@ -60,7 +60,8 @@ export default function AdminBookingsPage() {
     
     const q = query(
       collection(firestore, 'bookings'),
-      where('date', '==', dateStr)
+      where('date', '==', dateStr),
+      where('status', '==', 'confirmed')
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -91,7 +92,7 @@ export default function AdminBookingsPage() {
       <CardHeader>
         <CardTitle className="animate-float">Bookings by Date</CardTitle>
         <CardDescription>
-          View all bookings for a specific day. Conflicts are highlighted automatically.
+          View all confirmed bookings for a specific day. Conflicts are highlighted automatically.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -180,7 +181,7 @@ export default function AdminBookingsPage() {
           <>
             <Separator className="my-4" />
             <p className="py-12 text-center text-sm text-muted-foreground">
-              No bookings found for {selectedDate ? format(selectedDate, 'PPP') : 'the selected date'}.
+              No confirmed bookings found for {selectedDate ? format(selectedDate, 'PPP') : 'the selected date'}.
             </p>
           </>
         )}
