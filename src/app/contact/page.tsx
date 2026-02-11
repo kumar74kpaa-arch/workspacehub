@@ -24,7 +24,7 @@ export default function ContactPage() {
                     <CardContent className="space-y-4 text-muted-foreground">
                         <p className="flex items-center gap-3">
                             <span role="img" aria-label="email">📧</span>
-                            <span>Email: info@9to5workspace.com</span>
+                            <span>Email: info.9to5workspace@gmail.com</span>
                         </p>
                         <p className="flex items-center gap-3">
                             <span role="img" aria-label="phone">📞</span>
