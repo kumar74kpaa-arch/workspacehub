@@ -10,7 +10,6 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import type { Booking } from '@/lib/definitions';
-import { offices } from '@/lib/offices';
 
 interface Payment extends Booking {
     amount: number;
@@ -39,9 +38,28 @@ const calculateBookingAmount = (booking: Booking): number => {
     return 0;
 };
 
-const getOfficeName = (officeId: string) => {
-    return offices.find(o => o.id === officeId)?.name || officeId;
-}
+const getStatusBadge = (payment: Payment) => {
+    const now = new Date();
+    // Ensure startTime and endTime are valid dates before comparing
+    if (!payment.startTime || !payment.endTime) return <Badge variant="outline">Unknown</Badge>;
+
+    if (now >= payment.startTime && now <= payment.endTime) {
+        return (
+            <Badge className="bg-green-100 text-green-800 hover:bg-green-100 border-green-200">
+                <span className="relative flex h-2 w-2 mr-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                Live
+            </Badge>
+        );
+    }
+    if (now < payment.startTime) {
+        return <Badge variant="secondary">Upcoming</Badge>;
+    }
+    return <Badge variant="outline">Completed</Badge>;
+};
+
 
 export default function PaymentsPage() {
   const firestore = useFirestore();
@@ -69,7 +87,7 @@ export default function PaymentsPage() {
             ...data,
             startTime: (data.startTime as Timestamp).toDate(),
             endTime: (data.endTime as Timestamp).toDate(),
-            createdAt: (data.createdAt as Timestamp)?.toDate(),
+            createdAt: (data.createdAt as Timestamp)?.toDate() || new Date(),
         } as Booking;
 
         return {
@@ -100,9 +118,10 @@ export default function PaymentsPage() {
               <TableHead>User</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Method</TableHead>
-              <TableHead>Product</TableHead>
+              <TableHead>Workspace</TableHead>
               <TableHead>Type</TableHead>
-              <TableHead>Time</TableHead>
+              <TableHead>Transaction Time</TableHead>
+              <TableHead>Booking Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -112,9 +131,10 @@ export default function PaymentsPage() {
                   <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-28" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                 </TableRow>
               ))
             ) : payments.length > 0 ? (
@@ -127,16 +147,17 @@ export default function PaymentsPage() {
                   <TableCell>
                     <Badge variant="outline">Razorpay</Badge>
                   </TableCell>
-                  <TableCell>{getOfficeName(payment.officeId)}</TableCell>
+                  <TableCell>{payment.workspaceName}</TableCell>
                   <TableCell className="capitalize">{payment.workspaceType === 'desk' ? 'Workstation' : 'Room'}</TableCell>
                   <TableCell>
                     {payment.createdAt ? format(payment.createdAt, 'PPp') : 'N/A'}
                   </TableCell>
+                  <TableCell>{getStatusBadge(payment)}</TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                   No payments found.
                 </TableCell>
               </TableRow>
