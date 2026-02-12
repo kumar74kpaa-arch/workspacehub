@@ -1,5 +1,4 @@
 
-
 "use client";
 import { useState } from "react";
 import type { User } from "firebase/auth";
@@ -280,7 +279,11 @@ function WorkstationBookingDialog({
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ totalAmount: totalCost, bookingId: newBookingId, officeId: officeId }),
+        body: JSON.stringify({
+          totalAmount: totalCost,
+          bookingId: newBookingId,
+          officeId: officeId,
+        }),
       });
 
       if (!res.ok) {
@@ -573,7 +576,11 @@ function RoomBookingDialog({
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ totalAmount: totalCost, bookingId: newBookingId, officeId: officeId }),
+        body: JSON.stringify({
+          totalAmount: totalCost,
+          bookingId: newBookingId,
+          officeId: officeId,
+        }),
       });
 
       if (!res.ok) {
