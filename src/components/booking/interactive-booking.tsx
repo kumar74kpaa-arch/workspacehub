@@ -212,7 +212,7 @@ function WorkstationBookingDialog({
     endTime: endDateTime,
   });
 
-  const handleReserveClick = async () => {
+  const handleBookWorkstation = async () => {
     if (!user || !firestore || !officeId || !workstationId) {
         toast({ variant: "destructive", title: "Error", description: "Missing required booking information. Please refresh and try again." });
         return;
@@ -280,7 +280,7 @@ function WorkstationBookingDialog({
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ totalAmount: totalCost }),
+        body: JSON.stringify({ totalAmount: totalCost, bookingId: newBookingId }),
       });
 
       if (!res.ok) {
@@ -327,9 +327,6 @@ function WorkstationBookingDialog({
         },
         modal: {
             ondismiss: async function() {
-                if (newBookingId) {
-                  await deleteDoc(doc(firestore, "bookings", newBookingId));
-                }
                 setIsReserving(false);
             }
         }
@@ -338,9 +335,6 @@ function WorkstationBookingDialog({
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
       rzp.on('payment.failed', async function (response: any) {
-        if (newBookingId) {
-            await deleteDoc(doc(firestore, "bookings", newBookingId));
-        }
         toast({ variant: 'destructive', title: 'Payment Failed', description: response.error.description });
         setIsReserving(false);
       });
@@ -349,9 +343,6 @@ function WorkstationBookingDialog({
         console.error("Error reserving workstation: ", error);
         toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not reserve the workstation. Please try again.' });
         setIsReserving(false);
-        if (newBookingId) {
-          await deleteDoc(doc(firestore, "bookings", newBookingId));
-        }
         return;
     }
   };
@@ -412,7 +403,7 @@ function WorkstationBookingDialog({
           )}
         </div>
         <DialogFooter>
-          <Button onClick={handleReserveClick} disabled={isReserving || !validationResult.valid}>
+          <Button onClick={handleBookWorkstation} disabled={isReserving || !validationResult.valid}>
             {isReserving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Confirm & Pay"}
           </Button>
         </DialogFooter>
@@ -578,7 +569,7 @@ function RoomBookingDialog({
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ totalAmount: totalCost }),
+        body: JSON.stringify({ totalAmount: totalCost, bookingId: newBookingId }),
       });
 
       if (!res.ok) {
@@ -625,9 +616,6 @@ function RoomBookingDialog({
         },
         modal: {
             ondismiss: async function() {
-                if (newBookingId) {
-                  await deleteDoc(doc(firestore, "bookings", newBookingId));
-                }
                 setIsReserving(false);
             }
         }
@@ -636,9 +624,6 @@ function RoomBookingDialog({
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
       rzp.on('payment.failed', async function (response: any) {
-        if (newBookingId) {
-            await deleteDoc(doc(firestore, "bookings", newBookingId));
-        }
         toast({ variant: 'destructive', title: 'Payment Failed', description: response.error.description });
         setIsReserving(false);
       });
@@ -647,9 +632,6 @@ function RoomBookingDialog({
         console.error("Error reserving room: ", error);
         toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not reserve the room. Please try again.' });
         setIsReserving(false);
-        if (newBookingId) {
-          await deleteDoc(doc(firestore, "bookings", newBookingId));
-        }
         return;
     }
   };
@@ -930,6 +912,7 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
     </div>
   );
 }
+
 
 
 

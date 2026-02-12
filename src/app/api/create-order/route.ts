@@ -8,12 +8,21 @@ export async function POST(req: Request) {
       key_secret: process.env.RAZORPAY_KEY_SECRET!,
     });
 
-    const { totalAmount } = await req.json();
+    const { totalAmount, bookingId } = await req.json();
 
-    const order = await razorpay.orders.create({
+    const options: any = {
       amount: Math.round(totalAmount * 100), // convert to paise and round to integer
       currency: "INR",
-    });
+    };
+
+    if (bookingId) {
+        options.notes = {
+            bookingId: bookingId,
+            type: "seat_booking"
+        }
+    }
+
+    const order = await razorpay.orders.create(options);
 
     return NextResponse.json(order);
   } catch (error) {
