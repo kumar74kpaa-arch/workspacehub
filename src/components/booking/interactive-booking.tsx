@@ -296,6 +296,10 @@ function WorkstationBookingDialog({
         name: `9to5 Workspace - Workstation`,
         description: `Booking for ${format(date, "PPP")} from ${startTime} to ${endTime}`,
         order_id: order.id,
+        notes: {
+            bookingId: newBookingId,
+            officeId: officeId
+        },
         handler: async function (response: any) {
           const verificationRes = await fetch('/api/verify-payment', {
             method: 'POST',
@@ -585,6 +589,10 @@ function RoomBookingDialog({
         name: `9to5 Workspace - ${room.name}`,
         description: `Booking for ${format(date, "PPP")} from ${startTime} to ${endTime}`,
         order_id: order.id,
+        notes: {
+            bookingId: newBookingId,
+            officeId: officeId
+        },
         handler: async function (response: any) {
           const verificationRes = await fetch('/api/verify-payment', {
             method: 'POST',
