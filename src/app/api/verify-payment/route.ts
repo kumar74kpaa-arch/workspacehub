@@ -25,11 +25,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
+    // This is the "handshake" fix.
+    // Find the document by bookingId and update all necessary fields.
     await adminDb.collection("bookings").doc(bookingId).update({
       paymentStatus: "paid",
+      status: "confirmed",
       paymentId: razorpay_payment_id,
       orderId: razorpay_order_id,
-      status: "confirmed",
     });
 
     return NextResponse.json({ status: "ok" });
