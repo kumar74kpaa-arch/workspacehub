@@ -6,38 +6,47 @@ import { adminDb } from "@/firebase/admin";
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
+  const secret = process.env.RAZORPAY_KEY_SECRET!;
+
   try {
-    const secret = process.env.RAZORPAY_KEY_SECRET!;
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId } = await req.json();
 
-    if (!bookingId) {
-        return NextResponse.json({ error: "Booking ID is missing" }, { status: 400 });
-    }
-    
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    console.log(`[RAZORPAY_VERIFY] Received bookingId: ${bookingId}`);
 
+    // Validate bookingId
+    if (!bookingId || typeof bookingId !== 'string' || bookingId.includes('/')) {
+        console.error("[RAZORPAY_VERIFY_ERROR] Invalid bookingId received:", bookingId);
+        return new NextResponse("Invalid Booking ID", { status: 400 });
+    }
+
+    // HMAC Signature Verification
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac("sha256", secret)
       .update(body)
       .digest("hex");
 
     if (expectedSignature !== razorpay_signature) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+      console.error("[RAZORPAY_VERIFY_ERROR] Invalid signature.");
+      return new NextResponse("Invalid signature", { status: 400 });
     }
 
-    // This is the "handshake" fix.
-    // Find the document by bookingId and update all necessary fields.
-    await adminDb.collection("bookings").doc(bookingId).update({
+    // Update Firestore document
+    const bookingRef = adminDb.collection("bookings").doc(bookingId);
+    
+    await bookingRef.update({
       paymentStatus: "paid",
       status: "confirmed",
       paymentId: razorpay_payment_id,
       orderId: razorpay_order_id,
     });
+    
+    console.log(`[RAZORPAY_VERIFY] Successfully updated booking: ${bookingId}`);
 
     return NextResponse.json({ status: "ok" });
 
-  } catch (error) {
-    console.error("Payment verification failed:", error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  } catch (error: any) {
+    console.error("[RAZORPAY_VERIFY_ERROR]", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
