@@ -293,12 +293,11 @@ function WorkstationBookingDialog({
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: "INR",
-        name: `9to5 Workspace - Workstation`,
+        name: `9to5 Workspace`,
         description: `Booking for ${format(date, "PPP")} from ${startTime} to ${endTime}`,
         order_id: order.id,
         notes: {
             bookingId: newBookingId,
-            officeId: officeId
         },
         handler: async function (response: any) {
           const verificationRes = await fetch('/api/verify-payment', {
@@ -586,12 +585,11 @@ function RoomBookingDialog({
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: "INR",
-        name: `9to5 Workspace - ${room.name}`,
+        name: `9to5 Workspace`,
         description: `Booking for ${format(date, "PPP")} from ${startTime} to ${endTime}`,
         order_id: order.id,
         notes: {
             bookingId: newBookingId,
-            officeId: officeId
         },
         handler: async function (response: any) {
           const verificationRes = await fetch('/api/verify-payment', {
