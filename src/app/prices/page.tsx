@@ -6,11 +6,24 @@ import { Check, Coffee, Printer, IndianRupee, Users } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 
-const PricingTier = ({ title, price, period, popular, children }: { title: string, price: string, period: string, popular?: boolean, children: React.ReactNode }) => (
+const PricingTier = ({ title, price, period, popular, originalPrice, savings, children }: { title: string, price: string, period: string, popular?: boolean, originalPrice?: string, savings?: string, children: React.ReactNode }) => (
     <div className={`p-6 rounded-lg border bg-card h-full flex flex-col ${popular ? 'border-primary' : ''}`}>
         {popular && <Badge className="mb-2 self-start">Most Popular</Badge>}
+        {originalPrice && <Badge variant="secondary" className="mb-2 self-start bg-accent/10 text-accent">Early Bird Offer</Badge>}
         <h3 className="text-xl font-semibold">{title}</h3>
-        <p className="mt-2 text-3xl font-bold">{price}<span className="text-base font-normal text-muted-foreground">/{period}</span></p>
+        {originalPrice && (
+            <p className="mt-2 text-lg text-muted-foreground">
+                <span className="line-through">{originalPrice}</span>
+            </p>
+        )}
+        <p className={`text-3xl font-bold ${originalPrice ? 'mt-0' : 'mt-2'}`}>
+            {price}<span className="text-base font-normal text-muted-foreground">/{period}</span>
+        </p>
+        {savings && (
+             <p className="mt-1 text-sm font-semibold text-green-600">
+                {savings}
+            </p>
+        )}
         <div className="mt-4 text-sm text-muted-foreground flex-grow">{children}</div>
     </div>
 );
@@ -52,7 +65,14 @@ export default function PricesPage() {
                                <li>Does NOT include beverages</li>
                            </ul>
                        </PricingTier>
-                       <PricingTier title="Day Pass" price="₹1000" period="day" popular>
+                       <PricingTier 
+                            title="Day Pass" 
+                            price="₹1000" 
+                            period="day" 
+                            popular
+                            originalPrice="₹3000"
+                            savings="You save ₹2000 (66.67% off)"
+                        >
                             <ul className="space-y-2">
                                <li>9:30AM – 5:30PM access</li>
                                <li>High-speed WiFi</li>
@@ -60,7 +80,13 @@ export default function PricesPage() {
                                <li>Extra hours (till 8PM): ₹200/hr</li>
                             </ul>
                        </PricingTier>
-                       <PricingTier title="Month Pass" price="₹26,000" period="month">
+                       <PricingTier 
+                            title="Month Pass" 
+                            price="₹26,000" 
+                            period="month"
+                            originalPrice="₹45,000"
+                            savings="You save ₹19,000 (42.22% off)"
+                        >
                            <ul className="space-y-2">
                                <li>Access for 26 working days</li>
                                <li>All Day Pass benefits</li>
@@ -73,12 +99,18 @@ export default function PricesPage() {
                 <InfoCard title="Meeting Rooms" icon={Users}>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                          <div className="p-6 rounded-lg border bg-card/50">
+                            <Badge variant="secondary" className="mb-2 self-start bg-accent/10 text-accent">Special Launch Price</Badge>
                             <h3 className="text-lg font-semibold">Small Meeting Room (4 People)</h3>
-                            <p className="mt-1 text-2xl font-bold">₹750 <span className="text-base font-normal text-muted-foreground">/ hour</span></p>
+                            <p className="mt-1 text-muted-foreground"><span className="line-through">₹1500</span></p>
+                            <p className="mt-0 text-2xl font-bold">₹750 <span className="text-base font-normal text-muted-foreground">/ hour</span></p>
+                            <p className="mt-1 text-sm font-semibold text-green-600">50% off</p>
                          </div>
                          <div className="p-6 rounded-lg border bg-card/50">
+                            <Badge variant="secondary" className="mb-2 self-start bg-accent/10 text-accent">Special Launch Price</Badge>
                             <h3 className="text-lg font-semibold">Conference Room (9 People)</h3>
-                            <p className="mt-1 text-2xl font-bold">₹1000 <span className="text-base font-normal text-muted-foreground">/ hour</span></p>
+                             <p className="mt-1 text-muted-foreground"><span className="line-through">₹2000</span></p>
+                            <p className="mt-0 text-2xl font-bold">₹1000 <span className="text-base font-normal text-muted-foreground">/ hour</span></p>
+                            <p className="mt-1 text-sm font-semibold text-green-600">50% off</p>
                             <p className="mt-2 text-sm text-muted-foreground">Extra Participant: ₹100 per person per hour</p>
                          </div>
                      </div>
