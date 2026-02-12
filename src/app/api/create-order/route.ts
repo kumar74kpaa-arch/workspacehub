@@ -1,3 +1,4 @@
+
 import Razorpay from "razorpay";
 import { NextResponse } from "next/server";
 
@@ -8,18 +9,21 @@ export async function POST(req: Request) {
       key_secret: process.env.RAZORPAY_KEY_SECRET!,
     });
 
-    const { totalAmount, bookingId } = await req.json();
+    const { totalAmount, bookingId, officeId } = await req.json();
 
     const options: any = {
       amount: Math.round(totalAmount * 100), // convert to paise and round to integer
       currency: "INR",
     };
 
-    if (bookingId) {
-        options.notes = {
-            bookingId: bookingId,
-            type: "seat_booking"
-        }
+    if (bookingId || officeId) {
+      options.notes = {};
+      if (bookingId) {
+        options.notes.bookingId = bookingId;
+      }
+      if (officeId) {
+        options.notes.officeId = officeId;
+      }
     }
 
     const order = await razorpay.orders.create(options);
