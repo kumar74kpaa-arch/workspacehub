@@ -45,6 +45,12 @@ const nextConfig: NextConfig = {
         hostname: 'i.ibb.co',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.9to5workspace.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },

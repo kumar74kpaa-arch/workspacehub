@@ -298,6 +298,7 @@ function WorkstationBookingDialog({
         order_id: order.id,
         notes: {
             bookingId: newBookingId,
+            officeId: officeId,
         },
         handler: async function (response: any) {
           const verificationRes = await fetch('/api/verify-payment', {
@@ -590,6 +591,7 @@ function RoomBookingDialog({
         order_id: order.id,
         notes: {
             bookingId: newBookingId,
+            officeId: officeId,
         },
         handler: async function (response: any) {
           const verificationRes = await fetch('/api/verify-payment', {
