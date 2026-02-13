@@ -33,6 +33,8 @@ const calculateTotalBookedMinutes = (bookings: Booking[]): number => {
 
     const sortedBookings = [...bookings].sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
 
+    if (sortedBookings.length === 0) return 0;
+    
     const merged = [JSON.parse(JSON.stringify(sortedBookings[0]))]; // Deep copy
 
     for (let i = 1; i < sortedBookings.length; i++) {
@@ -309,7 +311,7 @@ function WorkstationBookingDialog({
                 where("status", "==", "confirmed")
             );
 
-            const snapshot = await getDocs(q);
+            const snapshot = await transaction.get(q);
             const existingBookings = snapshot.docs.map(d => ({...d.data(), startTime: (d.data().startTime as Timestamp).toDate(), endTime: (d.data().endTime as Timestamp).toDate()} as Booking));
 
             const hasConflictInTx = existingBookings.some(booking => {
@@ -380,6 +382,7 @@ function WorkstationBookingDialog({
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
               bookingId: newBookingId!,
+              amount: order.amount,
             }),
           });
           
@@ -531,7 +534,9 @@ function WorkstationSelector({
                 "w-full font-semibold transition-all relative",
                 isFullyBooked 
                   ? "bg-red-200 text-red-800 hover:bg-red-300 cursor-not-allowed" 
-                  : "bg-green-100 text-green-800 hover:bg-green-200"
+                  : isPartiallyBooked 
+                    ? "bg-orange-100 text-orange-800 hover:bg-orange-200"
+                    : "bg-green-100 text-green-800 hover:bg-green-200"
               )}
             >
               {wsId.split("-").pop()}
@@ -641,7 +646,7 @@ function RoomBookingDialog({
                 where("status", "==", "confirmed")
             );
             
-            const snapshot = await getDocs(q);
+            const snapshot = await transaction.get(q);
             const existingBookings = snapshot.docs.map(d => ({...d.data(), startTime: (d.data().startTime as Timestamp).toDate(), endTime: (d.data().endTime as Timestamp).toDate()} as Booking));
 
             const hasConflictInTx = existingBookings.some(booking => {
@@ -712,6 +717,7 @@ function RoomBookingDialog({
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
               bookingId: newBookingId!,
+              amount: order.amount,
             }),
           });
           
@@ -1098,7 +1104,3 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
     </div>
   );
 }
-
-    
-
-    

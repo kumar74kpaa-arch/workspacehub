@@ -19,9 +19,17 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
+      // THIS IS THE KEY: Inline styles force the browser to align the columns
+      styles={{
+        table: { width: '100%', borderCollapse: 'collapse' },
+        head_row: { display: 'flex', width: '100%', justifyContent: 'space-between' },
+        row: { display: 'flex', width: '100%', justifyContent: 'space-between', marginTop: '8px' },
+        head_cell: { width: '36px', textAlign: 'center', fontWeight: 'normal', fontSize: '0.8rem' },
+        cell: { width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+      }}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y-4",
+        month: "space-y-4 w-full",
         caption: "flex justify-center pt-1 relative items-center mb-4",
         caption_label: "text-sm font-medium",
         nav: "space-x-1 flex items-center",
@@ -31,30 +39,25 @@ function Calendar({
         ),
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
-        table: "w-full border-collapse",
-        head_row: "grid grid-cols-7 w-full", // CHANGED: Forced 7-column grid
-        head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] flex justify-center", // CHANGED: Centered headers
-        row: "grid grid-cols-7 w-full mt-2", // CHANGED: Forced 7-column grid
-        cell: "h-9 w-9 text-center text-sm p-0 relative flex justify-center items-center [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+        head_cell: "text-muted-foreground",
         day: cn(
           buttonVariants({ variant: "ghost" }),
           "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
         ),
-        day_range_end: "day-range-end",
         day_selected:
           "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
         day_today: "bg-accent text-accent-foreground",
         day_outside:
           "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
         day_disabled: "text-muted-foreground opacity-50",
-        day_range_middle:
-          "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",
         ...classNames,
       }}
       components={{
-        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" {...props} />,
-        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" {...props} />,
+        Chevron: ({ orientation }) => {
+          const Icon = orientation === "left" ? ChevronLeft : ChevronRight;
+          return <Icon className="h-4 w-4" />;
+        },
       }}
       {...props}
     />

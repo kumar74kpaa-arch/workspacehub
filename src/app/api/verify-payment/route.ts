@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { adminDb } from "@/firebase/admin";
@@ -9,14 +8,19 @@ export async function POST(req: Request) {
   const secret = process.env.RAZORPAY_KEY_SECRET!;
 
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId } = await req.json();
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId, amount } = await req.json();
 
-    console.log(`[RAZORPAY_VERIFY] Received bookingId: ${bookingId}`);
+    console.log(`[RAZORPAY_VERIFY] Received bookingId: ${bookingId} for amount: ${amount}`);
 
     // Validate bookingId
     if (!bookingId || typeof bookingId !== 'string' || bookingId.includes('/')) {
         console.error("[RAZORPAY_VERIFY_ERROR] Invalid bookingId received:", bookingId);
         return new NextResponse("Invalid Booking ID", { status: 400 });
+    }
+    
+    if (amount === undefined || typeof amount !== 'number' || amount <= 0) {
+        console.error("[RAZORPAY_VERIFY_ERROR] Invalid amount received:", amount);
+        return new NextResponse("Invalid Amount", { status: 400 });
     }
 
     // HMAC Signature Verification
@@ -39,9 +43,10 @@ export async function POST(req: Request) {
       status: "confirmed",
       paymentId: razorpay_payment_id,
       orderId: razorpay_order_id,
+      paidAmount: amount / 100, // Save amount in rupees
     });
     
-    console.log(`[RAZORPAY_VERIFY] Successfully updated booking: ${bookingId}`);
+    console.log(`[RAZORPAY_VERIFY] Successfully updated booking: ${bookingId} with paid amount: ${amount / 100}`);
 
     return NextResponse.json({ status: "ok" });
 

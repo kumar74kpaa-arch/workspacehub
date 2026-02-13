@@ -15,7 +15,7 @@ interface Payment extends Booking {
     amount: number;
 }
 
-// Helper function to calculate booking amount
+// Helper function to calculate booking amount (as a fallback)
 const calculateBookingAmount = (booking: Booking): number => {
     if (booking.workspaceType === 'desk') {
         return 1000; // Day Pass Price
@@ -92,7 +92,7 @@ export default function PaymentsPage() {
 
         return {
             ...booking,
-            amount: calculateBookingAmount(booking),
+            amount: calculateBookingAmount(booking), // Keep fallback calculation
         } as Payment;
       });
       setPayments(paymentsData);
@@ -143,7 +143,7 @@ export default function PaymentsPage() {
                   <TableCell>
                     <div className="font-medium">{payment.userName}</div>
                   </TableCell>
-                  <TableCell className="text-right font-medium">₹{payment.amount.toLocaleString('en-IN')}</TableCell>
+                  <TableCell className="text-right font-medium">₹{(payment.paidAmount ?? payment.amount).toLocaleString('en-IN')}</TableCell>
                   <TableCell>
                     <Badge variant="outline">Razorpay</Badge>
                   </TableCell>

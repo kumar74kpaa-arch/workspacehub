@@ -44,6 +44,7 @@ export type Booking = {
   paymentId?: string;
   orderId?: string;
   createdAt: Date;
+  paidAmount?: number;
 };
 
 export type MembershipPlan = {
