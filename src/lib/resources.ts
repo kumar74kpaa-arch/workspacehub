@@ -10,7 +10,7 @@ if (!workstationImage || !conferenceHallImage || !meetingRoomImage) {
 }
 
 // Resources for The Banyan (Premium)
-const banyanWorkstations: Workspace[] = Array.from({ length: 16 }, (_, i) => ({
+const banyanWorkstations: Workspace[] = Array.from({ length: 12 }, (_, i) => ({
     id: `BANYAN-WS-${String(i + 1).padStart(2, '0')}`,
     officeId: 'banyan',
     name: `Workstation ${String(i + 1).padStart(2, '0')}`,
