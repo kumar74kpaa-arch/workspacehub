@@ -25,6 +25,38 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { validateBookingTime } from "@/lib/validateBookingTime";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from "@/components/ui/badge";
+
+const calculateTotalBookedMinutes = (bookings: Booking[]): number => {
+    if (!bookings || bookings.length === 0) return 0;
+
+    const sortedBookings = [...bookings].sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+
+    const merged = [JSON.parse(JSON.stringify(sortedBookings[0]))]; // Deep copy
+
+    for (let i = 1; i < sortedBookings.length; i++) {
+        const current = sortedBookings[i];
+        const lastMerged = merged[merged.length - 1];
+
+        // Ensure times are Date objects for comparison
+        const lastMergedEndTime = new Date(lastMerged.endTime);
+        const currentStartTime = new Date(current.startTime);
+
+        if (currentStartTime < lastMergedEndTime) {
+            const currentEndTime = new Date(current.endTime);
+            lastMerged.endTime = new Date(Math.max(lastMergedEndTime.getTime(), currentEndTime.getTime()));
+        } else {
+            merged.push(JSON.parse(JSON.stringify(current))); // Deep copy
+        }
+    }
+
+    const totalMilliseconds = merged.reduce((acc, b) => {
+        return acc + (new Date(b.endTime).getTime() - new Date(b.startTime).getTime());
+    }, 0);
+
+    return totalMilliseconds / (1000 * 60);
+};
 
 function OccupancyBar({ bookings }: { bookings: Booking[] }) {
   // We define the workday as 8 hours (9:30 to 17:30)
@@ -277,13 +309,11 @@ function WorkstationBookingDialog({
                 where("status", "==", "confirmed")
             );
 
-            const snapshot = await transaction.get(q);
-            const existingBookings = snapshot.docs.map(d => d.data());
+            const snapshot = await getDocs(q);
+            const existingBookings = snapshot.docs.map(d => ({...d.data(), startTime: (d.data().startTime as Timestamp).toDate(), endTime: (d.data().endTime as Timestamp).toDate()} as Booking));
 
             const hasConflictInTx = existingBookings.some(booking => {
-                const existingStart = (booking.startTime as Timestamp).toDate();
-                const existingEnd = (booking.endTime as Timestamp).toDate();
-                return startDateTime < existingEnd && endDateTime > existingStart;
+                return startDateTime < booking.endTime && endDateTime > booking.startTime;
             });
 
             if (hasConflictInTx) {
@@ -324,7 +354,8 @@ function WorkstationBookingDialog({
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create Razorpay order.");
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to create Razorpay order.");
       }
       
       const order = await res.json();
@@ -487,28 +518,54 @@ function WorkstationSelector({
     <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-4 pt-4">
       {wsIds.map((wsId) => {
         const seatBookings = bookings.filter(b => b.workspaceId === wsId && b.status === "confirmed");
-        const isFullyBooked = seatBookings.some(b => {
-           // Logic to check if it's booked for the WHOLE day, otherwise keep enabled
-           return false; // Keep enabled so they can see partial slots
-        });
+        const totalMinutesBooked = calculateTotalBookedMinutes(seatBookings);
+        const isFullyBooked = totalMinutesBooked >= 480; // 8 hours * 60 mins
+        const isPartiallyBooked = seatBookings.length > 0;
 
-        return (
-          <div key={wsId} className="flex flex-col items-center">
+        const button = (
+          <div className="flex flex-col items-center">
             <Button
               onClick={() => onBookWorkstation(wsId)}
+              disabled={isFullyBooked}
               className={cn(
                 "w-full font-semibold transition-all relative",
-                seatBookings.length === 0 ? "bg-green-100 text-green-800 hover:bg-green-200" : "bg-orange-100 text-orange-800 hover:bg-orange-200"
+                isFullyBooked 
+                  ? "bg-red-200 text-red-800 hover:bg-red-300 cursor-not-allowed" 
+                  : "bg-green-100 text-green-800 hover:bg-green-200"
               )}
             >
               {wsId.split("-").pop()}
             </Button>
-            {/* The Indication Bar your client asked for */}
             <div className="w-full px-1 relative h-2">
                <OccupancyBar bookings={seatBookings} />
             </div>
           </div>
         );
+
+        if (isPartiallyBooked && !isFullyBooked) {
+          return (
+            <TooltipProvider key={wsId}>
+              <Tooltip>
+                <TooltipTrigger asChild>{button}</TooltipTrigger>
+                <TooltipContent>
+                  <div className="p-1">
+                    <h4 className="font-semibold text-sm mb-2">Reserved Slots</h4>
+                    <ul className="space-y-1">
+                      {seatBookings.map(booking => (
+                        <li key={booking.id} className="text-xs text-muted-foreground flex justify-between items-center gap-4">
+                          <span>{format(booking.startTime, 'h:mm a')} - {format(booking.endTime, 'h:mm a')}</span>
+                          {booking.userId === user?.uid && <Badge variant="secondary" className="text-xs h-4 px-1.5">You</Badge>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          );
+        }
+
+        return <div key={wsId}>{button}</div>;
       })}
     </div>
   );
@@ -583,14 +640,12 @@ function RoomBookingDialog({
                 where("date", "==", dateStr),
                 where("status", "==", "confirmed")
             );
-
-            const snapshot = await transaction.get(q);
-            const existingBookings = snapshot.docs.map(d => d.data());
+            
+            const snapshot = await getDocs(q);
+            const existingBookings = snapshot.docs.map(d => ({...d.data(), startTime: (d.data().startTime as Timestamp).toDate(), endTime: (d.data().endTime as Timestamp).toDate()} as Booking));
 
             const hasConflictInTx = existingBookings.some(booking => {
-                const existingStart = (booking.startTime as Timestamp).toDate();
-                const existingEnd = (booking.endTime as Timestamp).toDate();
-                return startDateTime < existingEnd && endDateTime > existingStart;
+                 return startDateTime < booking.endTime && endDateTime > booking.startTime;
             });
 
             if (hasConflictInTx) {
@@ -631,7 +686,8 @@ function RoomBookingDialog({
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create Razorpay order.");
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to create Razorpay order.");
       }
       
       const order = await res.json();
@@ -789,6 +845,7 @@ function RoomSelector({
   extraCost,
   onBookRoom,
   bookings,
+  user,
 }: {
   roomId: string;
   baseCapacity: number;
@@ -796,6 +853,7 @@ function RoomSelector({
   extraCost: number;
   onBookRoom: (room: Workspace, extraChairs: number) => void;
   bookings: Booking[];
+  user: User | null;
 }) {
   const [extraChairs, setExtraChairs] = useState(0);
 
@@ -804,72 +862,105 @@ function RoomSelector({
   if (!room) return <p className="text-red-500">Room configuration error.</p>;
 
   const roomBookings = bookings.filter(b => b.workspaceId === roomId && b.status === "confirmed");
+  const totalMinutesBooked = calculateTotalBookedMinutes(roomBookings);
+  const isFullyBooked = totalMinutesBooked >= 480;
+  const isPartiallyBooked = roomBookings.length > 0;
 
-  return (
-    <div className="pt-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>{room.name}</CardTitle>
-          <div className="pt-2">
-            <p className="text-xs text-muted-foreground mb-1">Today's Schedule:</p>
-            <div className="w-full relative h-2.5 bg-gray-200 rounded-full">
-              <OccupancyBar bookings={roomBookings} />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-sm mb-4">This room is booked as a whole. Select the number of extra chairs you need.</p>
-          <div className="flex flex-wrap gap-4 items-center">
-            {Array.from({ length: totalCapacity }).map((_, i) => {
-              const isExtra = i >= baseCapacity;
-              const isSelected = isExtra && i - baseCapacity < extraChairs;
-              return (
-                <Button
-                  key={i}
-                  variant="outline"
-                  size="icon"
-                  onClick={() =>
-                    isExtra &&
-                    setExtraChairs((c) =>
-                      i - baseCapacity < c ? i - baseCapacity : i - baseCapacity + 1
-                    )
-                  }
-                  className={cn(
-                    "h-12 w-12",
-                    isSelected && "bg-blue-200 border-blue-400",
-                    isExtra && "cursor-pointer hover:bg-gray-100",
-                    !isExtra && "opacity-50 cursor-default"
-                  )}
-                  disabled={!isExtra}
-                  title={isExtra ? `Select ${i + 1} seats` : `Seat ${i + 1} (included)`}
-                >
-                  <Armchair
-                    className={cn(
-                      isSelected ? "text-blue-700" : "text-gray-600"
-                    )}
-                  />
-                </Button>
-              );
-            })}
-          </div>
-          <div className="mt-6 space-y-4">
-            <p className="text-sm text-muted-foreground">
-              The first {baseCapacity} seats are included. Each additional seat
-              costs ₹{extraCost}/hr.
-            </p>
-            {extraChairs > 0 && (
-              <p className="font-semibold">
-                You've selected {extraChairs} extra seat(s).
-              </p>
+  const card = (
+    <Card className={cn("transition-shadow", isFullyBooked && "bg-red-50 border-red-200")}>
+      <CardHeader>
+        <div className="flex justify-between items-start">
+            <CardTitle>{room.name}</CardTitle>
+            {isPartiallyBooked && (
+            <Badge variant={isFullyBooked ? "destructive" : "secondary"}>
+                {isFullyBooked ? "Fully Booked" : "Partially Booked"}
+            </Badge>
             )}
-            <Button onClick={() => onBookRoom(room, extraChairs)}>
-              Select Time for {room.name}
+        </div>
+        <div className="pt-2">
+        <p className="text-xs text-muted-foreground mb-1">Today's Schedule (9:30 AM - 5:30 PM):</p>
+        <div className="w-full relative h-2.5 bg-gray-200 rounded-full">
+            <OccupancyBar bookings={roomBookings} />
+        </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground text-sm mb-4">This room is booked as a whole. Select the number of extra chairs you need.</p>
+        <div className="flex flex-wrap gap-4 items-center">
+        {Array.from({ length: totalCapacity }).map((_, i) => {
+            const isExtra = i >= baseCapacity;
+            const isSelected = isExtra && i - baseCapacity < extraChairs;
+            return (
+            <Button
+                key={i}
+                variant="outline"
+                size="icon"
+                onClick={() =>
+                isExtra &&
+                setExtraChairs((c) =>
+                    i - baseCapacity < c ? i - baseCapacity : i - baseCapacity + 1
+                )
+                }
+                className={cn(
+                "h-12 w-12",
+                isSelected && "bg-blue-200 border-blue-400",
+                isExtra && "cursor-pointer hover:bg-gray-100",
+                !isExtra && "opacity-50 cursor-default"
+                )}
+                disabled={!isExtra}
+                title={isExtra ? `Select ${i + 1} seats` : `Seat ${i + 1} (included)`}
+            >
+                <Armchair
+                className={cn(
+                    isSelected ? "text-blue-700" : "text-gray-600"
+                )}
+                />
             </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+            );
+        })}
+        </div>
+        <div className="mt-6 space-y-4">
+        <p className="text-sm text-muted-foreground">
+            The first {baseCapacity} seats are included. Each additional seat
+            costs ₹{extraCost}/hr.
+        </p>
+        {extraChairs > 0 && (
+            <p className="font-semibold">
+            You've selected {extraChairs} extra seat(s).
+            </p>
+        )}
+        <Button onClick={() => onBookRoom(room, extraChairs)} disabled={isFullyBooked}>
+            {isFullyBooked ? "Unavailable Today" : `Select Time for ${room.name}`}
+        </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
+
+  if (isPartiallyBooked) {
+      return (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>{card}</TooltipTrigger>
+                <TooltipContent>
+                    <div className="p-1">
+                        <h4 className="font-semibold text-sm mb-2">Reserved Slots</h4>
+                        <ul className="space-y-1">
+                        {roomBookings.map(booking => (
+                            <li key={booking.id} className="text-xs text-muted-foreground flex justify-between items-center gap-4">
+                            <span>{format(booking.startTime, 'h:mm a')} - {format(booking.endTime, 'h:mm a')}</span>
+                            {booking.userId === user?.uid && <Badge variant="secondary" className="text-xs h-4 px-1.5">You</Badge>}
+                            </li>
+                        ))}
+                        </ul>
+                    </div>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+      )
+  }
+
+  return <div className="pt-4">{card}</div>;
 }
 
 export default function InteractiveBooking(props: InteractiveBookingProps) {
@@ -947,6 +1038,7 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
           extraCost={categoryConfig.extraCost}
           onBookRoom={handleRoomSelection}
           bookings={props.bookings}
+          user={props.user}
         />
       );
     }
@@ -1006,5 +1098,7 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
     </div>
   );
 }
+
+    
 
     
