@@ -1,6 +1,7 @@
 
 "use client";
 import { useState } from "react";
+import Script from "next/script";
 import type { User } from "firebase/auth";
 import { collection, Timestamp, runTransaction, query, where, doc, serverTimestamp, deleteDoc, getDocs } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
@@ -924,6 +925,10 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
             user={props.user}
         />
     )}
+      <Script 
+        id="razorpay-checkout-js"
+        src="https://checkout.razorpay.com/v1/checkout.js" 
+      />
     </div>
   );
 }
