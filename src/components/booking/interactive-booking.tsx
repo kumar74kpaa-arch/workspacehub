@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Script from "next/script";
 import type { User } from "firebase/auth";
-import { collection, Timestamp, runTransaction, query, where, doc, serverTimestamp, deleteDoc, getDocs } from "firebase/firestore";
+import { collection, Timestamp, runTransaction, query, where, doc, serverTimestamp, getDocs } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format, parse } from "date-fns";
@@ -25,6 +25,37 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { validateBookingTime } from "@/lib/validateBookingTime";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+function OccupancyBar({ bookings }: { bookings: Booking[] }) {
+  // We define the workday as 8 hours (9:30 to 17:30)
+  const DAY_START_MINS = 9 * 60 + 30; // 570 mins
+  const DAY_TOTAL_MINS = 8 * 60; // 480 mins
+
+  return (
+    <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden flex mt-1">
+      {bookings.map((b, i) => {
+        const start = b.startTime;
+        const end = b.endTime;
+        
+        const startMins = start.getHours() * 60 + start.getMinutes();
+        const endMins = end.getHours() * 60 + end.getMinutes();
+        
+        // Calculate position and width percentages
+        const left = Math.max(0, ((startMins - DAY_START_MINS) / DAY_TOTAL_MINS) * 100);
+        const width = Math.min(100, ((endMins - startMins) / DAY_TOTAL_MINS) * 100);
+
+        return (
+          <div 
+            key={i}
+            className="h-full bg-red-500 absolute" 
+            style={{ left: `${left}%`, width: `${width}%` }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 
 const calculateWorkstationBookingAmount = ({
   startTime,
@@ -188,6 +219,7 @@ function WorkstationBookingDialog({
   onOpenChange,
   onBooked,
   user,
+  bookings,
 }: {
   officeId: string;
   workstationId: string;
@@ -195,6 +227,7 @@ function WorkstationBookingDialog({
   onOpenChange: (open: boolean) => void;
   onBooked: () => void;
   user: User | null;
+  bookings: Booking[];
 }) {
   const [startTime, setStartTime] = useState("09:30");
   const [endTime, setEndTime] = useState("17:30");
@@ -211,6 +244,8 @@ function WorkstationBookingDialog({
     startTime: startDateTime,
     endTime: endDateTime,
   });
+
+  const seatBookings = bookings?.filter(b => b.workspaceId === workstationId && b.status === "confirmed") || [];
 
   const handleBookWorkstation = async () => {
     if (!user || !firestore || !officeId || !workstationId) {
@@ -238,11 +273,12 @@ function WorkstationBookingDialog({
                 bookingsRef,
                 where("officeId", "==", officeId),
                 where("workspaceId", "==", workstationId),
-                where("date", "==", dateStr)
+                where("date", "==", dateStr),
+                where("status", "==", "confirmed")
             );
 
-            const snapshot = await getDocs(q);
-            const existingBookings = snapshot.docs.map(d => d.data()).filter(b => b.status !== 'cancelled');
+            const snapshot = await transaction.get(q);
+            const existingBookings = snapshot.docs.map(d => d.data());
 
             const hasConflictInTx = existingBookings.some(booking => {
                 const existingStart = (booking.startTime as Timestamp).toDate();
@@ -381,6 +417,21 @@ function WorkstationBookingDialog({
               </div>
             </div>
           </div>
+
+          {seatBookings.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-3">
+              <p className="text-xs font-bold text-red-800 uppercase flex items-center gap-2">
+                <Clock className="h-3 w-3" /> Already Reserved Slots:
+              </p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {seatBookings.map((b, i) => (
+                  <span key={i} className="text-xs bg-white border border-red-300 px-2 py-1 rounded text-red-700">
+                    {format(b.startTime, "hh:mm a")} - {format(b.endTime, "hh:mm a")}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           
           {totalCost > 0 && (
              <Card className="bg-muted/50 p-4">
@@ -432,41 +483,31 @@ function WorkstationSelector({
   user: User | null;
   onBookWorkstation: (workstationId: string) => void;
 }) {
-  
-  const getBookingStatus = (wsId: string) => {
-    const userBookings = bookings.filter(b => b.userId === user?.uid && b.workspaceId === wsId && b.workspaceType === "desk" && b.status === "confirmed");
-    if(userBookings.length > 0) return 'my-booking';
-    
-    const otherBookings = bookings.filter(b => b.workspaceId === wsId && b.workspaceType === "desk" && b.status === "confirmed");
-    if(otherBookings.length > 0) return 'booked';
-
-    return "available";
-  };
-
   return (
-    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-3 pt-4">
+    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-4 pt-4">
       {wsIds.map((wsId) => {
-        const status = getBookingStatus(wsId);
-        const isDisabled =
-          status === "booked" || status === "my-booking";
+        const seatBookings = bookings.filter(b => b.workspaceId === wsId && b.status === "confirmed");
+        const isFullyBooked = seatBookings.some(b => {
+           // Logic to check if it's booked for the WHOLE day, otherwise keep enabled
+           return false; // Keep enabled so they can see partial slots
+        });
 
         return (
-          <Button
-            key={wsId}
-            onClick={() => onBookWorkstation(wsId)}
-            disabled={isDisabled}
-            className={cn(
-              "font-semibold transition-all",
-              status === "available" &&
-                "bg-green-100 text-green-800 hover:bg-green-200",
-              status === "booked" && "bg-red-100 text-red-800 cursor-not-allowed",
-              status === "my-booking" &&
-                "bg-blue-100 text-blue-800 cursor-not-allowed"
-            )}
-            title={wsId}
-          >
-            {wsId.split("-").pop()}
-          </Button>
+          <div key={wsId} className="flex flex-col items-center">
+            <Button
+              onClick={() => onBookWorkstation(wsId)}
+              className={cn(
+                "w-full font-semibold transition-all relative",
+                seatBookings.length === 0 ? "bg-green-100 text-green-800 hover:bg-green-200" : "bg-orange-100 text-orange-800 hover:bg-orange-200"
+              )}
+            >
+              {wsId.split("-").pop()}
+            </Button>
+            {/* The Indication Bar your client asked for */}
+            <div className="w-full px-1 relative h-2">
+               <OccupancyBar bookings={seatBookings} />
+            </div>
+          </div>
         );
       })}
     </div>
@@ -481,6 +522,7 @@ function RoomBookingDialog({
   onOpenChange,
   onBooked,
   user,
+  bookings,
 }: {
   officeId: string;
   room: Workspace;
@@ -489,6 +531,7 @@ function RoomBookingDialog({
   onOpenChange: (open: boolean) => void;
   onBooked: () => void;
   user: User | null;
+  bookings: Booking[];
 }) {
   const [startTime, setStartTime] = useState("09:30");
   const [endTime, setEndTime] = useState("10:30");
@@ -508,6 +551,8 @@ function RoomBookingDialog({
     durationInHours,
     extraChairs,
   });
+
+  const roomBookings = bookings?.filter(b => b.workspaceId === room.id && b.status === "confirmed") || [];
   
   const handleReserveClick = async () => {
     if (!user || !firestore || !officeId || !room.id) {
@@ -535,11 +580,12 @@ function RoomBookingDialog({
                 bookingsRef,
                 where("officeId", "==", officeId),
                 where("workspaceId", "==", room.id),
-                where("date", "==", dateStr)
+                where("date", "==", dateStr),
+                where("status", "==", "confirmed")
             );
 
-            const snapshot = await getDocs(q);
-            const existingBookings = snapshot.docs.map(d => d.data()).filter(b => b.status !== 'cancelled');
+            const snapshot = await transaction.get(q);
+            const existingBookings = snapshot.docs.map(d => d.data());
 
             const hasConflictInTx = existingBookings.some(booking => {
                 const existingStart = (booking.startTime as Timestamp).toDate();
@@ -681,6 +727,21 @@ function RoomBookingDialog({
           
           {extraChairs > 0 && <p className="text-sm text-muted-foreground">{extraChairs} extra seat(s) selected.</p>}
 
+          {roomBookings.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-3">
+              <p className="text-xs font-bold text-red-800 uppercase flex items-center gap-2">
+                <Clock className="h-3 w-3" /> Already Reserved Slots:
+              </p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {roomBookings.map((b, i) => (
+                  <span key={i} className="text-xs bg-white border border-red-300 px-2 py-1 rounded text-red-700">
+                    {format(b.startTime, "hh:mm a")} - {format(b.endTime, "hh:mm a")}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {durationInHours > 0 && (
              <Card className="bg-muted/50 p-4">
               <CardContent className="p-0">
@@ -727,12 +788,14 @@ function RoomSelector({
   totalCapacity,
   extraCost,
   onBookRoom,
+  bookings,
 }: {
   roomId: string;
   baseCapacity: number;
   totalCapacity: number;
   extraCost: number;
   onBookRoom: (room: Workspace, extraChairs: number) => void;
+  bookings: Booking[];
 }) {
   const [extraChairs, setExtraChairs] = useState(0);
 
@@ -740,11 +803,19 @@ function RoomSelector({
   
   if (!room) return <p className="text-red-500">Room configuration error.</p>;
 
+  const roomBookings = bookings.filter(b => b.workspaceId === roomId && b.status === "confirmed");
+
   return (
     <div className="pt-4">
       <Card>
         <CardHeader>
           <CardTitle>{room.name}</CardTitle>
+          <div className="pt-2">
+            <p className="text-xs text-muted-foreground mb-1">Today's Schedule:</p>
+            <div className="w-full relative h-2.5 bg-gray-200 rounded-full">
+              <OccupancyBar bookings={roomBookings} />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-sm mb-4">This room is booked as a whole. Select the number of extra chairs you need.</p>
@@ -875,6 +946,7 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
           totalCapacity={categoryConfig.totalCapacity}
           extraCost={categoryConfig.extraCost}
           onBookRoom={handleRoomSelection}
+          bookings={props.bookings}
         />
       );
     }
@@ -903,6 +975,7 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
           workstationId={workstationDetails}
           date={props.date}
           user={props.user}
+          bookings={props.bookings}
           onOpenChange={(open) => !open && setWorkstationDetails(null)}
           onBooked={() => {
               setWorkstationDetails(null);
@@ -923,6 +996,7 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
                 props.onBooking();
             }}
             user={props.user}
+            bookings={props.bookings}
         />
     )}
       <Script 
@@ -932,3 +1006,5 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
     </div>
   );
 }
+
+    
