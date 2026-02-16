@@ -16,6 +16,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Loader2, Armchair, Clock, AlertTriangle } from "lucide-react";
@@ -181,6 +182,7 @@ type InteractiveBookingProps = {
   officeId: string;
   date: Date;
   bookings: Booking[];
+  adminBlocks: any[];
   user: User | null;
   agreedToTerms: boolean;
   onBooking: () => void;
@@ -311,7 +313,7 @@ function WorkstationBookingDialog({
                 where("status", "==", "confirmed")
             );
 
-            const snapshot = await transaction.get(q);
+            const snapshot = await getDocs(q);
             const existingBookings = snapshot.docs.map(d => ({...d.data(), startTime: (d.data().startTime as Timestamp).toDate(), endTime: (d.data().endTime as Timestamp).toDate()} as Booking));
 
             const hasConflictInTx = existingBookings.some(booking => {
@@ -509,11 +511,13 @@ function WorkstationBookingDialog({
 function WorkstationSelector({
   wsIds,
   bookings,
+  adminBlocks,
   user,
   onBookWorkstation
 }: {
   wsIds: string[];
   bookings: Booking[];
+  adminBlocks: any[];
   user: User | null;
   onBookWorkstation: (workstationId: string) => void;
 }) {
@@ -522,7 +526,8 @@ function WorkstationSelector({
       {wsIds.map((wsId) => {
         const seatBookings = bookings.filter(b => b.workspaceId === wsId && b.status === "confirmed");
         const totalMinutesBooked = calculateTotalBookedMinutes(seatBookings);
-        const isFullyBooked = totalMinutesBooked >= 480; // 8 hours * 60 mins
+        const isAdminBlocked = adminBlocks.some(block => block.workspaceId === wsId);
+        const isFullyBooked = totalMinutesBooked >= 480 || isAdminBlocked;
         const isPartiallyBooked = seatBookings.length > 0;
 
         const button = (
@@ -547,29 +552,38 @@ function WorkstationSelector({
           </div>
         );
 
-        if (isPartiallyBooked && !isFullyBooked) {
+        let tooltipContent: React.ReactNode = null;
+        if (isAdminBlocked) {
+          tooltipContent = <p>Reserved by Management</p>;
+        } else if (isPartiallyBooked && !isFullyBooked) {
+          tooltipContent = (
+            <div className="p-1">
+              <h4 className="font-semibold text-sm mb-2">Reserved Slots</h4>
+              <ul className="space-y-1">
+                {seatBookings.map(booking => (
+                  <li key={booking.id} className="text-xs text-muted-foreground flex justify-between items-center gap-4">
+                    <span>{format(booking.startTime, 'h:mm a')} - {format(booking.endTime, 'h:mm a')}</span>
+                    {booking.userId === user?.uid && <Badge variant="secondary" className="text-xs h-4 px-1.5">You</Badge>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        }
+
+        if (tooltipContent) {
           return (
             <TooltipProvider key={wsId}>
               <Tooltip>
                 <TooltipTrigger asChild>{button}</TooltipTrigger>
                 <TooltipContent>
-                  <div className="p-1">
-                    <h4 className="font-semibold text-sm mb-2">Reserved Slots</h4>
-                    <ul className="space-y-1">
-                      {seatBookings.map(booking => (
-                        <li key={booking.id} className="text-xs text-muted-foreground flex justify-between items-center gap-4">
-                          <span>{format(booking.startTime, 'h:mm a')} - {format(booking.endTime, 'h:mm a')}</span>
-                          {booking.userId === user?.uid && <Badge variant="secondary" className="text-xs h-4 px-1.5">You</Badge>}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {tooltipContent}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           );
         }
-
+        
         return <div key={wsId}>{button}</div>;
       })}
     </div>
@@ -646,7 +660,7 @@ function RoomBookingDialog({
                 where("status", "==", "confirmed")
             );
             
-            const snapshot = await transaction.get(q);
+            const snapshot = await getDocs(q);
             const existingBookings = snapshot.docs.map(d => ({...d.data(), startTime: (d.data().startTime as Timestamp).toDate(), endTime: (d.data().endTime as Timestamp).toDate()} as Booking));
 
             const hasConflictInTx = existingBookings.some(booking => {
@@ -851,6 +865,7 @@ function RoomSelector({
   extraCost,
   onBookRoom,
   bookings,
+  adminBlocks,
   user,
 }: {
   roomId: string;
@@ -859,6 +874,7 @@ function RoomSelector({
   extraCost: number;
   onBookRoom: (room: Workspace, extraChairs: number) => void;
   bookings: Booking[];
+  adminBlocks: any[];
   user: User | null;
 }) {
   const [extraChairs, setExtraChairs] = useState(0);
@@ -869,7 +885,8 @@ function RoomSelector({
 
   const roomBookings = bookings.filter(b => b.workspaceId === roomId && b.status === "confirmed");
   const totalMinutesBooked = calculateTotalBookedMinutes(roomBookings);
-  const isFullyBooked = totalMinutesBooked >= 480;
+  const isAdminBlocked = adminBlocks.some(block => block.workspaceId === roomId);
+  const isFullyBooked = totalMinutesBooked >= 480 || isAdminBlocked;
   const isPartiallyBooked = roomBookings.length > 0;
 
   const card = (
@@ -877,10 +894,12 @@ function RoomSelector({
       <CardHeader>
         <div className="flex justify-between items-start">
             <CardTitle>{room.name}</CardTitle>
-            {isPartiallyBooked && (
-            <Badge variant={isFullyBooked ? "destructive" : "secondary"}>
-                {isFullyBooked ? "Fully Booked" : "Partially Booked"}
-            </Badge>
+            {isAdminBlocked ? (
+              <Badge variant={"destructive"}>Reserved by Mgmt</Badge>
+            ) : isPartiallyBooked && (
+              <Badge variant={isFullyBooked ? "destructive" : "secondary"}>
+                  {isFullyBooked ? "Fully Booked" : "Partially Booked"}
+              </Badge>
             )}
         </div>
         <div className="pt-2">
@@ -943,27 +962,36 @@ function RoomSelector({
     </Card>
   );
 
-  if (isPartiallyBooked) {
-      return (
+  let tooltipContent: React.ReactNode = null;
+  if (isAdminBlocked) {
+    tooltipContent = <p>This room is blocked for the day by management.</p>;
+  } else if (isPartiallyBooked) {
+    tooltipContent = (
+      <div className="p-1">
+          <h4 className="font-semibold text-sm mb-2">Reserved Slots</h4>
+          <ul className="space-y-1">
+          {roomBookings.map(booking => (
+              <li key={booking.id} className="text-xs text-muted-foreground flex justify-between items-center gap-4">
+              <span>{format(booking.startTime, 'h:mm a')} - {format(booking.endTime, 'h:mm a')}</span>
+              {booking.userId === user?.uid && <Badge variant="secondary" className="text-xs h-4 px-1.5">You</Badge>}
+              </li>
+          ))}
+          </ul>
+      </div>
+    );
+  }
+
+  if (tooltipContent) {
+    return (
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>{card}</TooltipTrigger>
                 <TooltipContent>
-                    <div className="p-1">
-                        <h4 className="font-semibold text-sm mb-2">Reserved Slots</h4>
-                        <ul className="space-y-1">
-                        {roomBookings.map(booking => (
-                            <li key={booking.id} className="text-xs text-muted-foreground flex justify-between items-center gap-4">
-                            <span>{format(booking.startTime, 'h:mm a')} - {format(booking.endTime, 'h:mm a')}</span>
-                            {booking.userId === user?.uid && <Badge variant="secondary" className="text-xs h-4 px-1.5">You</Badge>}
-                            </li>
-                        ))}
-                        </ul>
-                    </div>
+                  {tooltipContent}
                 </TooltipContent>
             </Tooltip>
         </TooltipProvider>
-      )
+    )
   }
 
   return <div className="pt-4">{card}</div>;
@@ -1026,6 +1054,7 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
         onBookWorkstation={handleWorkstationSelection}
         wsIds={categoryConfig.resourceIds} 
         bookings={props.bookings}
+        adminBlocks={props.adminBlocks}
         user={props.user}
       />;
     }
@@ -1044,6 +1073,7 @@ export default function InteractiveBooking(props: InteractiveBookingProps) {
           extraCost={categoryConfig.extraCost}
           onBookRoom={handleRoomSelection}
           bookings={props.bookings}
+          adminBlocks={props.adminBlocks}
           user={props.user}
         />
       );

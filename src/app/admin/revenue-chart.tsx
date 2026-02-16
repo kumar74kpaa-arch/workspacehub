@@ -22,22 +22,22 @@ export function RevenueChart() {
   const [data, setData] = React.useState<any[]>([]);
   
   React.useEffect(() => {
-    // Generate data on the client to avoid hydration mismatch
-    const generatedData = [
-      { name: 'Jan', total: Math.floor(Math.random() * 400000) + 80000 },
-      { name: 'Feb', total: Math.floor(Math.random() * 400000) + 80000 },
-      { name: 'Mar', total: Math.floor(Math.random() * 400000) + 80000 },
-      { name: 'Apr', total: Math.floor(Math.random() * 400000) + 80000 },
-      { name: 'May', total: Math.floor(Math.random() * 400000) + 80000 },
-      { name: 'Jun', total: Math.floor(Math.random() * 400000) + 80000 },
-      { name: 'Jul', total: Math.floor(Math.random() * 400000) + 80000 },
-      { name: 'Aug', total: Math.floor(Math.random() * 400000) + 80000 },
-      { name: 'Sep', total: Math.floor(Math.random() * 400000) + 80000 },
-      { name: 'Oct', total: Math.floor(Math.random() * 400000) + 80000 },
-      { name: 'Nov', total: Math.floor(Math.random() * 400000) + 80000 },
-      { name: 'Dec', total: Math.floor(Math.random() * 400000) + 80000 },
+    // Initializing with real February revenue and 0 for other months
+    const cleanData = [
+      { name: 'Jan', total: 0 },
+      { name: 'Feb', total: 5.83 }, // Your first real transaction
+      { name: 'Mar', total: 0 },
+      { name: 'Apr', total: 0 },
+      { name: 'May', total: 0 },
+      { name: 'Jun', total: 0 },
+      { name: 'Jul', total: 0 },
+      { name: 'Aug', total: 0 },
+      { name: 'Sep', total: 0 },
+      { name: 'Oct', total: 0 },
+      { name: 'Nov', total: 0 },
+      { name: 'Dec', total: 0 },
     ];
-    setData(generatedData);
+    setData(cleanData);
   }, []);
 
   return (
@@ -62,15 +62,24 @@ export function RevenueChart() {
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `₹${Number(value) / 1000}k`}
+                // Sets the visual range from 5k to 50k as requested
+                domain={[5000, 50000]}
+                ticks={[5000, 10000, 20000, 30000, 40000, 50000]}
+                tickFormatter={(value) => `₹${value / 1000}k`}
               />
               <ChartTooltip
                 content={<ChartTooltipContent 
-                  formatter={(value) => `₹${value.toLocaleString()}`}
+                  formatter={(value) => `₹${Number(value).toLocaleString('en-IN')}`}
                 />}
                 cursor={{ fill: 'hsl(var(--accent) / 0.2)'}}
               />
-              <ReferenceLine y={350000} label="Breakeven Target" strokeDasharray="3 3" stroke="hsl(var(--destructive))" />
+              {/* Updated Breakeven Target to 50k */}
+              <ReferenceLine 
+                y={40000} 
+                label={{ value: "Breakeven Target", position: 'top', fill: 'hsl(var(--destructive))', fontSize: 10 }} 
+                strokeDasharray="3 3" 
+                stroke="hsl(var(--destructive))" 
+              />
               <Bar dataKey="total" fill="var(--color-total)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ChartContainer>

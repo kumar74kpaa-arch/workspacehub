@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -25,6 +26,7 @@ import InteractiveBooking from './interactive-booking';
 export default function SeatBookingClient({ officeId }: { officeId?: string }) {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [bookings, setBookings] = React.useState<Booking[]>([]);
+  const [adminBlocks, setAdminBlocks] = React.useState<any[]>([]);
   const [isCalendarOpen, setCalendarOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [agreedToTerms, setAgreedToTerms] = React.useState(false);
@@ -35,30 +37,45 @@ export default function SeatBookingClient({ officeId }: { officeId?: string }) {
 
   const selectedOffice = offices.find(o => o.id === officeId);
 
-  const fetchBookings = React.useCallback(async () => {
+  const fetchData = React.useCallback(async () => {
     if (!firestore || !date || !selectedOffice) return;
     setIsLoading(true);
     const dateStr = format(date, 'yyyy-MM-dd');
-    const q = query(
+
+    const bookingsQuery = query(
         collection(firestore, 'bookings'), 
         where('date', '==', dateStr),
         where('officeId', '==', selectedOffice.id)
     );
+    const adminBlocksQuery = query(
+      collection(firestore, 'adminReservations'),
+      where('date', '==', dateStr),
+      where('officeId', '==', selectedOffice.id)
+    );
+
     try {
-        const snapshot = await getDocs(q);
-        const bookingsData = snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                ...data,
-                startTime: (data.startTime as Timestamp).toDate(),
-                endTime: (data.endTime as Timestamp).toDate(),
-            } as Booking;
-        });
-        setBookings(bookingsData);
+      const [bookingsSnapshot, adminBlocksSnapshot] = await Promise.all([
+        getDocs(bookingsQuery),
+        getDocs(adminBlocksQuery),
+      ]);
+
+      const bookingsData = bookingsSnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+              id: doc.id,
+              ...data,
+              startTime: (data.startTime as Timestamp).toDate(),
+              endTime: (data.endTime as Timestamp).toDate(),
+          } as Booking;
+      });
+      setBookings(bookingsData);
+
+      const adminBlocksData = adminBlocksSnapshot.docs.map(doc => doc.data());
+      setAdminBlocks(adminBlocksData);
+
     } catch (error) {
-        console.error("Error fetching bookings:", error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch bookings.' });
+        console.error("Error fetching availability data:", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch availability.' });
     } finally {
         setIsLoading(false);
     }
@@ -66,12 +83,13 @@ export default function SeatBookingClient({ officeId }: { officeId?: string }) {
 
   React.useEffect(() => {
     if (selectedOffice && date) {
-        fetchBookings();
+        fetchData();
     } else {
         setBookings([]);
+        setAdminBlocks([]);
         setIsLoading(false);
     }
-  }, [selectedOffice, date, fetchBookings]);
+  }, [selectedOffice, date, fetchData]);
 
 
   if (!selectedOffice) {
@@ -146,9 +164,10 @@ export default function SeatBookingClient({ officeId }: { officeId?: string }) {
                   officeId={selectedOffice.id}
                   date={date}
                   bookings={bookings}
+                  adminBlocks={adminBlocks}
                   user={user}
                   agreedToTerms={agreedToTerms}
-                  onBooking={fetchBookings}
+                  onBooking={fetchData}
                 />
               ) : (
                 <p className="text-center text-muted-foreground">Please select a date to see availability.</p>

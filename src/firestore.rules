@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -50,6 +51,15 @@ service cloud.firestore {
       // A user can update/delete their own booking. Admins can manage any booking.
       // The Admin SDK (used for payment verification) bypasses these rules.
       allow update, delete: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+    }
+    
+    // Rules for admin reservations (blocks)
+    match /adminReservations/{reservationId} {
+        // Any authenticated user can read the blocks to see availability
+        allow read: if request.auth != null;
+
+        // Only admins can create, update, or delete blocks
+        allow write: if isAdmin();
     }
   }
 }
