@@ -47,6 +47,14 @@ export type Booking = {
   paidAmount?: number;
 };
 
+export type AdminReservation = {
+  id: string;
+  officeId: string;
+  workspaceId: string;
+  date: string; // YYYY-MM-DD
+  workspaceType: 'desk' | 'room';
+};
+
 export type MembershipPlan = {
   id: string;
   name: string;

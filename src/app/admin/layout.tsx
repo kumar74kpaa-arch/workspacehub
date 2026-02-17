@@ -12,6 +12,7 @@ import {
   Search,
   Loader2,
   ExternalLink,
+  Ban,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -45,6 +46,7 @@ const navItems = [
   { href: '/admin/bookings', icon: Calendar, label: 'Bookings' },
   { href: '/admin/users', icon: Users, label: 'Users' },
   { href: '/admin/resources', icon: Building2, label: 'Resources' },
+  { href: '/admin/blocker', icon: Ban, label: 'Blocker' },
   { href: '/admin/payments', icon: FileText, label: 'Payments' },
 ];
 

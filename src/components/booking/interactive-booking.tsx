@@ -61,10 +61,18 @@ const calculateTotalBookedMinutes = (bookings: Booking[]): number => {
     return totalMilliseconds / (1000 * 60);
 };
 
-function OccupancyBar({ bookings }: { bookings: Booking[] }) {
+function OccupancyBar({ bookings, isAdminBlocked }: { bookings: Booking[], isAdminBlocked?: boolean }) {
   // We define the workday as 8 hours (9:30 to 17:30)
   const DAY_START_MINS = 9 * 60 + 30; // 570 mins
   const DAY_TOTAL_MINS = 8 * 60; // 480 mins
+
+  if (isAdminBlocked) {
+    return (
+        <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden flex mt-1">
+            <div className="h-full bg-red-500 w-full" />
+        </div>
+    )
+  }
 
   return (
     <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden flex mt-1">
@@ -525,8 +533,8 @@ function WorkstationSelector({
     <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-4 pt-4">
       {wsIds.map((wsId) => {
         const seatBookings = bookings.filter(b => b.workspaceId === wsId && b.status === "confirmed");
-        const totalMinutesBooked = calculateTotalBookedMinutes(seatBookings);
         const isAdminBlocked = adminBlocks.some(block => block.workspaceId === wsId);
+        const totalMinutesBooked = calculateTotalBookedMinutes(seatBookings);
         const isFullyBooked = totalMinutesBooked >= 480 || isAdminBlocked;
         const isPartiallyBooked = seatBookings.length > 0;
 
@@ -547,14 +555,21 @@ function WorkstationSelector({
               {wsId.split("-").pop()}
             </Button>
             <div className="w-full px-1 relative h-2">
-               <OccupancyBar bookings={seatBookings} />
+               <OccupancyBar bookings={seatBookings} isAdminBlocked={isAdminBlocked} />
             </div>
           </div>
         );
 
         let tooltipContent: React.ReactNode = null;
         if (isAdminBlocked) {
-          tooltipContent = <p>Reserved by Management</p>;
+          tooltipContent = (
+            <div className="p-1">
+              <h4 className="font-semibold text-sm mb-2">Reserved Slots</h4>
+              <ul className="space-y-1">
+                <li className="text-xs text-muted-foreground">09:30 AM - 05:30 PM</li>
+              </ul>
+            </div>
+          );
         } else if (isPartiallyBooked && !isFullyBooked) {
           tooltipContent = (
             <div className="p-1">
@@ -573,7 +588,7 @@ function WorkstationSelector({
 
         if (tooltipContent) {
           return (
-            <TooltipProvider key={wsId}>
+            <TooltipProvider key={wsId} delayDuration={100}>
               <Tooltip>
                 <TooltipTrigger asChild>{button}</TooltipTrigger>
                 <TooltipContent>
@@ -884,8 +899,8 @@ function RoomSelector({
   if (!room) return <p className="text-red-500">Room configuration error.</p>;
 
   const roomBookings = bookings.filter(b => b.workspaceId === roomId && b.status === "confirmed");
-  const totalMinutesBooked = calculateTotalBookedMinutes(roomBookings);
   const isAdminBlocked = adminBlocks.some(block => block.workspaceId === roomId);
+  const totalMinutesBooked = calculateTotalBookedMinutes(roomBookings);
   const isFullyBooked = totalMinutesBooked >= 480 || isAdminBlocked;
   const isPartiallyBooked = roomBookings.length > 0;
 
@@ -894,18 +909,18 @@ function RoomSelector({
       <CardHeader>
         <div className="flex justify-between items-start">
             <CardTitle>{room.name}</CardTitle>
-            {isAdminBlocked ? (
-              <Badge variant={"destructive"}>Reserved by Mgmt</Badge>
-            ) : isPartiallyBooked && (
-              <Badge variant={isFullyBooked ? "destructive" : "secondary"}>
-                  {isFullyBooked ? "Fully Booked" : "Partially Booked"}
+            {isFullyBooked ? (
+              <Badge variant={"destructive"}>Fully Booked</Badge>
+            ) : isPartiallyBooked ? (
+              <Badge variant={"secondary"}>
+                  Partially Booked
               </Badge>
-            )}
+            ) : null}
         </div>
         <div className="pt-2">
         <p className="text-xs text-muted-foreground mb-1">Today's Schedule (9:30 AM - 5:30 PM):</p>
         <div className="w-full relative h-2.5 bg-gray-200 rounded-full">
-            <OccupancyBar bookings={roomBookings} />
+            <OccupancyBar bookings={roomBookings} isAdminBlocked={isAdminBlocked}/>
         </div>
         </div>
       </CardHeader>
@@ -964,7 +979,14 @@ function RoomSelector({
 
   let tooltipContent: React.ReactNode = null;
   if (isAdminBlocked) {
-    tooltipContent = <p>This room is blocked for the day by management.</p>;
+    tooltipContent = (
+        <div className="p-1">
+            <h4 className="font-semibold text-sm mb-2">Reserved Slots</h4>
+            <ul className="space-y-1">
+                <li className="text-xs text-muted-foreground">09:30 AM - 05:30 PM</li>
+            </ul>
+        </div>
+    );
   } else if (isPartiallyBooked) {
     tooltipContent = (
       <div className="p-1">
@@ -983,7 +1005,7 @@ function RoomSelector({
 
   if (tooltipContent) {
     return (
-        <TooltipProvider>
+        <TooltipProvider delayDuration={100}>
             <Tooltip>
                 <TooltipTrigger asChild>{card}</TooltipTrigger>
                 <TooltipContent>

@@ -167,6 +167,32 @@
         "endTime",
         "status"
       ]
+    },
+    "AdminReservation": {
+      "title": "Admin Reservation",
+      "description": "Represents a full-day block of a resource by an administrator.",
+      "type": "object",
+      "properties": {
+        "officeId": {
+          "type": "string",
+          "description": "The ID of the office for the reservation."
+        },
+        "workspaceId": {
+          "type": "string",
+          "description": "The ID of the workspace being blocked."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "The date of the block in YYYY-MM-DD format."
+        },
+        "workspaceType": {
+          "type": "string",
+          "description": "The type of workspace.",
+          "enum": ["desk", "room"]
+        }
+      },
+      "required": ["officeId", "workspaceId", "date", "workspaceType"]
     }
   },
   "auth": {
@@ -199,6 +225,12 @@
         "$ref": "#/entities/Workspace"
       },
       "description": "Stores all bookable resources across all offices."
+    },
+    "/adminReservations/{reservationId}": {
+      "schema": {
+        "$ref": "#/entities/AdminReservation"
+      },
+      "description": "Stores admin-only full-day resource blocks."
     }
   }
 }
