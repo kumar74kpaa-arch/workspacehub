@@ -62,17 +62,6 @@ const oliveWorkstations: Workspace[] = Array.from({ length: 16 }, (_, i) => ({
 
 const oliveRooms: Workspace[] = [
     {
-        id: 'OLIVE-MR-06',
-        officeId: 'olive',
-        name: 'The Olive Meeting Room',
-        type: 'room' as const,
-        capacity: 6,
-        imageUrl: meetingRoomImage.imageUrl,
-        imageHint: meetingRoomImage.imageHint,
-        isActive: true,
-        isBookable: true,
-    },
-    {
         id: 'OLIVE-MR-12',
         officeId: 'olive',
         name: 'The Olive Conference Room',
