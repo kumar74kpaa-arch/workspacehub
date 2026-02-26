@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -6,12 +5,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { format, startOfDay } from 'date-fns';
 import { Calendar as CalendarIcon, Loader2, ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useUser, useFirestore } from '@/firebase';
@@ -29,7 +26,6 @@ export default function SeatBookingClient({ officeId }: { officeId?: string }) {
   const [adminBlocks, setAdminBlocks] = React.useState<any[]>([]);
   const [isCalendarOpen, setCalendarOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [agreedToTerms, setAgreedToTerms] = React.useState(false);
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -126,18 +122,17 @@ export default function SeatBookingClient({ officeId }: { officeId?: string }) {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
-                <Calendar mode="single" selected={date} onSelect={(day) => { setDate(day); setCalendarOpen(false); }} initialFocus disabled={(day) => day < startOfDay(new Date())} />
+                <Calendar 
+                  mode="single" 
+                  selected={date} 
+                  onSelect={(day) => { setDate(day); setCalendarOpen(false); }} 
+                  initialFocus 
+                  disabled={(day) => day < startOfDay(new Date())} 
+                />
               </PopoverContent>
             </Popover>
           </div>
-            <div className="items-top flex space-x-2 pt-8">
-                <Checkbox id="terms-main" onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)} />
-                <div className="grid gap-1.5 leading-none">
-                    <label htmlFor="terms-main" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    I agree to the <Link href="/terms-and-conditions" target="_blank" className="underline text-primary">Terms & Conditions</Link>.
-                    </label>
-                </div>
-            </div>
+          {/* Checkbox section removed from here as per customer request */}
         </div>
         
         <div className="relative w-full max-w-6xl mx-auto pt-6 space-y-8">
@@ -166,7 +161,6 @@ export default function SeatBookingClient({ officeId }: { officeId?: string }) {
                   bookings={bookings}
                   adminBlocks={adminBlocks}
                   user={user}
-                  agreedToTerms={agreedToTerms}
                   onBooking={fetchData}
                 />
               ) : (
