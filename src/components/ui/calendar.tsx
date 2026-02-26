@@ -19,14 +19,9 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
-      // THIS IS THE KEY: Inline styles force the browser to align the columns
-      styles={{
-        table: { width: '100%', borderCollapse: 'collapse' },
-        head_row: { display: 'flex', width: '100%', justifyContent: 'space-between' },
-        row: { display: 'flex', width: '100%', justifyContent: 'space-between', marginTop: '8px' },
-        head_cell: { width: '36px', textAlign: 'center', fontWeight: 'normal', fontSize: '0.8rem' },
-        cell: { width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }
-      }}
+      /* FIX: Replaced Flexbox with CSS Grid (grid-cols-7) to ensure 
+         every day aligns exactly under its header (Su, Mo, Tu, etc.) 
+      */
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4 w-full",
@@ -39,10 +34,19 @@ function Calendar({
         ),
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
-        head_cell: "text-muted-foreground",
+        table: "w-full border-collapse space-y-1",
+        // Force headers into 7 equal columns
+        head_row: "grid grid-cols-7 w-full", 
+        head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] text-center",
+        // Force date rows into 7 equal columns to fix the "drift"
+        row: "grid grid-cols-7 w-full mt-2", 
+        cell: cn(
+          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent",
+          "first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
+        ),
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
+          "h-9 w-9 p-0 font-normal aria-selected:opacity-100 flex items-center justify-center m-auto"
         ),
         day_selected:
           "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
@@ -54,10 +58,8 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Chevron: ({ orientation }) => {
-          const Icon = orientation === "left" ? ChevronLeft : ChevronRight;
-          return <Icon className="h-4 w-4" />;
-        },
+        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
+        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
       }}
       {...props}
     />
