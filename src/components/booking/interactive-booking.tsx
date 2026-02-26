@@ -46,7 +46,6 @@ const getPricingBreakdown = (start: Date, end: Date, type: 'ws' | 'room', extraC
     const stdStart = setMinutes(setHours(new Date(start), 9), 30);
     const stdEnd = setMinutes(setHours(new Date(start), 17), 30);
 
-    // Calculate Extended Hours: 8:00-9:30 and 17:30-20:00
     const earlyMs = Math.max(0, Math.min(end.getTime(), stdStart.getTime()) - start.getTime());
     const lateMs = Math.max(0, end.getTime() - Math.max(start.getTime(), stdEnd.getTime()));
     const extendedHrs = (earlyMs + lateMs) / (1000 * 60 * 60);
@@ -96,7 +95,7 @@ function WorkstationSelector({ wsIds, bookings, adminBlocks, onSelect }: any) {
           const sBookings = bookings.filter((b: any) => b.workspaceId === id && b.status === "confirmed");
           const blocked = adminBlocks.some((b: any) => b.workspaceId === id);
           const mins = calculateTotalBookedMinutes(sBookings);
-          const isFull = mins >= 720 || blocked; // 12 hours
+          const isFull = mins >= 720 || blocked;
           return (
             <div key={id} className="flex flex-col items-center">
               <Button variant="outline" onClick={() => onSelect(id)} disabled={isFull}
@@ -148,12 +147,12 @@ function FinalBookingDialog({ officeId, resource, date, type, extraChairs, onOpe
     const [agreed, setAgreed] = useState(false);
     const [loading, setLoading] = useState(false);
     const firestore = useFirestore();
+    const router = useRouter();
     const { toast } = useToast();
 
     const startDT = parse(times.start, "HH:mm", date);
     const endDT = parse(times.end, "HH:mm", date);
     
-    // Validation: 8 AM to 8 PM
     const limitStart = setHours(new Date(date), 8);
     const limitEnd = setHours(new Date(date), 20);
     const isInvalidTime = isBefore(startDT, limitStart) || isAfter(endDT, limitEnd) || isBefore(endDT, startDT);
@@ -170,11 +169,27 @@ function FinalBookingDialog({ officeId, resource, date, type, extraChairs, onOpe
             });
             const res = await fetch("/api/create-order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ totalAmount: p.total, bookingId: newRef.id, officeId }) });
             const order = await res.json();
+
             const rzp = new (window as any).Razorpay({
-                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, amount: order.amount, order_id: order.id, name: "9to5 Workspace",
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                amount: order.amount,
+                order_id: order.id,
+                name: "9to5 Workspace",
+                description: `${type === 'ws' ? 'Workstation' : 'Room'} Booking`,
+                // PREFILL DATA: Prevents duplicate mobile/email entry in Razorpay
+                prefill: {
+                    name: user.displayName || "",
+                    email: user.email || "",
+                    contact: user.phoneNumber || "",
+                },
+                theme: { color: "#C8A24D" },
                 handler: async (resp: any) => {
                     await fetch('/api/verify-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...resp, bookingId: newRef.id }) });
-                    onBooked(); onOpenChange(false); toast({ title: "Booking Confirmed!" });
+                    toast({ title: "Booking Successful!", description: "Redirecting to your confirmation details...", duration: 5000 });
+                    onBooked(); 
+                    onOpenChange(false);
+                    // Redirect to a dedicated success page
+                    router.push(`/booking-success?id=${newRef.id}&office=${officeId}`);
                 }
             });
             rzp.open();
@@ -204,7 +219,7 @@ function FinalBookingDialog({ officeId, resource, date, type, extraChairs, onOpe
                         <label htmlFor="terms" className="text-xs text-muted-foreground">I agree to the <Link href="/terms-and-conditions" target="_blank" className="text-[#C8A24D] underline">Terms & Conditions</Link>.</label>
                     </div>
                 </div>
-                <DialogFooter><Button className="w-full bg-[#C8A24D]" disabled={loading || !agreed || isInvalidTime} onClick={handlePay}>Confirm & Pay</Button></DialogFooter>
+                <DialogFooter><Button className="w-full bg-[#C8A24D]" disabled={loading || !agreed || isInvalidTime} onClick={handlePay}>{loading ? <Loader2 className="animate-spin h-4 w-4" /> : "Confirm & Pay"}</Button></DialogFooter>
             </DialogContent>
         </Dialog>
     );
