@@ -18,14 +18,17 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
-      /* FIX: Replaced Flexbox with CSS Grid (grid-cols-7) to ensure 
-         every day aligns exactly under its header (Su, Mo, Tu, etc.) 
-      */
+      className={cn("p-3 bg-white border rounded-md shadow-lg", className)}
+      // Standard CSS is more reliable than Tailwind classes when layouts break like this
+      styles={{
+        table: { width: '280px', borderCollapse: 'collapse' },
+        head_row: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%' },
+        row: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%', marginTop: '4px' },
+      }}
       classNames={{
-        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y-4 w-full",
-        caption: "flex justify-center pt-1 relative items-center mb-4",
+        months: "flex flex-col space-y-4",
+        month: "space-y-4",
+        caption: "flex justify-center pt-1 relative items-center mb-2",
         caption_label: "text-sm font-medium",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
@@ -34,25 +37,16 @@ function Calendar({
         ),
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
-        table: "w-full border-collapse space-y-1",
-        // Force headers into 7 equal columns
-        head_row: "grid grid-cols-7 w-full", 
-        head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] text-center",
-        // Force date rows into 7 equal columns to fix the "drift"
-        row: "grid grid-cols-7 w-full mt-2", 
-        cell: cn(
-          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent",
-          "first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
-        ),
+        head_cell: "text-muted-foreground font-normal text-[0.8rem] text-center w-full pb-2",
+        cell: "h-9 w-9 text-center text-sm p-0 relative flex items-center justify-center",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal aria-selected:opacity-100 flex items-center justify-center m-auto"
+          "h-8 w-8 p-0 font-normal aria-selected:opacity-100 flex items-center justify-center rounded-full"
         ),
         day_selected:
           "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
         day_today: "bg-accent text-accent-foreground",
-        day_outside:
-          "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
+        day_outside: "text-muted-foreground opacity-30",
         day_disabled: "text-muted-foreground opacity-50",
         day_hidden: "invisible",
         ...classNames,
