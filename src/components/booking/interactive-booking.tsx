@@ -7,7 +7,7 @@ import { useFirestore } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { format, parse } from "date-fns";
 import { useRouter } from "next/navigation";
-import Link from "next/link"; // Added for the terms link
+import Link from "next/link";
 
 import type { Booking, Workspace } from "@/lib/definitions";
 import { Button } from "@/components/ui/button";
@@ -28,343 +28,286 @@ import { validateBookingTime } from "@/lib/validateBookingTime";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox"; // Ensure you have this shadcn component
+import { Checkbox } from "@/components/ui/checkbox";
 
-// ... (calculateTotalBookedMinutes and OccupancyBar remain unchanged)
-
-function WorkstationBookingDialog({
-  officeId,
-  workstationId,
-  date,
-  onOpenChange,
-  onBooked,
-  user,
-  bookings,
-}: {
-  officeId: string;
-  workstationId: string;
-  date: Date;
-  onOpenChange: (open: boolean) => void;
-  onBooked: () => void;
-  user: User | null;
-  bookings: Booking[];
-}) {
-  const [startTime, setStartTime] = useState("09:30");
-  const [endTime, setEndTime] = useState("17:30");
-  const [isReserving, setIsReserving] = useState(false);
-  const [agreed, setAgreed] = useState(false); // New state for terms
-
-  const firestore = useFirestore();
-  const { toast } = useToast();
-
-  const startDateTime = parse(startTime, "HH:mm", date);
-  const endDateTime = parse(endTime, "HH:mm", date);
-  const validationResult = validateBookingTime(startDateTime, endDateTime);
-
-  const { totalCost, pricingTier, details } = calculateWorkstationBookingAmount({
-    startTime: startDateTime,
-    endTime: endDateTime,
-  });
-
-  const seatBookings = bookings?.filter(b => b.workspaceId === workstationId && b.status === "confirmed") || [];
-
-  const handleBookWorkstation = async () => {
-    if (!agreed) return; // Guard clause
-    if (!user || !firestore || !officeId || !workstationId) {
-        toast({ variant: "destructive", title: "Error", description: "Missing required booking information." });
-        return;
-    }
-
-    if (totalCost <= 0) {
-      toast({ variant: 'destructive', title: 'Invalid time selected.' });
-      return;
-    }
-    
-    setIsReserving(true);
-    let newBookingId: string | null = null;
-    
-    try {
-        const newBookingRef = doc(collection(firestore, "bookings"));
-        newBookingId = newBookingRef.id;
-
-        await runTransaction(firestore, async (transaction) => {
-            const bookingsRef = collection(firestore, "bookings");
-            const dateStr = format(startDateTime, 'yyyy-MM-dd');
-            
-            const q = query(
-                bookingsRef,
-                where("officeId", "==", officeId),
-                where("workspaceId", "==", workstationId),
-                where("date", "==", dateStr),
-                where("status", "==", "confirmed")
-            );
-
-            const snapshot = await getDocs(q);
-            const existingBookings = snapshot.docs.map(d => ({...d.data(), startTime: (d.data().startTime as Timestamp).toDate(), endTime: (d.data().endTime as Timestamp).toDate()} as Booking));
-
-            const hasConflictInTx = existingBookings.some(booking => {
-                return startDateTime < booking.endTime && endDateTime > booking.startTime;
-            });
-
-            if (hasConflictInTx) {
-                throw new Error("This time slot was just booked. Please try another one.");
-            }
-
-            transaction.set(newBookingRef, {
-                officeId,
-                userId: user.uid,
-                userName: user.displayName || user.email,
-                workspaceId: workstationId,
-                workspaceName: `Workstation ${workstationId.split("-").pop()}`,
-                workspaceType: 'desk',
-                date: format(date, "yyyy-MM-dd"),
-                startTime: Timestamp.fromDate(startDateTime),
-                endTime: Timestamp.fromDate(endDateTime),
-                isExtendedHours: validationResult.extended,
-                pricingType: validationResult.extended ? 'extended' : 'standard',
-                status: 'pending',
-                paymentStatus: 'pending',
-                createdAt: serverTimestamp(),
-            });
-        });
-
-      if (!newBookingId) {
-        setIsReserving(false);
-        return;
-      }
-
-      const res = await fetch("/api/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          totalAmount: totalCost,
-          bookingId: newBookingId,
-          officeId: officeId,
-        }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to create Razorpay order.");
-      }
-      
-      const order = await res.json();
-
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: order.amount,
-        currency: "INR",
-        name: `9to5 Workspace`,
-        description: `Booking for ${format(date, "PPP")} from ${startTime} to ${endTime}`,
-        order_id: order.id,
-        notes: {
-            bookingId: newBookingId,
-            officeId: officeId,
-        },
-        handler: async function (response: any) {
-          const verificationRes = await fetch('/api/verify-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              bookingId: newBookingId!,
-              amount: order.amount,
-            }),
-          });
-          
-          if (verificationRes.ok) {
-            toast({ title: 'Workstation Booked!', description: `You've booked Workstation ${workstationId.split('-').pop()} on ${format(date, 'PPP')} from ${startTime} to ${endTime}.` });
-            onBooked();
-            onOpenChange(false);
-          } else {
-             toast({ variant: 'destructive', title: 'Payment Failed', description: 'Payment verification failed.' });
-             onBooked();
-          }
-          setIsReserving(false);
-        },
-        prefill: {
-            name: user.displayName || '',
-            email: user.email || '',
-        },
-        theme: {
-          color: "#C8A24D",
-        },
-        modal: {
-            ondismiss: async function() {
-                setIsReserving(false);
-            }
+/**
+ * UTILS & CALCULATIONS
+ */
+const calculateTotalBookedMinutes = (bookings: Booking[]): number => {
+    if (!bookings || bookings.length === 0) return 0;
+    const sortedBookings = [...bookings].sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+    const merged = [JSON.parse(JSON.stringify(sortedBookings[0]))];
+    for (let i = 1; i < sortedBookings.length; i++) {
+        const current = sortedBookings[i];
+        const lastMerged = merged[merged.length - 1];
+        const lastMergedEndTime = new Date(lastMerged.endTime);
+        const currentStartTime = new Date(current.startTime);
+        if (currentStartTime < lastMergedEndTime) {
+            const currentEndTime = new Date(current.endTime);
+            lastMerged.endTime = new Date(Math.max(lastMergedEndTime.getTime(), currentEndTime.getTime()));
+        } else {
+            merged.push(JSON.parse(JSON.stringify(current)));
         }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
-
-    } catch (error: any) {
-        toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not reserve the workstation.' });
-        setIsReserving(false);
     }
-  };
+    const totalMilliseconds = merged.reduce((acc, b) => acc + (new Date(b.endTime).getTime() - new Date(b.startTime).getTime()), 0);
+    return totalMilliseconds / (1000 * 60);
+};
 
+function OccupancyBar({ bookings, isAdminBlocked }: { bookings: Booking[], isAdminBlocked?: boolean }) {
+  const DAY_START_MINS = 9 * 60 + 30; 
+  const DAY_TOTAL_MINS = 8 * 60; 
+  if (isAdminBlocked) return (
+    <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden mt-1"><div className="h-full bg-red-500 w-full" /></div>
+  );
   return (
-    <Dialog open onOpenChange={onOpenChange} modal={true}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Reserve Workstation {workstationId.split('-').pop()}</DialogTitle>
-          <DialogDescription>For {format(date, "PPP")}.</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="start-time">Start Time</Label>
-              <Input id="start-time" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="end-time">End Time</Label>
-              <Input id="end-time" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-            </div>
-          </div>
-
-          {totalCost > 0 && (
-             <Card className="bg-muted/50 p-4">
-                <div className="text-sm space-y-1">
-                  <div className="flex justify-between"><span>Pricing Tier:</span> <span>{pricingTier}</span></div>
-                  <div className="flex justify-between font-bold border-t pt-2 mt-2"><span>Total Estimate:</span> <span>₹{totalCost.toFixed(2)}</span></div>
-                </div>
-            </Card>
-          )}
-
-          {/* Terms and Conditions Checkbox */}
-          <div className="flex items-start space-x-2 pt-2">
-            <Checkbox id="terms" checked={agreed} onCheckedChange={(checked) => setAgreed(checked as boolean)} />
-            <label htmlFor="terms" className="text-xs text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              I agree to the <Link href="/terms-and-conditions" target="_blank" className="text-[#C8A24D] underline">Terms & Conditions</Link> and Refund Policy.
-            </label>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button onClick={handleBookWorkstation} disabled={isReserving || !validationResult.valid || !agreed}>
-            {isReserving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Confirm & Pay"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden flex mt-1 relative">
+      {bookings.map((b, i) => {
+        const startMins = b.startTime.getHours() * 60 + b.startTime.getMinutes();
+        const endMins = b.endTime.getHours() * 60 + b.endTime.getMinutes();
+        const left = Math.max(0, ((startMins - DAY_START_MINS) / DAY_TOTAL_MINS) * 100);
+        const width = Math.min(100, ((endMins - startMins) / DAY_TOTAL_MINS) * 100);
+        return <div key={i} className="h-full bg-red-500 absolute" style={{ left: `${left}%`, width: `${width}%` }} />;
+      })}
+    </div>
   );
 }
 
-function RoomBookingDialog({
-  officeId,
-  room,
-  date,
-  extraChairs,
-  onOpenChange,
-  onBooked,
-  user,
-  bookings,
-}: {
-  officeId: string;
-  room: Workspace;
-  date: Date;
-  extraChairs: number;
-  onOpenChange: (open: boolean) => void;
-  onBooked: () => void;
-  user: User | null;
-  bookings: Booking[];
-}) {
-  const [startTime, setStartTime] = useState("09:30");
-  const [endTime, setEndTime] = useState("10:30");
-  const [isReserving, setIsReserving] = useState(false);
-  const [agreed, setAgreed] = useState(false); // New state for terms
+const calculateWorkstationBookingAmount = ({ startTime, endTime }: { startTime: Date; endTime: Date; }) => {
+  const durationInHours = Math.max(0, (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60));
+  if (durationInHours <= 0) return { totalCost: 0, pricingTier: 'Invalid', details: '' };
+  const HOURLY_RATE = 350;
+  const DAY_PASS_RATE = 1000;
+  const EXTENDED_RATE = 200;
+  const hourlyCost = durationInHours * HOURLY_RATE;
+  const standardDayEnd = new Date(startTime); standardDayEnd.setHours(17, 30, 0, 0);
+  const extendedHoursStart = Math.max(startTime.getTime(), standardDayEnd.getTime());
+  const extendedDurationHours = Math.max(0, endTime.getTime() - extendedHoursStart) / (1000 * 60 * 60);
+  const dayPassCost = DAY_PASS_RATE + (Math.ceil(extendedDurationHours) * EXTENDED_RATE);
 
+  if (dayPassCost < hourlyCost && durationInHours > 2.8) {
+    return { totalCost: dayPassCost, pricingTier: 'Day Pass', details: `Day Pass + ${extendedDurationHours.toFixed(1)} Extended hrs` };
+  }
+  return { totalCost: hourlyCost, pricingTier: 'Hourly', details: `${durationInHours.toFixed(1)} hrs @ ₹${HOURLY_RATE}/hr` };
+};
+
+const calculateRoomBookingAmount = ({ roomName, durationInHours, extraChairs }: { roomName: string; durationInHours: number; extraChairs: number; }) => {
+  const isConference = roomName.toLowerCase().includes('conference');
+  const roomCost = (isConference ? 1000 : 750) * durationInHours;
+  const extraChairCost = extraChairs * 100 * durationInHours;
+  return { roomCost, extraChairCost, totalCost: roomCost + extraChairCost };
+};
+
+/**
+ * CONFIG & PROPS
+ */
+type ResourceCategory = "workstation" | "meeting-room" | "conference-room";
+const officeConfig: Record<string, any[]> = {
+  banyan: [
+    { label: "Workstation", category: "workstation", resourceIds: Array.from({ length: 12 }, (_, i) => `BANYAN-WS-${String(i + 1).padStart(2, "0")}`) },
+    { label: "Meeting Room", category: "meeting-room", roomId: "BANYAN-MR-06", baseCapacity: 4, totalCapacity: 6, extraCost: 100 },
+    { label: "Conference Room", category: "conference-room", roomId: "BANYAN-MR-12", baseCapacity: 9, totalCapacity: 12, extraCost: 100 },
+  ],
+  olive: [
+    { label: "Workstation", category: "workstation", resourceIds: Array.from({ length: 16 }, (_, i) => `OLIVE-WS-${String(i + 1).padStart(2, "0")}`) },
+    { label: "Conference Room", category: "conference-room", roomId: "OLIVE-MR-12", baseCapacity: 9, totalCapacity: 12, extraCost: 100 },
+  ],
+};
+
+/**
+ * DIALOG COMPONENTS
+ */
+function WorkstationBookingDialog({ officeId, workstationId, date, onOpenChange, onBooked, user, bookings }: any) {
+  const [startTime, setStartTime] = useState("09:30");
+  const [endTime, setEndTime] = useState("17:30");
+  const [isReserving, setIsReserving] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  const startDateTime = parse(startTime, "HH:mm", date);
-  const endDateTime = parse(endTime, "HH:mm", date);
-  const validationResult = validateBookingTime(startDateTime, endDateTime);
-  const durationInHours = Math.max(0, (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60));
+  const startDT = parse(startTime, "HH:mm", date);
+  const endDT = parse(endTime, "HH:mm", date);
+  const validation = validateBookingTime(startDT, endDT);
+  const { totalCost, pricingTier, details } = calculateWorkstationBookingAmount({ startTime: startDT, endTime: endDT });
 
-  const { roomCost, extraChairCost, totalCost } = calculateRoomBookingAmount({
-    roomName: room.name,
-    durationInHours,
-    extraChairs,
-  });
-
-  const handleReserveClick = async () => {
-    if (!agreed) return;
-    if (!user || !firestore || !officeId || !room.id) return;
+  const handleBook = async () => {
+    if (!agreed || !user || !firestore) return;
     setIsReserving(true);
-
     try {
-      // ... (Firestore transaction logic same as your original)
-      // ... (Razorpay creation logic same as your original)
-      
-      // Note: Ensure the confirm button logic uses the 'agreed' state
-    } catch (e) {
-      setIsReserving(false);
-    }
+        const newRef = doc(collection(firestore, "bookings"));
+        await runTransaction(firestore, async (transaction) => {
+            const q = query(collection(firestore, "bookings"), where("officeId", "==", officeId), where("workspaceId", "==", workstationId), where("date", "==", format(startDT, 'yyyy-MM-dd')), where("status", "==", "confirmed"));
+            const snap = await getDocs(q);
+            const conflict = snap.docs.some(d => {
+                const b = d.data();
+                return startDT < (b.endTime as Timestamp).toDate() && endDT > (b.startTime as Timestamp).toDate();
+            });
+            if (conflict) throw new Error("Slot already booked.");
+            transaction.set(newRef, { officeId, userId: user.uid, userName: user.displayName || user.email, workspaceId: workstationId, workspaceName: `Workstation ${workstationId.split("-").pop()}`, workspaceType: 'desk', date: format(date, "yyyy-MM-dd"), startTime: Timestamp.fromDate(startDT), endTime: Timestamp.fromDate(endDT), status: 'pending', paymentStatus: 'pending', createdAt: serverTimestamp() });
+        });
+
+        const res = await fetch("/api/create-order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ totalAmount: totalCost, bookingId: newRef.id, officeId }) });
+        const order = await res.json();
+        const rzp = new (window as any).Razorpay({
+            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+            amount: order.amount,
+            order_id: order.id,
+            name: "9to5 Workspace",
+            handler: async (response: any) => {
+                const v = await fetch('/api/verify-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...response, bookingId: newRef.id, amount: order.amount }) });
+                if (v.ok) { toast({ title: "Booked!" }); onBooked(); onOpenChange(false); }
+                setIsReserving(false);
+            },
+            modal: { ondismiss: () => setIsReserving(false) }
+        });
+        rzp.open();
+    } catch (e: any) { toast({ variant: "destructive", title: "Error", description: e.message }); setIsReserving(false); }
   };
 
   return (
-    <Dialog open onOpenChange={onOpenChange} modal={true}>
+    <Dialog open onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Reserve {room.name}</DialogTitle>
-        </DialogHeader>
+        <DialogHeader><DialogTitle>Reserve Workstation {workstationId.split('-').pop()}</DialogTitle></DialogHeader>
         <div className="space-y-4 py-4">
-           {/* ... (Existing Time Pickers) */}
-
-          {durationInHours > 0 && (
-             <Card className="bg-muted/50 p-4">
-                <div className="text-sm space-y-1">
-                  <div className="flex justify-between"><span>Total Estimate:</span> <span className="font-bold">₹{totalCost.toFixed(2)}</span></div>
-                </div>
-            </Card>
-          )}
-
-          {/* Terms and Conditions Checkbox */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2"><Label>Start</Label><Input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} /></div>
+            <div className="space-y-2"><Label>End</Label><Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} /></div>
+          </div>
+          <Card className="bg-muted/50 p-4 text-sm">
+            <div className="flex justify-between"><span>Tier:</span><span>{pricingTier}</span></div>
+            <div className="flex justify-between font-bold border-t mt-2 pt-2"><span>Total:</span><span>₹{totalCost.toFixed(2)}</span></div>
+          </Card>
           <div className="flex items-start space-x-2 pt-2">
-            <Checkbox id="terms-room" checked={agreed} onCheckedChange={(checked) => setAgreed(checked as boolean)} />
-            <label htmlFor="terms-room" className="text-xs text-muted-foreground leading-none">
+            <Checkbox id="terms" checked={agreed} onCheckedChange={checked => setAgreed(checked as boolean)} />
+            <label htmlFor="terms" className="text-xs text-muted-foreground leading-none">
               I agree to the <Link href="/terms-and-conditions" target="_blank" className="text-[#C8A24D] underline">Terms & Conditions</Link>.
             </label>
           </div>
         </div>
-        <DialogFooter>
-          <Button onClick={handleReserveClick} disabled={isReserving || !validationResult.valid || !agreed}>
-            {isReserving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Confirm & Pay"}
-          </Button>
-        </DialogFooter>
+        <DialogFooter><Button onClick={handleBook} disabled={isReserving || !validation.valid || !agreed}>Confirm & Pay</Button></DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
-export default function InteractiveBooking(props: InteractiveBookingProps) {
-  const [selectedCategory, setSelectedCategory] = useState<ResourceCategory | null>(null);
-  const [roomDetails, setRoomDetails] = useState<{ room: Workspace, extraChairs: number} | null>(null);
-  const [workstationDetails, setWorkstationDetails] = useState<string | null>(null);
-  const router = useRouter();
+function RoomBookingDialog({ officeId, room, date, extraChairs, onOpenChange, onBooked, user, bookings }: any) {
+  const [startTime, setStartTime] = useState("09:30");
+  const [endTime, setEndTime] = useState("10:30");
+  const [isReserving, setIsReserving] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const firestore = useFirestore();
   const { toast } = useToast();
 
-  const handleRoomSelection = (room: Workspace, extraChairs: number) => {
-    if (!props.user) {
-        router.push(`/login?redirect_uri=/seat-booking?office=${props.officeId}`);
-        return;
-    }
-    // Logic removed: Customer wants terms at the end, not here.
-    setRoomDetails({ room, extraChairs });
-  }
+  const startDT = parse(startTime, "HH:mm", date);
+  const endDT = parse(endTime, "HH:mm", date);
+  const validation = validateBookingTime(startDT, endDT);
+  const duration = Math.max(0, (endDT.getTime() - startDT.getTime()) / (1000 * 60 * 60));
+  const { totalCost } = calculateRoomBookingAmount({ roomName: room.name, durationInHours: duration, extraChairs });
 
-  const handleWorkstationSelection = (workstationId: string) => {
-    if (!props.user) {
-        router.push(`/login?redirect_uri=/seat-booking?office=${props.officeId}`);
-        return;
-    }
-    // Logic removed: Customer wants terms at the end, not here.
-    setWorkstationDetails(workstationId);
-  }
+  const handleBook = async () => {
+    if (!agreed || !user || !firestore) return;
+    setIsReserving(true);
+    try {
+      const newRef = doc(collection(firestore, "bookings"));
+      await runTransaction(firestore, async (transaction) => {
+        transaction.set(newRef, { officeId, userId: user.uid, userName: user.displayName || user.email, workspaceId: room.id, workspaceName: room.name, workspaceType: 'room', date: format(date, "yyyy-MM-dd"), startTime: Timestamp.fromDate(startDT), endTime: Timestamp.fromDate(endDT), status: 'pending', paymentStatus: 'pending', createdAt: serverTimestamp() });
+      });
+      const res = await fetch("/api/create-order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ totalAmount: totalCost, bookingId: newRef.id, officeId }) });
+      const order = await res.json();
+      const rzp = new (window as any).Razorpay({
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        order_id: order.id,
+        name: "9to5 Workspace",
+        handler: async (response: any) => {
+          await fetch('/api/verify-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...response, bookingId: newRef.id, amount: order.amount }) });
+          toast({ title: "Room Reserved!" }); onBooked(); onOpenChange(false); setIsReserving(false);
+        },
+        modal: { ondismiss: () => setIsReserving(false) }
+      });
+      rzp.open();
+    } catch (e: any) { setIsReserving(false); }
+  };
 
-  // ... (Rest of the component remains the same)
+  return (
+    <Dialog open onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Reserve {room.name}</DialogTitle></DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2"><Label>Start</Label><Input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} /></div>
+            <div className="space-y-2"><Label>End</Label><Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} /></div>
+          </div>
+          <Card className="bg-muted/50 p-4 text-sm font-bold flex justify-between"><span>Estimate:</span><span>₹{totalCost.toFixed(2)}</span></Card>
+          <div className="flex items-start space-x-2 pt-2">
+            <Checkbox id="terms-room" checked={agreed} onCheckedChange={checked => setAgreed(checked as boolean)} />
+            <label htmlFor="terms-room" className="text-xs text-muted-foreground">I agree to the <Link href="/terms-and-conditions" target="_blank" className="text-[#C8A24D] underline">Terms & Conditions</Link>.</label>
+          </div>
+        </div>
+        <DialogFooter><Button onClick={handleBook} disabled={isReserving || !validation.valid || !agreed}>Confirm & Pay</Button></DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/**
+ * MAIN COMPONENT
+ */
+export default function InteractiveBooking(props: any) {
+  const [selectedCategory, setSelectedCategory] = useState<ResourceCategory | null>(null);
+  const [roomDetails, setRoomDetails] = useState<any>(null);
+  const [workstationDetails, setWorkstationDetails] = useState<string | null>(null);
+  const router = useRouter();
+  const config = officeConfig[props.officeId] || [];
+
+  const handleSelect = (type: 'room' | 'ws', data: any) => {
+    if (!props.user) return router.push(`/login?redirect_uri=/seat-booking?office=${props.officeId}`);
+    if (type === 'room') setRoomDetails(data); else setWorkstationDetails(data);
+  };
+
+  const renderContent = () => {
+    if (!selectedCategory) return (
+      <div className="text-center py-12 border-2 border-dashed rounded-lg">
+        <Armchair className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+        <p className="text-muted-foreground">Select a category above to view available spaces.</p>
+      </div>
+    );
+    const cat = config.find(c => c.category === selectedCategory);
+    if (!cat) return null;
+
+    if (cat.resourceIds) return (
+      <div className="grid grid-cols-4 sm:grid-cols-8 gap-4 pt-4">
+        {cat.resourceIds.map((id: string) => (
+          <div key={id} className="flex flex-col items-center">
+            <Button variant="outline" className="w-full" onClick={() => handleSelect('ws', id)}>{id.split("-").pop()}</Button>
+            <OccupancyBar bookings={props.bookings.filter((b: any) => b.workspaceId === id)} isAdminBlocked={props.adminBlocks.some((b: any) => b.workspaceId === id)} />
+          </div>
+        ))}
+      </div>
+    );
+
+    const room = allResources.find(r => r.id === cat.roomId);
+    if (!room) return null;
+    return (
+      <Card className="mt-4">
+        <CardHeader><CardTitle>{room.name}</CardTitle></CardHeader>
+        <CardContent>
+          <Button onClick={() => handleSelect('room', { room, extraChairs: 0 })}>Select Time for {room.name}</Button>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  return (
+    <div className="w-full">
+      <div className="flex flex-wrap gap-2 border-b pb-4">
+        {config.map((item: any) => (
+          <Button key={item.category} variant={selectedCategory === item.category ? "default" : "outline"} onClick={() => setSelectedCategory(item.category)}>{item.label}</Button>
+        ))}
+      </div>
+      <div className="mt-4">{renderContent()}</div>
+      {workstationDetails && props.date && <WorkstationBookingDialog officeId={props.officeId} workstationId={workstationDetails} date={props.date} user={props.user} bookings={props.bookings} onOpenChange={(open: any) => !open && setWorkstationDetails(null)} onBooked={() => { setWorkstationDetails(null); props.onBooking(); }} />}
+      {roomDetails && props.date && <RoomBookingDialog officeId={props.officeId} room={roomDetails.room} date={props.date} extraChairs={roomDetails.extraChairs} user={props.user} bookings={props.bookings} onOpenChange={(open: any) => !open && setRoomDetails(null)} onBooked={() => { setRoomDetails(null); props.onBooking(); }} />}
+      <Script id="razorpay-checkout-js" src="https://checkout.razorpay.com/v1/checkout.js" />
+    </div>
+  );
 }
