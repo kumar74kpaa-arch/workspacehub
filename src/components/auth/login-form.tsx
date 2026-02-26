@@ -6,7 +6,6 @@ import { z } from 'zod';
 import { User, Mail, Lock } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -37,6 +36,7 @@ export function LoginForm() {
   const firestore = useFirestore();
   const [isSigningUp, setIsSigningUp] = useState(false);
 
+  // Initialize both forms
   const loginForm = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: { email: '', password: '' },
@@ -53,9 +53,9 @@ export function LoginForm() {
     try {
       const user = await loginUserWithPassword(auth, values);
       await redirectUserBasedOnRole(firestore, user, router);
-      toast({ title: 'Success', description: 'You have successfully signed in.' });
+      toast({ title: 'Success', description: 'Signed in successfully.' });
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Authentication Error', description: error.message });
+      toast({ variant: 'destructive', title: 'Error', description: error.message });
     } finally {
       setIsLoading(false);
     }
@@ -64,17 +64,14 @@ export function LoginForm() {
   const handleSignup = async (values: z.infer<typeof SignupSchema>) => {
     if (!auth || !firestore) return;
     setIsLoading(true);
-
-    const signupData = {
-      displayName: values.name,
-      email: values.email,
-      password: values.password,
-    };
-
     try {
-      const user = await signupUserWithPassword(auth, signupData);
+      const user = await signupUserWithPassword(auth, {
+        displayName: values.name,
+        email: values.email,
+        password: values.password,
+      });
       await redirectUserBasedOnRole(firestore, user, router);
-      toast({ title: 'Account Created', description: 'You have successfully created an account.' });
+      toast({ title: 'Account Created', description: 'Welcome to the platform!' });
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Signup Error', description: error.message });
     } finally {
@@ -95,83 +92,114 @@ export function LoginForm() {
         </TabsContent>
 
         <TabsContent value="email">
-          {isSigningUp ? (
-             <Form {...signupForm}>
-                <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-6 pt-4">
-                  <div className="space-y-4">
-                    <FormField control={signupForm.control} name="name" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Name</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                                <User className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="John Doe" {...field} className="pl-10" />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField control={signupForm.control} name="email" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl><div className="relative"><Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="name@example.com" {...field} className="pl-10" /></div></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField control={signupForm.control} name="password" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl><div className="relative"><Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input type="password" placeholder="••••••••" {...field} className="pl-10" /></div></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                    )} />
-                  </div>
+          <div className="pt-4">
+            {isSigningUp ? (
+              /* SIGNUP FORM VIEW */
+              <Form {...signupForm}>
+                <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
+                  <FormField control={signupForm.control} name="name" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input placeholder="John Doe" {...field} className="pl-10" />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+
+                  <FormField control={signupForm.control} name="email" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input placeholder="name@example.com" {...field} className="pl-10" />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+
+                  <FormField control={signupForm.control} name="password" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input type="password" placeholder="••••••••" {...field} className="pl-10" />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? 'Creating Account...' : 'Create Account'}
                   </Button>
                 </form>
-             </Form>
-          ) : (
-            <Form {...loginForm}>
-              <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-6 pt-4">
-                <div className="space-y-4">
+              </Form>
+            ) : (
+              /* LOGIN FORM VIEW */
+              <Form {...loginForm}>
+                <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
                   <FormField control={loginForm.control} name="email" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl><div className="relative"><Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="name@example.com" {...field} className="pl-10" /></div></FormControl>
-                        <FormMessage />
-                      </FormItem>
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input placeholder="name@example.com" {...field} className="pl-10" />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )} />
+
                   <FormField control={loginForm.control} name="password" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl><div className="relative"><Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input type="password" placeholder="••••••••" {...field} className="pl-10" /></div></FormControl>
-                        <FormMessage />
-                      </FormItem>
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input type="password" placeholder="••••••••" {...field} className="pl-10" />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )} />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Signing In...' : 'Sign In'}
-                </Button>
-              </form>
-            </Form>
-          )}
-           <div className="mt-4 text-center text-sm">
-            {isSigningUp ? 'Already have an account?' : "Don't have an account?"}{' '}
-            <button onClick={() => setIsSigningUp(!isSigningUp)} className="underline">
-              {isSigningUp ? 'Sign In' : 'Sign Up'}
-            </button>
+
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? 'Signing In...' : 'Sign In'}
+                  </Button>
+                </form>
+              </Form>
+            )}
+
+            <div className="mt-4 text-center text-sm">
+              <span className="text-muted-foreground">
+                {isSigningUp ? 'Already have an account?' : "Don't have an account?"}
+              </span>{' '}
+              <button 
+                type="button" 
+                onClick={() => setIsSigningUp(!isSigningUp)} 
+                className="underline font-medium hover:text-primary"
+              >
+                {isSigningUp ? 'Sign In' : 'Sign Up'}
+              </button>
+            </div>
           </div>
         </TabsContent>
       </Tabs>
+
       <div className="relative my-6">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-muted-foreground">
-            Or
-          </span>
+          <span className="bg-background px-2 text-muted-foreground">Or</span>
         </div>
       </div>
       <GoogleSignInButton buttonText="Continue with Google" />
