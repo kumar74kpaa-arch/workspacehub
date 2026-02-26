@@ -18,12 +18,13 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-3 bg-white border rounded-md shadow-lg", className)}
-      // Standard CSS is more reliable than Tailwind classes when layouts break like this
+      className={cn("p-3 bg-white", className)}
+      // Explicitly forcing widths via inline styles to prevent the vertical "stretch"
       styles={{
-        table: { width: '280px', borderCollapse: 'collapse' },
-        head_row: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%' },
-        row: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%', marginTop: '4px' },
+        root: { width: '300px' },
+        table: { width: '100%', borderCollapse: 'separate', borderSpacing: '0 4px' },
+        head_cell: { width: '40px', paddingBottom: '10px' },
+        cell: { width: '40px', height: '40px', padding: '0' }
       }}
       classNames={{
         months: "flex flex-col space-y-4",
@@ -37,11 +38,13 @@ function Calendar({
         ),
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
-        head_cell: "text-muted-foreground font-normal text-[0.8rem] text-center w-full pb-2",
-        cell: "h-9 w-9 text-center text-sm p-0 relative flex items-center justify-center",
+        // Using standard table classes instead of custom grids
+        head_row: "flex w-full justify-between", 
+        head_cell: "text-muted-foreground font-normal text-[0.8rem] text-center",
+        row: "flex w-full justify-between",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-8 w-8 p-0 font-normal aria-selected:opacity-100 flex items-center justify-center rounded-full"
+          "h-9 w-9 p-0 font-normal aria-selected:opacity-100 flex items-center justify-center rounded-md"
         ),
         day_selected:
           "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
