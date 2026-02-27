@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // 1. Critical bypasses for 2026 build standards
+  // 1. Skip strict checks to allow the build to proceed
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -9,20 +9,20 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  // 2. Your original image logic
+  // 2. Your original image logic (Fixed for Next.js 15)
   images: {
     remotePatterns: [
-      { protocol: 'https', hostname: 'placehold.co', pathname: '/**' },
-      { protocol: 'https', hostname: 'images.unsplash.com', pathname: '/**' },
-      { protocol: 'https', hostname: 'picsum.photos', pathname: '/**' },
-      { protocol: 'https', hostname: 'lh3.googleusercontent.com', pathname: '/**' },
-      { protocol: 'https', hostname: 'maplindia.com', pathname: '/**' },
-      { protocol: 'https', hostname: 'i.ibb.co', pathname: '/**' },
-      { protocol: 'https', hostname: 'www.9to5workspace.com', pathname: '/**' }
+      { protocol: 'https', hostname: 'placehold.co' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'picsum.photos' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+      { protocol: 'https', hostname: 'maplindia.com' },
+      { protocol: 'https', hostname: 'i.ibb.co' },
+      { protocol: 'https', hostname: 'www.9to5workspace.com' }
     ],
   },
 
-  // 3. Simple Webpack fix for the "fs" error
+  // 3. Fix Webpack to prevent "Module Not Found" for Node tools
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -30,6 +30,7 @@ const nextConfig: NextConfig = {
         fs: false,
         net: false,
         tls: false,
+        crypto: false,
       };
     }
     return config;
