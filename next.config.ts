@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // 1. Keep these to prevent small errors from stopping the whole build
+  // 1. Critical bypasses for 2026 build standards
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  // 2. Your original image logic (Restored exactly as it was)
+  // 2. Your original image logic
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'placehold.co', pathname: '/**' },
@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // 3. This is the ONLY addition needed for the AI SDK to work with your old logic
+  // 3. Simple Webpack fix for the "fs" error
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
