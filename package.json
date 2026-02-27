@@ -10,12 +10,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "ai": "latest",
+    "ai": "4.0.0",
     "@ai-sdk/google": "latest",
     "lucide-react": "latest",
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest",
+    "next": "15.1.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
     "@hookform/resolvers": "latest",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-alert-dialog": "latest",
@@ -53,7 +53,7 @@
     "recharts": "latest",
     "tailwind-merge": "latest",
     "tailwindcss-animate": "latest",
-    "zod": "latest"
+    "zod": "3.23.8"
   },
   "devDependencies": {
     "@types/node": "latest",
