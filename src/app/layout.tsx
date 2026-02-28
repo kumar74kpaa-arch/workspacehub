@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseProvider } from '@/firebase/provider';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import JyotiChat from '@/components/JyotiChat';
 
 const fontSans = Inter({
   subsets: ['latin'],
@@ -48,6 +49,7 @@ export default function RootLayout({
           </div>
           <Toaster />
           <FirebaseErrorListener />
+          <JyotiChat />
         </FirebaseProvider>
       </body>
     </html>

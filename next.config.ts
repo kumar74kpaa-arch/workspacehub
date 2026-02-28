@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // 3. Fix Webpack to prevent "Module Not Found" for Node tools
+  // 3. Fix Webpack to prevent "Module Not Found" for Node tools and resolve zod/v3
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -33,6 +33,13 @@ const nextConfig: NextConfig = {
         crypto: false,
       };
     }
+    
+    // Alias zod/v3 to zod to fix resolution errors in AI SDK dependencies
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'zod/v3': 'zod',
+    };
+
     return config;
   },
 };
