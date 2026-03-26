@@ -32,12 +32,10 @@ import {
 } from '@/components/ui/accordion';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardTitle, CardDescription } from '@/components/ui/card';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { spacesData } from '@/lib/spaces-data';
-import { SpaceCard } from '@/components/spaces/space-card';
 import { HeroSlideshow } from '@/components/hero-slideshow';
 
 const amenitiesByCategory = [
@@ -107,6 +105,7 @@ export default function Home() {
     <>
       <Header />
       <main className="flex-1">
+        {/* Hero Section */}
         <section className="relative w-full h-[75vh] min-h-[500px] md:h-[80vh] flex items-center text-white">
           <HeroSlideshow />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent z-10" />
@@ -130,6 +129,7 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Tour Section */}
         <section id="tour" className="w-full py-24 lg:py-32 bg-secondary/50">
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
@@ -148,7 +148,6 @@ export default function Home() {
                       width={800} 
                       height={600} 
                       className="rounded-lg object-cover aspect-[4/3] transition-transform duration-300 group-hover:scale-105"
-                      data-ai-hint={banyanSpace.imageHint}
                     />
                   </div>
                   <h3 className="text-2xl pt-2 font-bold font-headline group-hover:text-accent transition-colors">{banyanSpace.name}</h3>
@@ -164,7 +163,6 @@ export default function Home() {
                       width={800} 
                       height={600} 
                       className="rounded-lg object-cover aspect-[4/3] transition-transform duration-300 group-hover:scale-105"
-                      data-ai-hint={oliveSpace.imageHint}
                     />
                   </div>
                   <h3 className="text-2xl pt-2 font-bold font-headline group-hover:text-accent transition-colors">{oliveSpace.name}</h3>
@@ -175,6 +173,7 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Amenities Section */}
         <section id="amenities" className="w-full py-24 lg:py-32 bg-background">
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
@@ -215,6 +214,7 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Why Choose Us Section */}
         <section id="why-us" className="w-full py-24 lg:py-32 bg-secondary/50">
           <div className="container px-4 md:px-6">
             <div className="text-center space-y-4 mb-16">
