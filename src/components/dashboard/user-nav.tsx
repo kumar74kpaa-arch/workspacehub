@@ -33,8 +33,8 @@ export function UserNav() {
 
   if (!user) {
     return (
-      <Button asChild>
-        <Link href="/login">Login / Sign Up</Link>
+      <Button asChild variant="ghost" size="sm" className="text-xs font-medium text-muted-foreground hover:text-foreground">
+        <Link href="/login">Member Login</Link>
       </Button>
     );
   }
@@ -47,35 +47,41 @@ export function UserNav() {
         <Button
           variant="outline"
           size="icon"
-          className="overflow-hidden rounded-full"
+          className="overflow-hidden rounded-full h-8 w-8"
         >
-          <Avatar>
+          <Avatar className="h-8 w-8">
             <AvatarImage src={user.photoURL || ''} alt={user.displayName || user.email || ''} />
-            <AvatarFallback>{userInitials}</AvatarFallback>
+            <AvatarFallback className="text-xs">{userInitials}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.displayName || 'User'}</p>
+            <p className="text-sm font-medium leading-none">{user.displayName || 'Member'}</p>
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <User className="mr-2 h-4 w-4" />
-          <span>Profile</span>
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard" className="flex items-center">
+            <User className="mr-2 h-4 w-4" />
+            <span>Member Dashboard</span>
+          </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <CreditCard className="mr-2 h-4 w-4" />
-          <span>Billing</span>
+        <DropdownMenuItem asChild>
+          <Link href="/spaces" className="flex items-center">
+            <CreditCard className="mr-2 h-4 w-4" />
+            <span>Book Workspace</span>
+          </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Settings</span>
+        <DropdownMenuItem asChild>
+          <Link href="/admin" className="flex items-center">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Admin Portal</span>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>

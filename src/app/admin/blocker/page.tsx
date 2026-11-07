@@ -7,9 +7,9 @@ export default function AdminBlockerPage() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Admin Reservation Blocker</CardTitle>
+                <CardTitle>Availability & Blocked Slots</CardTitle>
                 <CardDescription>
-                    Reserve or unreserve any resource for a full day. This will make it unavailable for user bookings.
+                    Manage inventory availability and block or unblock workstation or meeting room slots for private corporate bookings or maintenance.
                 </CardDescription>
             </CardHeader>
             <CardContent>

@@ -1,12 +1,15 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   // 1. Skip strict checks to allow the build to proceed
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
+  turbopack: {
+    resolveAlias: {
+      'zod/v3': 'zod',
+    },
   },
 
   // 2. Your original image logic (Fixed for Next.js 15)

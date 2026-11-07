@@ -14,8 +14,13 @@ import { cn } from '@/lib/utils';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const space = spacesData.find((s) => s.slug === params.slug);
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const space = spacesData.find((s) => s.slug === slug);
   if (!space) {
     return {
       title: 'Space Not Found',
@@ -28,8 +33,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function SpaceDetailPage({ params }: { params: { slug: string } }) {
-  const space = spacesData.find((s) => s.slug === params.slug);
+export default async function SpaceDetailPage({ params }: PageProps) {
+  const { slug } = await params;
+  const space = spacesData.find((s) => s.slug === slug);
 
   if (!space) {
     notFound();
@@ -189,17 +195,22 @@ export default function SpaceDetailPage({ params }: { params: { slug: string } }
         </section>
 
         {/* CTA Section */}
-        <section className="py-24 lg:py-32 bg-secondary/30">
-            <div className="container px-4 md:px-6 text-center">
-                 <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl">
-                    Ready to Join?
+        <section className="py-20 lg:py-28 bg-secondary/30 border-t border-border/60">
+            <div className="container px-4 md:px-6 text-center max-w-3xl">
+                 <h2 className="text-3xl font-headline font-bold tracking-tight sm:text-4xl">
+                    Ready to Experience {space.name}?
                 </h2>
-                <p className="mt-3 text-muted-foreground md:text-lg max-w-2xl mx-auto mb-8">
-                    Reserve your spot at {space.name} today and elevate your workday.
+                <p className="mt-3 text-muted-foreground text-sm sm:text-base leading-relaxed mb-8">
+                    Schedule a free guided walkthrough to inspect our workstations and meeting rooms, or reserve your seat online today.
                 </p>
-                <Button asChild size="lg" className={cn('font-semibold', ctaButtonClass)}>
-                    <Link href={`/seat-booking?office=${space.slug}`}>Reserve Your Seat at {space.name}</Link>
-                </Button>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Button asChild size="lg" className="rounded-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-7">
+                    <Link href="/book-a-tour">Book a Free Guided Tour</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className={cn('rounded-full font-semibold', ctaButtonClass)}>
+                    <Link href={`/seat-booking?office=${space.slug}`}>Reserve Your Seat</Link>
+                  </Button>
+                </div>
             </div>
         </section>
       </main>

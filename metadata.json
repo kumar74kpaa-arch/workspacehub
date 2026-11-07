@@ -1,0 +1,7 @@
+{
+  "name": "9to5 Workspace",
+  "description": "Thoughtfully designed coworking space booking platform for focused professionals.",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

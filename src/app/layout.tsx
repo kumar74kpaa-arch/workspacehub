@@ -5,6 +5,9 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseProvider } from '@/firebase/provider';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { FloatingContact } from '@/components/contact/floating-contact';
+
+import Script from 'next/script';
 
 const fontSans = Inter({
   subsets: ['latin'],
@@ -17,10 +20,12 @@ const fontHeadline = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: '9to5 - A Calm Space to Work and Think',
+  title: '9to5 Workspace - A Calm Space to Work and Think in South Delhi',
   description:
-    'Thoughtfully designed coworking for focused professionals.',
+    'Thoughtfully designed coworking and meeting spaces for focused professionals, legal consultants, and growing teams in Lajpat Nagar.',
 };
+
+const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export default function RootLayout({
   children,
@@ -36,6 +41,29 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap"
           rel="stylesheet"
         />
+        {gaMeasurementId && (
+          <>
+            <Script
+              strategy="afterInteractive"
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+            />
+            <Script
+              id="google-analytics-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${gaMeasurementId}', {
+                    page_path: window.location.pathname,
+                    anonymize_ip: true
+                  });
+                `,
+              }}
+            />
+          </>
+        )}
       </head>
       <body className={cn('min-h-screen bg-background font-body antialiased', fontSans.variable, fontHeadline.variable)}>
         <div className="absolute inset-0 -z-10 overflow-hidden">
@@ -48,6 +76,7 @@ export default function RootLayout({
           </div>
           <Toaster />
           <FirebaseErrorListener />
+          <FloatingContact />
         </FirebaseProvider>
       </body>
     </html>

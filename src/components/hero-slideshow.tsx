@@ -8,12 +8,11 @@ const images = [
   '/layouts/1.jpg',
   '/layouts/2.jpg',
   '/layouts/3.jpg',
-  '/layouts/4.jpg',
   '/layouts/5.jpg',
   '/layouts/6.jpg',
-  '/layouts/7.jpeg',
+  '/layouts/7.jpg',
   '/layouts/8.jpg',
-]
+];
 
 export function HeroSlideshow() {
   const [currentIndex, setCurrentIndex] = useState(0)

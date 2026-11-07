@@ -10,81 +10,121 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { Skeleton } from '@/components/ui/skeleton';
+import { useFirestore } from '@/firebase';
+import { collection, query, where, onSnapshot, Timestamp } from 'firebase/firestore';
+import type { Booking } from '@/lib/definitions';
 
 const chartConfig = {
   total: {
-    label: "Revenue",
-    color: "hsl(var(--accent))",
+    label: "Revenue (₹)",
+    color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig;
 
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 export function RevenueChart() {
+  const firestore = useFirestore();
   const [data, setData] = React.useState<any[]>([]);
-  
+  const [loading, setLoading] = React.useState(true);
+
   React.useEffect(() => {
-    // Initializing with real February revenue and 0 for other months
-    const cleanData = [
-      { name: 'Jan', total: 0 },
-      { name: 'Feb', total: 5.83 }, // Your first real transaction
-      { name: 'Mar', total: 0 },
-      { name: 'Apr', total: 0 },
-      { name: 'May', total: 0 },
-      { name: 'Jun', total: 0 },
-      { name: 'Jul', total: 0 },
-      { name: 'Aug', total: 0 },
-      { name: 'Sep', total: 0 },
-      { name: 'Oct', total: 0 },
-      { name: 'Nov', total: 0 },
-      { name: 'Dec', total: 0 },
-    ];
-    setData(cleanData);
-  }, []);
+    const monthlyTotals = MONTH_NAMES.map((name) => ({ name, total: 0 }));
+
+    if (!firestore) {
+      setData(monthlyTotals);
+      setLoading(false);
+      return;
+    }
+
+    const q = query(
+      collection(firestore, 'bookings'),
+      where('paymentStatus', '==', 'paid')
+    );
+
+    const unsub = onSnapshot(
+      q,
+      (snapshot) => {
+        const counts = [...monthlyTotals];
+
+        snapshot.docs.forEach((doc) => {
+          const b = doc.data();
+          const start = (b.startTime as Timestamp)?.toDate
+            ? (b.startTime as Timestamp).toDate()
+            : new Date(b.startTime);
+          
+          const monthIdx = start.getMonth();
+          if (monthIdx >= 0 && monthIdx < 12) {
+            let amount = 1000;
+            if (b.amount) {
+              amount = Number(b.amount);
+            } else if (b.workspaceType === 'room') {
+              amount = 1500;
+            }
+            counts[monthIdx].total += amount;
+          }
+        });
+
+        setData(counts);
+        setLoading(false);
+      },
+      () => {
+        setData(monthlyTotals);
+        setLoading(false);
+      }
+    );
+
+    return () => unsub();
+  }, [firestore]);
 
   return (
-    <Card>
+    <Card className="border-border shadow-xs">
       <CardHeader>
-        <CardTitle>Revenue Overview</CardTitle>
-        <CardDescription>An overview of your monthly revenue against your breakeven target.</CardDescription>
+        <CardTitle className="text-lg font-headline">Revenue Trends</CardTitle>
+        <CardDescription>Monthly verified booking revenue against operational breakeven threshold.</CardDescription>
       </CardHeader>
       <CardContent>
-        {data.length > 0 ? (
-          <ChartContainer config={chartConfig} className="h-[350px] w-full">
+        {loading ? (
+          <Skeleton className="h-[300px] w-full" />
+        ) : (
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
             <BarChart data={data} accessibilityLayer>
               <XAxis
                 dataKey="name"
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
+                fontSize={11}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
+                fontSize={11}
                 tickLine={false}
                 axisLine={false}
-                // Sets the visual range from 5k to 50k as requested
-                domain={[5000, 50000]}
-                ticks={[5000, 10000, 20000, 30000, 40000, 50000]}
-                tickFormatter={(value) => `₹${value / 1000}k`}
+                domain={[0, 'auto']}
+                tickFormatter={(val) => `₹${val >= 1000 ? `${val / 1000}k` : val}`}
               />
               <ChartTooltip
-                content={<ChartTooltipContent 
-                  formatter={(value) => `₹${Number(value).toLocaleString('en-IN')}`}
-                />}
-                cursor={{ fill: 'hsl(var(--accent) / 0.2)'}}
+                content={
+                  <ChartTooltipContent
+                    formatter={(val) => `₹${Number(val).toLocaleString('en-IN')}`}
+                  />
+                }
               />
-              {/* Updated Breakeven Target to 50k */}
-              <ReferenceLine 
-                y={40000} 
-                label={{ value: "Breakeven Target", position: 'top', fill: 'hsl(var(--destructive))', fontSize: 10 }} 
-                strokeDasharray="3 3" 
-                stroke="hsl(var(--destructive))" 
+              <ReferenceLine
+                y={40000}
+                stroke="hsl(var(--destructive))"
+                strokeDasharray="3 3"
+                label={{
+                  value: 'Breakeven Target (₹40,000)',
+                  position: 'top',
+                  fill: 'hsl(var(--destructive))',
+                  fontSize: 10,
+                }}
               />
               <Bar dataKey="total" fill="var(--color-total)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ChartContainer>
-        ) : (
-          <Skeleton className="h-[350px] w-full" />
         )}
       </CardContent>
     </Card>

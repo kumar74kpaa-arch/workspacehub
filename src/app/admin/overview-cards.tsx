@@ -1,159 +1,246 @@
 'use client';
+
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { IndianRupee, Users, CalendarCheck, Zap } from 'lucide-react';
+import { IndianRupee, Users, Compass, Inbox } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useState, useEffect } from 'react';
 import { useFirestore } from '@/firebase';
 import { collection, query, where, onSnapshot, Timestamp } from 'firebase/firestore';
 import type { Booking } from '@/lib/definitions';
-import { isToday } from 'date-fns';
+import { isToday, format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Helper function to calculate booking amount
 const calculateBookingAmount = (booking: Booking): number => {
-    if (booking.workspaceType === 'desk') {
-        return 1000; // Day Pass Price
-    }
-    if (booking.workspaceType === 'room') {
-        const durationInHours = (booking.endTime.getTime() - booking.startTime.getTime()) / (1000 * 60 * 60);
-        if (durationInHours <= 0) return 0;
-        
-        const isConference = booking.workspaceName.toLowerCase().includes('conference');
-        const roomBasePrice = isConference ? 1000 : 750;
-        
-        const extraChairsMatch = booking.workspaceName.match(/\(\+(\d+)\s*seats\)/);
-        const extraChairs = extraChairsMatch ? parseInt(extraChairsMatch[1], 10) : 0;
-        
-        const roomCost = roomBasePrice * durationInHours;
-        const extraChairCost = extraChairs > 0 ? extraChairs * 100 * durationInHours : 0;
-        
-        return roomCost + extraChairCost;
-    }
-    return 0;
+  if (booking.workspaceType === 'desk') {
+    return 1000; // Day Pass Price in INR
+  }
+  if (booking.workspaceType === 'room') {
+    const durationInHours = (booking.endTime.getTime() - booking.startTime.getTime()) / (1000 * 60 * 60);
+    if (durationInHours <= 0) return 0;
+
+    const isConference = booking.workspaceName.toLowerCase().includes('conference');
+    const roomBasePrice = isConference ? 1000 : 750;
+
+    const extraChairsMatch = booking.workspaceName.match(/\(\+(\d+)\s*seats\)/);
+    const extraChairs = extraChairsMatch ? parseInt(extraChairsMatch[1], 10) : 0;
+
+    const roomCost = roomBasePrice * durationInHours;
+    const extraChairCost = extraChairs > 0 ? extraChairs * 100 * durationInHours : 0;
+
+    return roomCost + extraChairCost;
+  }
+  return 0;
 };
 
 export function OverviewCards() {
   const firestore = useFirestore();
   const [stats, setStats] = useState({
     totalRevenue: 0,
-    totalBookings: 0,
-    extendedHours: 0,
+    newEnquiries: 0,
+    upcomingTours: 0,
     occupancy: 0,
+    todayBookingsCount: 0,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!firestore) {
-        setLoading(false);
-        return;
+      setLoading(false);
+      return;
     }
     setLoading(true);
 
-    const q = query(
+    // 1. Listen to paid bookings
+    const bookingsQuery = query(
       collection(firestore, 'bookings'),
       where('paymentStatus', '==', 'paid')
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-        let totalRevenue = 0;
-        let totalBookings = 0;
-        let extendedHours = 0;
-        let todayDeskBookings = 0;
+    let bookingsTotal = 0;
+    let todayDesks = 0;
 
-        const bookingsData: Booking[] = snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                ...data,
-                startTime: (data.startTime as Timestamp).toDate(),
-                endTime: (data.endTime as Timestamp).toDate(),
-            } as Booking;
+    const unsubBookings = onSnapshot(
+      bookingsQuery,
+      (snapshot) => {
+        let rev = 0;
+        let todayCount = 0;
+
+        snapshot.docs.forEach((doc) => {
+          const data = doc.data();
+          const booking: Booking = {
+            id: doc.id,
+            ...data,
+            startTime: (data.startTime as Timestamp)?.toDate ? (data.startTime as Timestamp).toDate() : new Date(data.startTime),
+            endTime: (data.endTime as Timestamp)?.toDate ? (data.endTime as Timestamp).toDate() : new Date(data.endTime),
+          } as Booking;
+
+          rev += calculateBookingAmount(booking);
+
+          if (isToday(booking.startTime)) {
+            todayCount++;
+          }
         });
 
-        bookingsData.forEach(booking => {
-            totalRevenue += calculateBookingAmount(booking);
-            totalBookings++;
+        bookingsTotal = rev;
+        todayDesks = todayCount;
 
-            if (booking.isExtendedHours) {
-                const duration = (booking.endTime.getTime() - booking.startTime.getTime()) / (1000 * 60 * 60);
-                extendedHours += duration;
-            }
+        // Total bookable capacity: 28 desks (12 Banyan + 16 Olive)
+        const totalCapacity = 28;
+        const occ = Math.min(100, Math.round((todayDesks / totalCapacity) * 100));
 
-            if (booking.workspaceType === 'desk' && isToday(booking.startTime)) {
-                todayDeskBookings++;
-            }
+        setStats((prev) => ({
+          ...prev,
+          totalRevenue: bookingsTotal,
+          occupancy: occ,
+          todayBookingsCount: todayDesks,
+        }));
+      },
+      (err) => console.warn('[Overview] Bookings listener note:', err)
+    );
+
+    // 2. Listen to tour enquiries for upcoming tours and new status
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    let newEnquiriesCount = 0;
+    let upcomingToursCount = 0;
+
+    const unsubTours = onSnapshot(
+      collection(firestore, 'tour_enquiries'),
+      (snap) => {
+        let toursNew = 0;
+        let toursUpcoming = 0;
+        snap.docs.forEach((d) => {
+          const data = d.data();
+          if ((data.status || 'new') === 'new') toursNew++;
+          if (data.preferredDate && data.preferredDate >= todayStr) toursUpcoming++;
         });
 
-        // Total workstations: 12 at Banyan + 16 at Olive = 28
-        const totalWorkstations = 28;
-        const occupancy = totalWorkstations > 0 ? (todayDeskBookings / totalWorkstations) * 100 : 0;
-
-        setStats({
-            totalRevenue,
-            totalBookings,
-            extendedHours: Math.round(extendedHours),
-            occupancy: Math.round(occupancy),
-        });
+        upcomingToursCount = toursUpcoming;
+        setStats((prev) => ({
+          ...prev,
+          upcomingTours: upcomingToursCount,
+          newEnquiries: prev.newEnquiries + toursNew,
+        }));
         setLoading(false);
-    }, (error) => {
-        console.error("Error fetching overview stats:", error);
-        setLoading(false);
-    });
+      },
+      () => setLoading(false)
+    );
 
-    return () => unsubscribe();
+    // 3. Listen to corporate enquiries
+    const unsubCorp = onSnapshot(
+      collection(firestore, 'corporate_enquiries'),
+      (snap) => {
+        let corpNew = 0;
+        snap.docs.forEach((d) => {
+          const data = d.data();
+          if ((data.status || 'new') === 'new') corpNew++;
+        });
+        setStats((prev) => ({
+          ...prev,
+          newEnquiries: corpNew,
+        }));
+      },
+      () => {}
+    );
+
+    return () => {
+      unsubBookings();
+      unsubTours();
+      unsubCorp();
+    };
   }, [firestore]);
-  
+
   if (loading) {
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><Skeleton className="h-5 w-3/4" /><IndianRupee className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><Skeleton className="h-8 w-1/2" /><Skeleton className="h-4 w-2/3 mt-2" /></CardContent></Card>
-            <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><Skeleton className="h-5 w-3/4" /><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><Skeleton className="h-8 w-1/2" /><Skeleton className="h-2 w-full mt-2" /></CardContent></Card>
-            <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><Skeleton className="h-5 w-3/4" /><Zap className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><Skeleton className="h-8 w-1/2" /><Skeleton className="h-4 w-2/3 mt-2" /></CardContent></Card>
-            <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><Skeleton className="h-5 w-3/4" /><CalendarCheck className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><Skeleton className="h-8 w-1/2" /><Skeleton className="h-4 w-2/3 mt-2" /></CardContent></Card>
-        </div>
-    )
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-4 w-4 rounded-full" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-7 w-20" />
+              <Skeleton className="h-3 w-36 mt-2" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
   }
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
+      {/* 1. Total Revenue */}
+      <Card className="border-border shadow-xs">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-          <IndianRupee className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Total Revenue
+          </CardTitle>
+          <IndianRupee className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">₹{stats.totalRevenue.toLocaleString('en-IN')}</div>
-          <p className="text-xs text-muted-foreground">All time revenue from paid bookings</p>
+          <div className="text-2xl font-bold font-mono">
+            ₹{stats.totalRevenue.toLocaleString('en-IN')}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Confirmed & paid bookings to date
+          </p>
         </CardContent>
       </Card>
-      <Card>
+
+      {/* 2. New Enquiries */}
+      <Card className="border-border shadow-xs">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Today's Occupancy</CardTitle>
-           <Users className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            New Enquiries
+          </CardTitle>
+          <Inbox className="h-4 w-4 text-emerald-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.occupancy}%</div>
-           <Progress value={stats.occupancy} className="h-2 mt-2" />
+          <div className="text-2xl font-bold font-mono text-emerald-600">
+            {stats.newEnquiries}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Uncontacted tour & corporate leads
+          </p>
         </CardContent>
       </Card>
-       <Card>
+
+      {/* 3. Upcoming Tours */}
+      <Card className="border-border shadow-xs">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Extended Hours Booked</CardTitle>
-          <Zap className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Upcoming Tours
+          </CardTitle>
+          <Compass className="h-4 w-4 text-blue-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.extendedHours} Hours</div>
-          <p className="text-xs text-muted-foreground">Total late booking hours</p>
+          <div className="text-2xl font-bold font-mono">
+            {stats.upcomingTours}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Scheduled on or after today
+          </p>
         </CardContent>
       </Card>
-      <Card>
+
+      {/* 4. Today's Occupancy */}
+      <Card className="border-border shadow-xs">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
-          <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Today&apos;s Occupancy
+          </CardTitle>
+          <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.totalBookings}</div>
-          <p className="text-xs text-muted-foreground">Total paid bookings all time</p>
+          <div className="flex items-baseline justify-between">
+            <span className="text-2xl font-bold font-mono">{stats.occupancy}%</span>
+            <span className="text-xs text-muted-foreground font-mono">
+              {stats.todayBookingsCount}/28 Desks
+            </span>
+          </div>
+          <Progress value={stats.occupancy} className="h-2 mt-2" />
         </CardContent>
       </Card>
     </div>

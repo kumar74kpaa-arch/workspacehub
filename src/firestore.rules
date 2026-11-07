@@ -1,4 +1,3 @@
-
 rules_version = '2';
 
 service cloud.firestore {
@@ -20,46 +19,46 @@ service cloud.firestore {
 
     // Rules for the users collection
     match /users/{userId} {
-      // A user can get their own document. An admin's `get` call for their own role check is also allowed here.
       allow get: if isUser(userId) || isAdmin();
-      
-      // An admin can list all user documents.
       allow list: if isAdmin();
-      
-      // A user can create their own document on signup, but cannot assign themselves as admin.
       allow create: if isUser(userId) && request.resource.data.role == 'user';
-      
-      // An admin can update any user. A user can update their own document, but cannot change their role.
       allow update: if isAdmin() || (isUser(userId) && request.resource.data.role == resource.data.role);
-
-      // Only admins can delete users
       allow delete: if isAdmin();
     }
 
     // Rules for the bookings collection
     match /bookings/{bookingId} {
-      // Admins can list all bookings. Users can only list their own bookings (enforced by query).
-      // Any signed-in user can perform a list for conflict checking in a transaction.
       allow list: if request.auth != null;
-      
-      // An admin can get any single booking. A user can only get their own booking.
       allow get: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
-
-      // A user can create a booking for themselves.
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      
-      // A user can update/delete their own booking. Admins can manage any booking.
-      // The Admin SDK (used for payment verification) bypasses these rules.
       allow update, delete: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
     }
-    
+
     // Rules for admin reservations (blocks)
     match /adminReservations/{reservationId} {
-        // Any authenticated user can read the blocks to see availability
-        allow read: if request.auth != null;
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
 
-        // Only admins can create, update, or delete blocks
-        allow write: if isAdmin();
+    // Rules for Tour Enquiries
+    match /tour_enquiries/{enquiryId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Rules for Corporate Enquiries
+    match /corporate_enquiries/{enquiryId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Rules for Grievances
+    match /grievances/{grievanceId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Rules for Testimonials
+    match /testimonials/{testimonialId} {
+      allow read: if resource.data.published == true || isAdmin();
+      allow write: if isAdmin();
     }
   }
 }
